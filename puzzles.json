@@ -1,0 +1,10 @@
+[
+  {
+    "fen": "r1bqkb1r/pppp1ppp/2n5/4P3/2Bp2n1/5N2/PPP2PPP/RNBQK2R w KQkq - 1 5",
+    "description": "Мат Легаля (Пример)"
+  },
+  {
+    "fen": "r1b1k1nr/pppp1ppp/2n5/2b1p3/2B1P2q/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+    "description": "Детский мат (защита)"
+  }
+]

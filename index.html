@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Vision Trainer Ultimate</title>
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="startScreen" class="view active">
+        <div class="menu-box">
+    <h1>Chess Vision Trainer</h1>
+    <p>Тренировка тактического зрения</p>
+    
+    <div class="form-group">
+        <label>Количество задач (доступно: <span id="maxPuzzlesCount">...</span>):</label>
+        <input type="number" id="taskCountInput" min="1" value="5" class="number-input">
+    </div>
+
+    <div class="form-group" style="background: #eef; padding: 10px; border-radius: 8px; margin: 15px 0;">
+        <label>⏳ Ограничение времени (сек):</label>
+        <input type="number" id="timeLimitInput" min="0" value="0" class="number-input" style="width: 100px;">
+        <div style="font-size: 0.8rem; color: #555; margin-top: 5px;">0 = безлимит (просто таймер)</div>
+        
+        <div style="margin-top: 10px; text-align: left;">
+            <label style="font-weight: normal;">
+                <input type="radio" name="timeMode" value="per_puzzle" checked> На одну задачу
+            </label>
+            <br>
+            <label style="font-weight: normal;">
+                <input type="radio" name="timeMode" value="total"> На всю сессию
+            </label>
+        </div>
+    </div>
+
+    <div class="settings-list">
+        <h3>Настройки</h3>
+        <label><input type="checkbox" id="setSequential"> 🔄 Поочередный режим (W->B)</label>
+        <label><input type="checkbox" id="setAutoFlip" checked> 🔁 Авто-поворот доски</label>
+        <label><input type="checkbox" id="setHighlights" checked> 🟩 Подсветка найденного</label>
+        <label><input type="checkbox" id="setHints" checked> 🔢 Счетчики (Hints)</label>
+        <label><input type="checkbox" id="setStatusText" checked> 💬 Текстовые статусы</label>
+    </div>
+
+    <button id="startSessionBtn" class="big-btn">Начать тренировку</button>
+</div>
+    </div>
+
+    <div id="gameScreen" class="view hidden">
+        <div class="header">
+            <div class="progress-info">
+                Задача: <span id="progressDisplay">1/5</span>
+            </div>
+            <div id="taskIndicator" class="task-indicator hidden">Цель: <span id="currentTaskName">Белые</span></div>
+            <div class="timer-box">⏱ <span id="gameTimer">00:00</span></div>
+            <button id="giveUpBtn" class="small-btn">Сдаться (Пропуск)</button>
+        </div>
+
+        <div class="main-container">
+            <div id="board"></div>
+
+            <div class="panel">
+                <div id="statusMessage">Ход белых</div>
+
+                <div class="stats-grid">
+                    <div class="stat-card white-card">
+                        <div class="card-header">🏳️ Белые</div>
+                        <div class="stat-row" id="row-w-checks"><span>Шахи:</span> <span id="w-checks"
+                                class="counter">-</span></div>
+                        <div class="stat-row" id="row-w-captures"><span>Взятия:</span> <span id="w-captures"
+                                class="counter">-</span></div>
+                    </div>
+                    <div class="stat-card black-card">
+                        <div class="card-header">🏴 Черные</div>
+                        <div class="stat-row" id="row-b-checks"><span>Шахи:</span> <span id="b-checks"
+                                class="counter">-</span></div>
+                        <div class="stat-row" id="row-b-captures"><span>Взятия:</span> <span id="b-captures"
+                                class="counter">-</span></div>
+                    </div>
+                </div>
+
+                <div class="log-container">
+                    <div id="log"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultScreen" class="view hidden">
+        <div class="result-box">
+            <h2>🎉 Сессия завершена!</h2>
+
+            <div class="summary-grid">
+                <div class="sum-item">
+                    <span class="sum-label">Решено задач</span>
+                    <span class="sum-val" id="resTotalSolved">0</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Общее время</span>
+                    <span class="sum-val" id="resTotalTime">00:00</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Среднее на задачу</span>
+                    <span class="sum-val" id="resAvgTime">00:00</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Всего кликов</span>
+                    <span class="sum-val" id="resTotalClicks">0</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Ошибок</span>
+                    <span class="sum-val error-text" id="resTotalErrors">0</span>
+                </div>
+            </div>
+
+            <h3>Детализация ходов</h3>
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>Категория</th>
+                        <th>Найдено</th>
+                        <th>Всего было</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🏳️ Шахи белых</td>
+                        <td id="resWCheckFound">0</td>
+                        <td id="resWCheckTotal">0</td>
+                        <td id="resWCheckPct">0%</td>
+                    </tr>
+                    <tr>
+                        <td>🏳️ Взятия белых</td>
+                        <td id="resWCapFound">0</td>
+                        <td id="resWCapTotal">0</td>
+                        <td id="resWCapPct">0%</td>
+                    </tr>
+                    <tr>
+                        <td>🏴 Шахи черных</td>
+                        <td id="resBCheckFound">0</td>
+                        <td id="resBCheckTotal">0</td>
+                        <td id="resBCheckPct">0%</td>
+                    </tr>
+                    <tr>
+                        <td>🏴 Взятия черных</td>
+                        <td id="resBCapFound">0</td>
+                        <td id="resBCapTotal">0</td>
+                        <td id="resBCapPct">0%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button onclick="location.reload()" class="big-btn">В Главное Меню</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
