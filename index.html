@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chess Vision Trainer Ultimate</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,55 +14,75 @@
 
     <div id="startScreen" class="view active">
         <div class="menu-box">
-    <h1>Chess Vision Trainer</h1>
-    <p>Тренировка тактического зрения</p>
-    
-    <div class="form-group">
-        <label>Количество задач (доступно: <span id="maxPuzzlesCount">...</span>):</label>
-        <input type="number" id="taskCountInput" min="1" value="5" class="number-input">
-    </div>
+            <h1>Chess Vision Trainer</h1>
+            <p>Тренировка тактического зрения</p>
+            
+            <div class="form-group" style="background: #fff3cd; padding: 10px; border-radius: 8px; margin: 15px 0;">
+                <label>🎯 Сложность:</label>
+                <select id="difficultySelect" style="padding: 8px; font-size: 1rem; width: 100%; border-radius: 4px; border: 1px solid #ccc; margin-top: 5px;">
+                    <option value="all">🎲 Случайная (Все)</option>
+                    <option value="easy">🟢 Легкая (мало фигур)</option>
+                    <option value="medium">🟡 Средняя</option>
+                    <option value="hard">🔴 Сложная (хаос)</option>
+                </select>
+            </div>
 
-    <div class="form-group" style="background: #eef; padding: 10px; border-radius: 8px; margin: 15px 0;">
-        <label>⏳ Ограничение времени (сек):</label>
-        <input type="number" id="timeLimitInput" min="0" value="0" class="number-input" style="width: 100px;">
-        <div style="font-size: 0.8rem; color: #555; margin-top: 5px;">0 = безлимит (просто таймер)</div>
-        
-        <div style="margin-top: 10px; text-align: left;">
-            <label style="font-weight: normal;">
-                <input type="radio" name="timeMode" value="per_puzzle" checked> На одну задачу
-            </label>
-            <br>
-            <label style="font-weight: normal;">
-                <input type="radio" name="timeMode" value="total"> На всю сессию
-            </label>
+            <div class="form-group">
+                <label>Количество задач (доступно: <span id="maxPuzzlesCount">...</span>):</label>
+                <input type="number" id="taskCountInput" min="1" value="5" class="number-input">
+            </div>
+
+            <div class="form-group" style="background: #eef; padding: 10px; border-radius: 8px; margin: 15px 0;">
+                <label>⏳ Ограничение времени (сек):</label>
+                <input type="number" id="timeLimitInput" min="0" value="0" class="number-input" style="width: 100px;">
+                <div style="font-size: 0.8rem; color: #555; margin-top: 5px;">0 = безлимит (просто таймер)</div>
+                
+                <div style="margin-top: 10px; text-align: left;">
+                    <label style="font-weight: normal;">
+                        <input type="radio" name="timeMode" value="per_puzzle" checked> На одну задачу
+                    </label>
+                    <br>
+                    <label style="font-weight: normal;">
+                        <input type="radio" name="timeMode" value="total"> На всю сессию
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-list">
+                <h3>Настройки</h3>
+                <label><input type="checkbox" id="setSequential"> 🔄 Поочередный режим (W->B)</label>
+                <label><input type="checkbox" id="setAutoFlip" checked> 🔁 Авто-поворот доски</label>
+                <label><input type="checkbox" id="setHighlights" checked> 🟩 Подсветка найденного</label>
+                <label><input type="checkbox" id="setHints" checked> 🔢 Счетчики (Hints)</label>
+                <label><input type="checkbox" id="setStatusText" checked> 💬 Текстовые статусы</label>
+                <label><input type="checkbox" id="setShowLog" checked> 📜 История ходов</label> <label><input type="checkbox" id="setCoords" checked> 🔠 Координаты (a-h, 1-8)</label>
+            </div>
+
+            <button id="startSessionBtn" class="big-btn">Начать тренировку</button>
         </div>
-    </div>
-
-    <div class="settings-list">
-        <h3>Настройки</h3>
-        <label><input type="checkbox" id="setSequential"> 🔄 Поочередный режим (W->B)</label>
-        <label><input type="checkbox" id="setAutoFlip" checked> 🔁 Авто-поворот доски</label>
-        <label><input type="checkbox" id="setHighlights" checked> 🟩 Подсветка найденного</label>
-        <label><input type="checkbox" id="setHints" checked> 🔢 Счетчики (Hints)</label>
-        <label><input type="checkbox" id="setStatusText" checked> 💬 Текстовые статусы</label>
-    </div>
-
-    <button id="startSessionBtn" class="big-btn">Начать тренировку</button>
-</div>
     </div>
 
     <div id="gameScreen" class="view hidden">
         <div class="header">
             <div class="progress-info">
-                Задача: <span id="progressDisplay">1/5</span>
+                <span style="color:#777; font-size: 0.9rem;">Задача:</span> 
+                <span id="progressDisplay" style="color: #333; margin-left: 5px;">1 / 5</span>
             </div>
+            
             <div id="taskIndicator" class="task-indicator hidden">Цель: <span id="currentTaskName">Белые</span></div>
+            
             <div class="timer-box">⏱ <span id="gameTimer">00:00</span></div>
-            <button id="giveUpBtn" class="small-btn">Сдаться (Пропуск)</button>
+            
+            <div class="header-buttons">
+                <button id="flipBoardBtn" class="icon-btn" title="Перевернуть доску">🔄</button>
+                <button id="giveUpBtn" class="icon-btn skip-btn" title="Сдаться (Пропуск)">⏭️</button>
+            </div>
         </div>
 
         <div class="main-container">
-            <div id="board"></div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
 
             <div class="panel">
                 <div id="statusMessage">Ход белых</div>
@@ -84,7 +105,15 @@
                 </div>
 
                 <div class="log-container">
-                    <div id="log"></div>
+                    <div class="log-col">
+                        <div class="log-header">🏳️ Белые</div>
+                        <div id="log-white" class="log-list"></div>
+                    </div>
+                    <div class="log-separator"></div>
+                    <div class="log-col">
+                        <div class="log-header">🏴 Черные</div>
+                        <div id="log-black" class="log-list"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -98,6 +127,10 @@
                 <div class="sum-item">
                     <span class="sum-label">Решено задач</span>
                     <span class="sum-val" id="resTotalSolved">0</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Точность</span>
+                    <span class="sum-val" id="resAccuracy">0%</span>
                 </div>
                 <div class="sum-item">
                     <span class="sum-label">Общее время</span>
@@ -155,7 +188,10 @@
                 </tbody>
             </table>
 
-            <button onclick="location.reload()" class="big-btn">В Главное Меню</button>
+            <div class="result-actions">
+                <button id="shareBtn" class="share-btn">📸 Скопировать результат</button>
+                <button onclick="location.reload()" class="big-btn">В Главное Меню</button>
+            </div>
         </div>
     </div>
 
@@ -164,5 +200,4 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="script.js"></script>
 </body>
-
 </html>

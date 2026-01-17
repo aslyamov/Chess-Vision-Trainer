@@ -2,7 +2,8 @@ body {
     font-family: 'Segoe UI', sans-serif;
     background: #f0f2f5;
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    /* Убрали отступы у body, добавим их контейнеру */
     display: flex;
     justify-content: center;
     min-height: 100vh;
@@ -12,8 +13,10 @@ body {
 .view {
     display: none;
     width: 100%;
-    max-width: 1000px;
+    /* max-width убрали, чтобы использовать всю ширину на ПК */
     animation: fadeIn 0.4s;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .view.active {
@@ -36,7 +39,7 @@ body {
     }
 }
 
-/* МЕНЮ */
+/* МЕНЮ (Центрируем) */
 .menu-box,
 .result-box {
     background: white;
@@ -48,6 +51,7 @@ body {
     text-align: center;
 }
 
+/* Остальные стили меню и кнопок без изменений... */
 .form-group {
     margin: 20px 0;
 }
@@ -82,22 +86,45 @@ body {
     background: #218838;
 }
 
-/* ИГРА */
+.share-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    transition: 0.2s;
+    margin-bottom: 15px;
+}
+
+.share-btn:hover {
+    background: #0069d9;
+}
+
+/* --- ИГРА: ХЕДЕР --- */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     background: white;
     padding: 10px 20px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    max-width: 1350px;
+    /* Ограничим ширину хедера */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .progress-info {
     font-weight: bold;
     font-size: 1.2rem;
     color: #555;
+    display: flex;
+    align-items: center;
 }
 
 .timer-box {
@@ -110,33 +137,113 @@ body {
     border-radius: 4px;
 }
 
-.small-btn {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
+.header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
+.icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.skip-btn:hover {
+    filter: drop-shadow(0 0 2px rgba(220, 53, 69, 0.5));
+}
+
+.icon-btn:hover {
+    transform: scale(1.15);
+}
+
+.disabled-btn {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* --- ГЛАВНЫЙ ИГРОВОЙ КОНТЕЙНЕР (Сетка) --- */
 .main-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 30px;
+    /* Разрешаем перенос на новую строку */
+    gap: 20px;
     justify-content: center;
+    /* Центрируем всё */
+    align-items: flex-start;
+}
+
+/* ДОСКА */
+.board-wrapper {
+    /* На ПК: ширина зависит от высоты экрана (чтобы была большой и квадратной) */
+    width: 75vh;
+    max-width: 60vw;
+    /* Но не шире 60% экрана, чтобы место для панели осталось */
+    touch-action: none;
 }
 
 #board {
-    width: 450px;
+    width: 100%;
 }
 
+/* ПАНЕЛЬ */
 .panel {
     flex: 1;
-    min-width: 300px;
+    min-width: 320px;
+    /* Минимальная ширина панели */
+    max-width: 400px;
+    /* Максимальная ширина */
     background: white;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+    display: flex;
+    flex-direction: column;
+    /* Высота панели подстраивается под высоту доски (примерно) */
+    height: 75vh;
+    box-sizing: border-box;
+}
+
+/* --- АДАПТИВНОСТЬ (ТЕЛЕФОНЫ И ПЛАНШЕТЫ) --- */
+/* Если экран уже чем 950px (вертикальный планшет или телефон) */
+@media (max-width: 950px) {
+    .main-container {
+        flex-direction: column;
+        /* Ставим вертикально */
+        align-items: center;
+    }
+
+    .board-wrapper {
+        width: 100%;
+        max-width: 95vw;
+        /* На телефоне доска во всю ширину */
+        height: auto;
+    }
+
+    .panel {
+        width: 100%;
+        max-width: 95vw;
+        height: auto;
+        /* Высота авто */
+        min-height: auto;
+    }
+
+    .log-container {
+        height: 200px;
+        /* Фиксируем высоту лога на телефоне */
+    }
+}
+
+.chessboard-63f37 .notation-322f9 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #1b7b34;
 }
 
 #statusMessage {
@@ -146,7 +253,7 @@ body {
     min-height: 1.2em;
 }
 
-/* Статистика в игре */
+/* СТАТИСТИКА */
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -191,25 +298,76 @@ body {
     border-radius: 3px;
 }
 
-/* Лог */
+/* ЛОГ ХОДОВ */
 .log-container {
-    height: 150px;
+    flex-grow: 1;
+    /* Заполняет все свободное место в панели */
     overflow-y: auto;
+    min-height: 100px;
+
     border-top: 1px solid #eee;
-    padding-top: 10px;
+    margin-top: 10px;
     font-size: 0.85rem;
+
+    display: flex;
+    background: #fafafa;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.log-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #eee;
+}
+
+.log-col:last-child {
+    border-right: none;
+}
+
+.log-header {
+    background: #f1f1f1;
+    text-align: center;
+    padding: 6px;
+    font-weight: bold;
+    color: #555;
+    border-bottom: 1px solid #ddd;
+}
+
+.log-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 8px;
+    scrollbar-width: thin;
 }
 
 .log-item {
     margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
+}
+
+.move-text {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #333;
 }
 
 .badge {
     padding: 2px 5px;
     border-radius: 3px;
     color: white;
-    margin-right: 5px;
-    font-size: 0.75rem;
+    margin-left: 5px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .bg-check {
@@ -218,10 +376,6 @@ body {
 
 .bg-capture {
     background: #007bff;
-}
-
-.bg-both {
-    background: linear-gradient(90deg, #007bff, #dc3545);
 }
 
 .highlight-found {
@@ -294,14 +448,15 @@ body {
 }
 
 .number-input {
-    width: 80px;             /* Компактный размер */
+    width: 80px;
     padding: 8px;
-    font-size: 1.2rem;       /* Крупные цифры */
+    font-size: 1.2rem;
     text-align: center;
     border: 2px solid #ddd;
     border-radius: 6px;
     margin-top: 10px;
 }
+
 .number-input:focus {
     border-color: #28a745;
     outline: none;

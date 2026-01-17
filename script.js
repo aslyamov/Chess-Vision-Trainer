@@ -11,8 +11,8 @@ var foundMoves = new Set();
 
 // Таймер
 var timerInterval = null;
-var sessionStartTime = 0; // Время начала сессии (для статистики)
-var limitEndTime = 0;     // Время, когда таймер должен остановиться (для обратного отсчета)
+var sessionStartTime = 0; 
+var limitEndTime = 0;     
 
 // Статистика
 var sessionStats = {
@@ -38,34 +38,77 @@ $(document).ready(function() {
         .then(response => response.json())
         .then(data => {
             puzzles = data;
-            $('#maxPuzzlesCount').text(puzzles.length);
-            $('#taskCountInput').attr('max', puzzles.length);
-            if (puzzles.length < 5) $('#taskCountInput').val(puzzles.length);
+            updateAvailableCount(); 
         })
         .catch(err => {
             console.warn("JSON не найден.");
             puzzles = [
-                { fen: "r1bqkb1r/pppp1ppp/2n5/4P3/2Bp2n1/5N2/PPP2PPP/RNBQK2R w KQkq - 1 5" },
-                { fen: "r1b1k1nr/pppp1ppp/2n5/2b1p3/2B1P2q/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4" },
-                { fen: "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8" }
+                { fen: "r1bqkb1r/pppp1ppp/2n5/4P3/2Bp2n1/5N2/PPP2PPP/RNBQK2R w KQkq - 1 5", difficulty: "easy" },
+                { fen: "r1b1k1nr/pppp1ppp/2n5/2b1p3/2B1P2q/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4", difficulty: "easy" },
+                { fen: "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8", difficulty: "medium" }
             ];
-            $('#maxPuzzlesCount').text(puzzles.length);
-            $('#taskCountInput').attr('max', puzzles.length);
-            $('#taskCountInput').val(puzzles.length);
+            updateAvailableCount();
         });
 
+    $('#difficultySelect').on('change', updateAvailableCount);
     $('#startSessionBtn').on('click', startSession);
     $('#giveUpBtn').on('click', skipPuzzle);
     
-    board = Chessboard('board', {
-        draggable: true,
-        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-        onDragStart: onDragStart,
-        onDrop: onDrop
+    $('#flipBoardBtn').on('click', function() {
+        if (board) board.flip();
+    });
+
+    $('#shareBtn').on('click', async function() {
+        let btn = $(this);
+        let originalText = btn.text();
+        btn.text('⏳ Создание...');
+        $('.result-actions').hide();
+        try {
+            const canvas = await html2canvas(document.querySelector('.result-box'), {
+                scale: 2, backgroundColor: "#ffffff", useCORS: true
+            });
+            canvas.toBlob(async function(blob) {
+                try {
+                    const item = new ClipboardItem({ "image/png": blob });
+                    await navigator.clipboard.write([item]);
+                    $('.result-actions').show();
+                    btn.text('✅ Скопировано!');
+                    setTimeout(() => btn.text(originalText), 3000);
+                } catch (err) {
+                    $('.result-actions').show();
+                    btn.text('❌ Ошибка');
+                    alert("Браузер не разрешил копирование.");
+                }
+            });
+        } catch (error) {
+            $('.result-actions').show();
+            btn.text(originalText);
+            alert("Ошибка.");
+        }
+    });
+
+    $(window).resize(function() {
+        if (board) board.resize();
     });
 });
 
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+function updateAvailableCount() {
+    let diff = $('#difficultySelect').val();
+    let count = 0;
+    if (diff === 'all') {
+        count = puzzles.length;
+    } else {
+        count = puzzles.filter(p => (p.difficulty || 'medium') === diff).length;
+    }
+    $('#maxPuzzlesCount').text(count);
+    $('#taskCountInput').attr('max', count);
+    let currentVal = parseInt($('#taskCountInput').val()) || 0;
+    if (currentVal > count) {
+        $('#taskCountInput').val(count > 0 ? count : 1);
+    }
+    if (count === 0) $('#maxPuzzlesCount').text("0 (нет задач)");
+}
+
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -74,53 +117,87 @@ function shuffleArray(array) {
     return array;
 }
 
-// --- ЛОГИКА СЕССИИ ---
-
 function startSession() {
-    // Чтение настроек
     settings = {
         sequentialMode: $('#setSequential').is(':checked'),
         autoFlip: $('#setAutoFlip').is(':checked'),
         highlightFound: $('#setHighlights').is(':checked'),
         showHints: $('#setHints').is(':checked'),
         showText: $('#setStatusText').is(':checked'),
-        // Новые настройки времени
+        showLog: $('#setShowLog').is(':checked'), // <-- Читаем настройку ЛОГА
+        showCoords: $('#setCoords').is(':checked'), 
         timeLimit: parseInt($('#timeLimitInput').val()) || 0,
-        timeMode: $('input[name="timeMode"]:checked').val() // 'per_puzzle' или 'total'
+        timeMode: $('input[name="timeMode"]:checked').val() 
     };
 
-    // Выбор задач
+    let diff = $('#difficultySelect').val();
+    let filteredPuzzles = puzzles;
+    if (diff !== 'all') {
+        filteredPuzzles = puzzles.filter(p => (p.difficulty || 'medium') === diff);
+        if (filteredPuzzles.length === 0) filteredPuzzles = puzzles;
+    }
+
     let inputVal = parseInt($('#taskCountInput').val());
-    let totalAvailable = puzzles.length;
+    let totalAvailable = filteredPuzzles.length;
     if (isNaN(inputVal) || inputVal < 1) inputVal = 1;
     if (inputVal > totalAvailable) inputVal = totalAvailable;
     
-    let shuffled = shuffleArray([...puzzles]);
+    let shuffled = shuffleArray([...filteredPuzzles]);
     sessionPuzzles = shuffled.slice(0, inputVal);
     
-    // Сброс статистики
-    currentPuzzleIndex = 0;
     sessionStats = {
         totalTimeSeconds: 0, totalClicks: 0, totalErrors: 0, solvedCount: 0,
         wChecks: { found: 0, total: 0 }, wCaps: { found: 0, total: 0 },
         bChecks: { found: 0, total: 0 }, bCaps: { found: 0, total: 0 }
     };
+    currentPuzzleIndex = 0;
+
+    // --- ПРИМЕНЕНИЕ НАСТРОЙКИ ЛОГА ---
+    if (settings.showLog) {
+        $('.log-container').removeClass('hidden');
+    } else {
+        $('.log-container').addClass('hidden');
+    }
+
+    // --- КНОПКА ПЕРЕВОРОТА ---
+    if (settings.sequentialMode && settings.autoFlip) {
+        $('#flipBoardBtn').prop('disabled', true).addClass('disabled-btn');
+        $('#flipBoardBtn').attr('title', 'Отключено авто-поворотом');
+    } else {
+        $('#flipBoardBtn').prop('disabled', false).removeClass('disabled-btn');
+        $('#flipBoardBtn').attr('title', 'Перевернуть доску');
+    }
+
+    if (board) board.destroy();
+    board = Chessboard('board', {
+        draggable: true,
+        showNotation: settings.showCoords,
+        position: 'start',
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+        onDragStart: onDragStart,
+        onDrop: onDrop
+    });
+
+    $('.board-wrapper').on('scroll touchmove touchend', function(e){
+        e.preventDefault();
+    }, { passive: false });
 
     $('.view').removeClass('active').addClass('hidden');
     $('#gameScreen').removeClass('hidden').addClass('active');
 
-    // Старт общего времени (для статистики)
     sessionStartTime = Date.now();
 
-    // Если режим "На всю сессию", запускаем таймер один раз здесь
     if (settings.timeLimit > 0 && settings.timeMode === 'total') {
         limitEndTime = sessionStartTime + (settings.timeLimit * 1000);
-        startTimer(true); // true = режим обратного отсчета
+        startTimer(true); 
     } else if (settings.timeLimit === 0) {
-        startTimer(false); // Обычный таймер вверх
+        startTimer(false); 
     }
 
-    loadPuzzle(0);
+    setTimeout(() => {
+        loadPuzzle(0);
+        if (board) board.resize();
+    }, 200);
 }
 
 function loadPuzzle(index) {
@@ -130,26 +207,28 @@ function loadPuzzle(index) {
     }
 
     let fen = sessionPuzzles[index].fen;
-    
     game = new Chess();
     targets = { w: { checks: [], captures: [] }, b: { checks: [], captures: [] } };
     foundMoves.clear();
     currentStageIndex = 0;
-    $('.square-55d63').removeClass('highlight-found');
-    $('#log').html('');
+    
+    $('#board .square-55d63').removeClass('highlight-found'); 
+    
+    // Очистка колонок лога
+    $('#log-white').html('');
+    $('#log-black').html('');
 
     if (!game.load(fen) && !game.load_pgn(fen)) {
-        console.error("Некорректный FEN:", fen);
         nextPuzzle(); 
         return;
     }
 
     board.position(game.fen());
     board.orientation('white');
+    board.resize();
 
     analyzeTargets(game.fen());
     
-    // Статистика "Available"
     sessionStats.wChecks.total += targets.w.checks.length;
     sessionStats.wCaps.total   += targets.w.captures.length;
     sessionStats.bChecks.total += targets.b.checks.length;
@@ -158,13 +237,11 @@ function loadPuzzle(index) {
     updateGameUI();
     setStatus("Найдите все шахи и взятия!");
 
-    // Управление таймером "На одну задачу"
     if (settings.timeLimit > 0 && settings.timeMode === 'per_puzzle') {
         limitEndTime = Date.now() + (settings.timeLimit * 1000);
         startTimer(true);
     }
 
-    // Авто-пропуск пустых
     if (settings.sequentialMode) {
         checkStageCompletion();
     } else {
@@ -195,6 +272,17 @@ function finishSession() {
     $('#resTotalClicks').text(sessionStats.totalClicks);
     $('#resTotalErrors').text(sessionStats.totalErrors);
 
+    let successfulClicks = sessionStats.totalClicks - sessionStats.totalErrors;
+    if (successfulClicks < 0) successfulClicks = 0;
+    let accuracy = (sessionStats.totalClicks > 0) 
+        ? Math.round((successfulClicks / sessionStats.totalClicks) * 100) 
+        : 0;
+
+    $('#resAccuracy').text(accuracy + "%");
+    if (accuracy >= 90) $('#resAccuracy').css('color', '#28a745');
+    else if (accuracy >= 70) $('#resAccuracy').css('color', '#ffc107');
+    else $('#resAccuracy').css('color', '#dc3545');
+
     updateResRow('WCheck', sessionStats.wChecks);
     updateResRow('WCap', sessionStats.wCaps);
     updateResRow('BCheck', sessionStats.bChecks);
@@ -211,7 +299,6 @@ function updateResRow(prefix, obj) {
     $(`#res${prefix}Pct`).text(calcPct(obj.found, obj.total));
 }
 
-// --- АНАЛИЗ ---
 function analyzeTargets(fen) {
     let wRes = getMovesForColor(fen, 'w');
     targets.w.checks = wRes.checks;
@@ -225,7 +312,6 @@ function getMovesForColor(fen, color) {
     let tempGame = new Chess(fen);
     let tokens = fen.split(' ');
     tokens[1] = color; 
-    
     if (!tempGame.load(tokens.join(' '))) return { checks: [], captures: [] };
 
     let checks = [], captures = [];
@@ -238,11 +324,8 @@ function getMovesForColor(fen, color) {
     return { checks, captures };
 }
 
-// --- ВЗАИМОДЕЙСТВИЕ ---
 function onDragStart(source, piece) {
-    // Блокируем, если время вышло (на всякий случай)
     if (settings.timeLimit > 0 && Date.now() > limitEndTime) return false;
-
     if (settings.sequentialMode) {
         let stage = STAGES[currentStageIndex];
         if (piece.charAt(0) !== stage.color) return false;
@@ -251,23 +334,22 @@ function onDragStart(source, piece) {
 }
 
 function onDrop(source, target) {
-    if (source === target) return;
-    
-    // Доп. проверка времени
     if (settings.timeLimit > 0 && Date.now() > limitEndTime) return 'snapback';
+    if (target === 'offboard' || source === target) return 'snapback';
 
     sessionStats.totalClicks++;
 
     let moveKey = source + '-' + target;
-    let piece = board.position()[source];
-    let color = piece.charAt(0);
+    let pieceObj = game.get(source); 
+    let pieceType = pieceObj ? pieceObj.type : '';
+    let pieceColor = pieceObj ? pieceObj.color : '';
     
     if (settings.sequentialMode) {
         let stage = STAGES[currentStageIndex];
-        if (color !== stage.color) return 'snapback';
+        if (pieceColor !== stage.color) return 'snapback';
     }
 
-    let tColor = targets[color];
+    let tColor = targets[pieceColor];
     let isCheck = tColor.checks.some(m => m.from === source && m.to === target);
     let isCapture = tColor.captures.some(m => m.from === source && m.to === target);
 
@@ -290,13 +372,18 @@ function onDrop(source, target) {
             foundMoves.add(moveKey);
             if (settings.highlightFound) $('#board .square-' + target).addClass('highlight-found');
             
-            if (isCheck && color === 'w') sessionStats.wChecks.found++;
-            if (isCapture && color === 'w') sessionStats.wCaps.found++;
-            if (isCheck && color === 'b') sessionStats.bChecks.found++;
-            if (isCapture && color === 'b') sessionStats.bCaps.found++;
+            if (isCheck && pieceColor === 'w') sessionStats.wChecks.found++;
+            if (isCapture && pieceColor === 'w') sessionStats.wCaps.found++;
+            if (isCheck && pieceColor === 'b') sessionStats.bChecks.found++;
+            if (isCapture && pieceColor === 'b') sessionStats.bCaps.found++;
 
             setStatus("Верно!", "green");
-            logMove(source + "-" + target, isCheck, isCapture);
+            
+            // Находим SAN
+            let moveObj = [...tColor.checks, ...tColor.captures].find(m => m.from === source && m.to === target);
+            let san = moveObj ? moveObj.san : source + '-' + target;
+
+            logMove(san, isCheck, isCapture, pieceColor, pieceType);
             
             updateGameUI();
 
@@ -323,9 +410,8 @@ function checkIfAllFound() {
     return foundMoves.size === uniqueNeeded.size && uniqueNeeded.size > 0;
 }
 
-// --- UI ---
 function updateGameUI() {
-    $('#progressDisplay').text(`Задача ${currentPuzzleIndex + 1} из ${sessionPuzzles.length}`);
+    $('#progressDisplay').text(`${currentPuzzleIndex + 1} / ${sessionPuzzles.length}`);
     
     if (settings.sequentialMode) {
         if (currentStageIndex < STAGES.length) {
@@ -382,40 +468,62 @@ function setStatus(msg, color) {
     if (settings.showText) $('#statusMessage').text(msg).css('color', color || '#333');
 }
 
-function logMove(san, isCheck, isCapture) {
-    let badges = '';
-    if (isCheck && isCapture) badges = '<span class="badge bg-both">Шах+Взятие</span>';
-    else if (isCheck) badges = '<span class="badge bg-check">Шах</span>';
-    else if (isCapture) badges = '<span class="badge bg-capture">Взятие</span>';
-    $('#log').prepend(`<div class="log-item">${badges} <b>${san}</b></div>`);
+// --- ПЕРЕВОД В РУССКУЮ НОТАЦИЮ ---
+function toRussianSAN(san) {
+    if (san === 'O-O' || san === 'O-O-O') return san;
+    let result = san
+        .replace(/N/g, 'К')   
+        .replace(/B/g, 'С')   
+        .replace(/R/g, 'Л')   
+        .replace(/Q/g, 'Ф')   
+        .replace(/K/g, 'Кр')  
+        .replace(/x/g, ':');  
+    return result;
 }
 
-// --- ТАЙМЕР (НОВАЯ ЛОГИКА) ---
+function logMove(san, isCheck, isCapture, color, pieceType) {
+    let russianSan = toRussianSAN(san);
+    let badges = '';
+    if (isCapture) badges += '<span class="badge bg-capture">ВЗЯТИЕ</span>';
+    if (isCheck) badges += '<span class="badge bg-check">ШАХ</span>';
+
+    let html = `
+        <div class="log-item">
+            <span class="move-text">${russianSan}</span>
+            <div style="display:flex;">${badges}</div>
+        </div>
+    `;
+
+    if (color === 'w') {
+        $('#log-white').prepend(html);
+    } else {
+        $('#log-black').prepend(html);
+    }
+}
+
+// --- ТАЙМЕР ---
 
 function startTimer(isCountdown) {
     if (timerInterval) clearInterval(timerInterval);
     
-    // Функция обновления UI
     const update = () => {
         let seconds;
         if (isCountdown) {
-            // Считаем вниз
             let remaining = Math.ceil((limitEndTime - Date.now()) / 1000);
             if (remaining <= 0) {
                 remaining = 0;
-                handleTimeOut(); // Время вышло!
+                handleTimeOut(); 
             }
             seconds = remaining;
-            $('#gameTimer').css('color', seconds <= 10 ? '#ff4444' : 'white'); // Краснеет в конце
+            $('#gameTimer').css('color', seconds <= 10 ? '#ff4444' : 'white');
         } else {
-            // Считаем вверх
             seconds = Math.floor((Date.now() - sessionStartTime) / 1000);
             $('#gameTimer').css('color', 'white');
         }
         $('#gameTimer').text(formatTime(seconds));
     };
 
-    update(); // Сразу обновить
+    update();
     timerInterval = setInterval(update, 1000);
 }
 
@@ -425,16 +533,13 @@ function stopTimer() {
 
 function handleTimeOut() {
     stopTimer();
-    
     if (settings.timeMode === 'total') {
         alert("Время сессии вышло!");
         finishSession();
     } else {
-        // Если время на задачу
         setStatus("Время вышло!", "red");
-        // Красная вспышка или звук здесь были бы уместны
         setTimeout(() => {
-            nextPuzzle(); // Просто переходим к следующей, solvedCount не увеличиваем
+            nextPuzzle(); 
         }, 1000);
     }
 }
