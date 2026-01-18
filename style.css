@@ -8,6 +8,7 @@ body {
     min-height: 100vh;
 }
 
+/* --- УПРАВЛЕНИЕ ЭКРАНАМИ --- */
 .view {
     display: none;
     width: 100%;
@@ -36,6 +37,7 @@ body {
     }
 }
 
+/* --- ОБЩИЙ СТИЛЬ КАРТОЧЕК --- */
 .menu-box,
 .result-box,
 .board-card,
@@ -46,6 +48,7 @@ body {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
 }
 
+/* --- НАЧАЛЬНОЕ МЕНЮ --- */
 .menu-box,
 .result-box {
     max-width: 460px;
@@ -74,6 +77,7 @@ h1 {
     text-align: center;
 }
 
+/* Плитки */
 .tile-selector {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -121,6 +125,7 @@ h1 {
     transform: translateY(-2px);
 }
 
+/* Цвета плиток */
 .tile-option input[value="easy"]:checked+.tile-card {
     border-color: #28a745;
     background: #e6f9ed;
@@ -145,6 +150,7 @@ h1 {
     color: #004085;
 }
 
+/* Инпуты и Настройки */
 .form-row {
     display: flex;
     gap: 20px;
@@ -264,22 +270,28 @@ h1 {
     transform: translateY(-1px);
 }
 
-/* --- ИГРОВОЙ МАКЕТ --- */
+
+/* --- ИГРОВОЙ МАКЕТ (DESKTOP & TABLET LANDSCAPE) --- */
+/* Этот стиль работает, когда экран ШИРЕ 900px (iPad горизонтально и ПК) */
 .main-container {
     display: flex;
     flex-wrap: wrap;
     gap: 30px;
     justify-content: center;
     align-items: stretch;
+    /* Растягиваем высоту */
     width: 100%;
     max-width: 1600px;
     margin: 0 auto;
 }
 
+/* 1. ДОСКА */
 .board-card {
     flex: 1 1 auto;
     width: auto;
+    /* Ограничиваем высоту, чтобы влезало в экран */
     max-width: 85vh;
+
     display: flex;
     justify-content: center;
     align-items: center;
@@ -298,14 +310,14 @@ h1 {
     width: 100%;
 }
 
+/* 2. МЕНЮ СПРАВА */
 .sidebar-card {
-    flex: 1 0 320px; 
-    
-    /* Максимальная ширина, чтобы на больших экранах не было гигантским */
-    max-width: 400px;
-    
+    flex: 0 0 380px;
+    /* Фиксированная ширина меню на ПК */
+    width: 380px;
+
     background: white;
-    padding: 25px;
+    padding: 30px;
     border-radius: 24px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
     display: flex;
@@ -322,6 +334,7 @@ h1 {
     letter-spacing: 0.5px;
 }
 
+/* СЕТКА ПАНЕЛИ 2x2 */
 .game-dashboard {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -414,6 +427,18 @@ h1 {
     border-color: #f5c6cb;
 }
 
+.task-indicator {
+    background: #fff3cd;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    text-align: center;
+    margin-bottom: 15px;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+/* Таблица и Лог */
 .game-stats-table {
     width: 100%;
     border-collapse: separate;
@@ -534,21 +559,11 @@ h1 {
     box-shadow: inset 0 0 5px 4px #28a745;
 }
 
-.task-indicator {
-    background: #fff3cd;
-    padding: 8px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    text-align: center;
-    margin-bottom: 15px;
-    color: #856404;
-    border: 1px solid #ffeeba;
-}
-
 .hidden {
     display: none !important;
 }
 
+/* Результаты */
 .summary-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -688,6 +703,7 @@ h1 {
     filter: brightness(1.05);
 }
 
+/* Модалка */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -737,57 +753,67 @@ h1 {
     }
 }
 
-/* --- АДАПТИВНОСТЬ (ТОЛЬКО ТЕЛЕФОНЫ) --- */
-/* Переключаемся в вертикальный режим только если экран уже телефона (меньше 800px) */
-@media (max-width: 800px) {
+/* --- АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (МЕНЕЕ 900px) --- */
+/* Если ширина экрана меньше 900px (телефоны и iPad вертикально) - ставим в одну колонку */
+@media (max-width: 900px) {
     .main-container {
-        flex-direction: column; /* Элементы друг под другом */
+        flex-direction: column;
+        /* Вертикальный стек */
         align-items: center;
-        gap: 20px;
-        padding-bottom: 30px;
-    }
-    
-    /* 1. ДОСКА НА ТЕЛЕФОНЕ */
-    .board-card {
-        flex: none;
-        width: 100%; 
-        
-        /* Ограничиваем высоту, чтобы осталось место для меню снизу */
-        max-width: 55vh; 
-        aspect-ratio: 1 / 1; 
-        
-        padding: 10px;
-        box-sizing: border-box;
+        gap: 15px;
+        padding-bottom: 20px;
     }
 
-    /* 2. МЕНЮ НА ТЕЛЕФОНЕ */
+    /* Доска на телефоне */
+    .board-card {
+        flex: none;
+        /* Сбрасываем расширение */
+        width: 100%;
+
+        /* ГЛАВНОЕ: Связываем ширину с высотой экрана, чтобы осталось место для меню */
+        max-width: 55vh;
+        aspect-ratio: 1 / 1;
+
+        padding: 10px;
+    }
+
+    /* Меню на телефоне */
     .sidebar-card {
         flex: none;
         width: 100%;
-        
-        /* То же ограничение ширины, чтобы было ровно с доской */
-        max-width: 55vh; 
-        
-        min-height: auto;
+
+        /* Меню имеет такую же ширину, как доска */
+        max-width: 55vh;
+
         padding: 20px;
-        
-        /* Если меню длинное, внутри появится скролл, но страница не уедет */
-        max-height: 40vh; 
-        overflow-y: auto; 
+        min-height: auto;
+
+        /* Скролл внутри меню, если оно слишком длинное для маленького телефона */
+        max-height: 40vh;
+        overflow-y: auto;
     }
-    
-    /* Уменьшаем лог */
+
     .log-container {
-        height: 120px; 
-        flex-grow: 0;
+        height: 120px;
+        /* Фиксируем высоту лога */
     }
-    
-    .result-actions { flex-direction: column; } 
-    .action-btn { width: 100%; }
+
+    .result-actions {
+        flex-direction: column;
+    }
+
+    .action-btn {
+        width: 100%;
+    }
 }
 
-/* Спец. правило для горизонтальных телефонов (ландшафт) */
+/* Для горизонтальных телефонов (чтобы доска была крупнее) */
 @media (max-height: 600px) and (orientation: landscape) {
-    .board-card { max-width: 85vh; }
-    .sidebar-card { max-width: 85vh; }
+    .board-card {
+        max-width: 85vh;
+    }
+
+    .sidebar-card {
+        max-width: 85vh;
+    }
 }
