@@ -734,38 +734,62 @@ h1 {
     }
 }
 
-/* БРЕКПОИНТ: ТЕПЕРЬ 1200px */
+/* --- АДАПТИВНОСТЬ (ПЛАНШЕТЫ И МОБИЛЬНЫЕ) --- */
+/* Срабатывает, если ширина меньше 1200px */
 @media (max-width: 1200px) {
     .main-container {
-        flex-direction: column;
+        flex-direction: column; /* Элементы друг под другом */
         align-items: center;
         gap: 20px;
+        padding-bottom: 30px; /* Отступ снизу для скролла */
     }
-
+    
+    /* 1. ДОСКА */
     .board-card {
-        width: 100%;
-        max-width: 95vw;
+        flex: none; /* Сбрасываем flex-расширение */
+        
+        width: 100%; /* Стремится занять всю ширину */
+        
+        /* ГЛАВНОЕ: Ограничиваем ширину 55% от ВЫСОТЫ экрана. 
+           Так как доска квадратная (aspect-ratio: 1), 
+           её высота тоже станет 55vh, оставляя место для меню снизу. */
+        max-width: 55vh; 
+        
+        aspect-ratio: 1 / 1; /* Всегда квадратная */
         padding: 10px;
-        border-radius: 16px;
+        box-sizing: border-box;
     }
 
+    /* 2. МЕНЮ */
     .sidebar-card {
-        width: 100%;
-        max-width: 95vw;
         flex: none;
         min-height: auto;
         padding: 20px;
+        
+        width: 100%; /* Стремится занять всю ширину */
+        
+        /* ГЛАВНОЕ: Применяем ТО ЖЕ ограничение, что и у доски.
+           Теперь они будут строго одинаковой ширины. */
+        max-width: 55vh; 
+        
+        /* Если контент не влезает по высоте, даем скролл внутри меню */
+        max-height: 40vh; 
+        overflow-y: auto; 
     }
-
+    
+    /* Уменьшаем лог, чтобы не занимал всё место */
     .log-container {
-        height: 200px;
+        min-height: 80px; 
+        height: 120px; 
+        flex-grow: 0;
     }
+    
+    .result-actions { flex-direction: column; } 
+    .action-btn { width: 100%; }
+}
 
-    .result-actions {
-        flex-direction: column;
-    }
-
-    .action-btn {
-        width: 100%;
-    }
+/* Спец. правило для горизонтальных телефонов (чтобы доска была крупнее) */
+@media (max-height: 600px) and (orientation: landscape) {
+    .board-card { max-width: 85vh; }
+    .sidebar-card { max-width: 85vh; }
 }
