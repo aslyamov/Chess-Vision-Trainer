@@ -8,7 +8,6 @@ body {
     min-height: 100vh;
 }
 
-/* --- УПРАВЛЕНИЕ ЭКРАНАМИ --- */
 .view {
     display: none;
     width: 100%;
@@ -37,7 +36,6 @@ body {
     }
 }
 
-/* --- ОБЩИЙ СТИЛЬ КАРТОЧЕК --- */
 .menu-box,
 .result-box,
 .board-card,
@@ -48,7 +46,6 @@ body {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
 }
 
-/* --- НАЧАЛЬНОЕ МЕНЮ --- */
 .menu-box,
 .result-box {
     max-width: 460px;
@@ -77,7 +74,6 @@ h1 {
     text-align: center;
 }
 
-/* Плитки (Сложность/Время) */
 .tile-selector {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -125,7 +121,6 @@ h1 {
     transform: translateY(-2px);
 }
 
-/* Цвета плиток */
 .tile-option input[value="easy"]:checked+.tile-card {
     border-color: #28a745;
     background: #e6f9ed;
@@ -150,7 +145,6 @@ h1 {
     color: #004085;
 }
 
-/* Инпуты */
 .form-row {
     display: flex;
     gap: 20px;
@@ -197,7 +191,6 @@ h1 {
     background: #fff;
 }
 
-/* Настройки */
 .settings-box {
     text-align: left;
     background: #ffffff;
@@ -246,7 +239,6 @@ h1 {
     accent-color: #28a745;
 }
 
-/* Большая кнопка */
 .big-btn {
     background: linear-gradient(135deg, #28a745, #218838);
     color: white;
@@ -272,33 +264,25 @@ h1 {
     transform: translateY(-1px);
 }
 
-
-/* --- ИГРОВОЙ МАКЕТ (LAYOUT) --- */
+/* --- ИГРОВОЙ МАКЕТ --- */
 .main-container {
     display: flex;
     flex-wrap: wrap;
     gap: 30px;
     justify-content: center;
     align-items: stretch;
-    /* Одинаковая высота колонок */
     width: 100%;
-    /* Важно: ограничиваем ширину, чтобы не разъезжалось */
     max-width: 1600px;
     margin: 0 auto;
 }
 
-/* 1. КАРТОЧКА ДОСКИ */
 .board-card {
-    /* Доска занимает все свободное место */
-    flex: 1 1 60%;
-    /* Но не меньше 300px и не больше высоты экрана */
-    min-width: 320px;
+    flex: 1 1 auto;
+    width: auto;
     max-width: 85vh;
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     background: white;
     padding: 25px;
     border-radius: 24px;
@@ -314,12 +298,9 @@ h1 {
     width: 100%;
 }
 
-/* 2. БОКОВАЯ ПАНЕЛЬ */
 .sidebar-card {
-    /* Фиксированная ширина меню - залог стабильности */
     flex: 0 0 400px;
     width: 400px;
-
     background: white;
     padding: 30px;
     border-radius: 24px;
@@ -338,16 +319,13 @@ h1 {
     letter-spacing: 0.5px;
 }
 
-/* --- СЕТКА ПАНЕЛИ УПРАВЛЕНИЯ (2x2) --- */
 .game-dashboard {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    /* Две равные колонки */
     gap: 12px;
     margin-bottom: 20px;
 }
 
-/* Общий стиль элементов сетки */
 .info-pill,
 .status-pill,
 .dashboard-actions {
@@ -356,11 +334,9 @@ h1 {
     align-items: center;
     border-radius: 12px;
     height: 56px;
-    /* Фиксированная высота для выравнивания */
     box-sizing: border-box;
 }
 
-/* Таймер (Лево-Верх) */
 .timer-pill {
     background: #333;
     color: #fff;
@@ -376,7 +352,6 @@ h1 {
     transform: translateY(-2px);
 }
 
-/* Прогресс (Право-Верх) */
 .progress-pill {
     background: #f8f9fa;
     color: #2c3e50;
@@ -385,33 +360,26 @@ h1 {
     font-size: 1.2rem;
 }
 
-/* Статус (Лево-Низ) - теперь поменьше */
 .status-pill {
     background: #e6f7ff;
     color: #0050b3;
     font-weight: 700;
     font-size: 0.9rem;
-    /* Уменьшили шрифт */
     text-align: center;
     border: 1px solid #bae7ff;
     line-height: 1.2;
     padding: 0 5px;
 }
 
-/* Кнопки (Право-Низ) */
 .dashboard-actions {
     background: transparent;
     padding: 0;
     gap: 8px;
-    /* Зазор между кнопками */
 }
 
-/* Квадратные кнопки */
 .icon-only-btn {
     flex: 1;
-    /* Растягиваем на всю ширину ячейки */
     height: 100%;
-    /* На всю высоту */
     border-radius: 12px;
     font-size: 1.4rem;
     cursor: pointer;
@@ -421,7 +389,6 @@ h1 {
     justify-content: center;
     align-items: center;
     padding: 0;
-    /* Убираем отступы */
 }
 
 .btn-flip {
@@ -444,8 +411,6 @@ h1 {
     border-color: #f5c6cb;
 }
 
-
-/* --- ТАБЛИЦА СТАТИСТИКИ (В ИГРЕ) --- */
 .game-stats-table {
     width: 100%;
     border-collapse: separate;
@@ -483,7 +448,6 @@ h1 {
     color: #333;
 }
 
-/* ЛОГ ХОДОВ */
 .log-container {
     flex-grow: 1;
     overflow-y: auto;
@@ -582,7 +546,6 @@ h1 {
     display: none !important;
 }
 
-/* --- ЭКРАН РЕЗУЛЬТАТОВ --- */
 .summary-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -722,7 +685,6 @@ h1 {
     filter: brightness(1.05);
 }
 
-/* --- МОДАЛЬНОЕ ОКНО --- */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -772,12 +734,10 @@ h1 {
     }
 }
 
-/* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
-/* Критическая точка: когда ширина экрана меньше 900px, переключаемся на вертикаль */
+/* БРЕКПОИНТ: ТЕПЕРЬ 1200px */
 @media (max-width: 1200px) {
     .main-container {
         flex-direction: column;
-        /* Элементы друг под другом */
         align-items: center;
         gap: 20px;
     }
@@ -786,14 +746,14 @@ h1 {
         width: 100%;
         max-width: 95vw;
         padding: 10px;
-        flex: none;
-        /* Отменяем гибкость */
+        border-radius: 16px;
     }
 
     .sidebar-card {
         width: 100%;
         max-width: 95vw;
         flex: none;
+        min-height: auto;
         padding: 20px;
     }
 

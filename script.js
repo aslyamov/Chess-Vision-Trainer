@@ -1,27 +1,52 @@
-// --- КОНФИГУРАЦИЯ ---
-var puzzles = []; 
-var sessionPuzzles = []; 
-var currentPuzzleIndex = 0;
+// --- ЛОКАЛИЗАЦИЯ ---
+var currentLang = localStorage.getItem('chess_lang') || 'ru';
+var langData = {};
 
-// Игровые объекты
+async function loadLanguage(lang) {
+    try {
+        const response = await fetch(`locales/${lang}.json`);
+        if (!response.ok) throw new Error("Ошибка загрузки языка");
+
+        langData = await response.json();
+        currentLang = lang;
+        localStorage.setItem('chess_lang', lang);
+
+        applyTranslations();
+
+        // Отмечаем плитку
+        $(`input[name="language"][value="${lang}"]`).prop('checked', true);
+
+    } catch (error) {
+        console.error("Language load failed:", error);
+    }
+}
+
+function applyTranslations() {
+    $('[data-lang]').each(function () {
+        let key = $(this).attr('data-lang');
+        if (langData[key]) {
+            $(this).text(langData[key]);
+        }
+    });
+}
+
+// --- КОНФИГУРАЦИЯ ---
+var puzzles = [];
+var sessionPuzzles = [];
+var currentPuzzleIndex = 0;
 var board = null;
 var game = new Chess();
 var targets = { w: { checks: [], captures: [] }, b: { checks: [], captures: [] } };
-var foundMoves = new Set(); 
-
-// Таймер
+var foundMoves = new Set();
 var timerInterval = null;
-var sessionStartTime = 0; 
-var limitEndTime = 0;     
-
-// Статистика
+var sessionStartTime = 0;
+var limitEndTime = 0;
 var sessionStats = {
     totalTimeSeconds: 0, totalClicks: 0, totalErrors: 0, solvedCount: 0,
     wChecks: { found: 0, total: 0 }, wCaps: { found: 0, total: 0 },
     bChecks: { found: 0, total: 0 }, bCaps: { found: 0, total: 0 }
 };
 
-// Этапы (Sequential Mode)
 var currentStageIndex = 0;
 const STAGES = [
     { id: 'w-checks', color: 'w', type: 'checks', name: 'Белые: Шахи' },
@@ -32,92 +57,83 @@ const STAGES = [
 
 var settings = {};
 
-$(document).ready(function() {
-    // 1. Загрузка JSON
+$(document).ready(function () {
+    // 1. Грузим язык
+    loadLanguage(currentLang);
+    $('input[name="language"]').on('change', function () {
+        loadLanguage($(this).val());
+    });
+
+    // 2. Грузим задачи
     fetch('puzzles.json')
         .then(response => response.json())
         .then(data => {
             puzzles = data;
-            updateAvailableCount(); 
+            updateAvailableCount();
         })
         .catch(err => {
-            console.warn("JSON не найден.");
-            // Фейковые данные для теста
+            console.warn("JSON не найден, используем тестовые данные");
             puzzles = [
-                { fen: "r1bqkb1r/pppp1ppp/2n5/4P3/2Bp2n1/5N2/PPP2PPP/RNBQK2R w KQkq - 1 5", difficulty: "easy" },
-                { fen: "r1b1k1nr/pppp1ppp/2n5/2b1p3/2B1P2q/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4", difficulty: "easy" },
-                { fen: "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8", difficulty: "medium" }
+                { fen: "r1bqkb1r/pppp1ppp/2n5/4P3/2Bp2n1/5N2/PPP2PPP/RNBQK2R w KQkq - 1 5", difficulty: "easy" }
             ];
             updateAvailableCount();
         });
 
-    // Слушаем изменения на radio кнопках (Сложность)
     $('input[name="difficulty"]').on('change', updateAvailableCount);
-
     $('#startSessionBtn').on('click', startSession);
     $('#giveUpBtn').on('click', skipPuzzle);
-    
-    $('#flipBoardBtn').on('click', function() {
+    $('#closeModalBtn').on('click', function () {
+        $('#timeoutModal').addClass('hidden');
+        finishSession();
+    });
+
+    $('#flipBoardBtn').on('click', function () {
         if (board) board.flip();
     });
 
-    $('#shareBtn').on('click', async function() {
+    $('#shareBtn').on('click', async function () {
         let btn = $(this);
-        let originalText = btn.text();
-        btn.text('⏳ Создание...');
+        let originalText = btn.find('.btn-text').text();
+        btn.find('.btn-text').text('...');
         $('.result-actions').hide();
         try {
             const canvas = await html2canvas(document.querySelector('.result-box'), {
                 scale: 2, backgroundColor: "#ffffff", useCORS: true
             });
-            canvas.toBlob(async function(blob) {
+            canvas.toBlob(async function (blob) {
                 try {
                     const item = new ClipboardItem({ "image/png": blob });
                     await navigator.clipboard.write([item]);
                     $('.result-actions').show();
-                    btn.text('✅ Скопировано!');
-                    setTimeout(() => btn.text(originalText), 3000);
+                    btn.find('.btn-text').text('OK!');
+                    setTimeout(() => btn.find('.btn-text').text(originalText), 2000);
                 } catch (err) {
                     $('.result-actions').show();
-                    btn.text('❌ Ошибка');
-                    alert("Браузер не разрешил копирование.");
+                    alert("Ошибка копирования");
                 }
             });
         } catch (error) {
             $('.result-actions').show();
-            btn.text(originalText);
-            alert("Ошибка.");
+            alert("Ошибка");
         }
     });
 
-    $(window).resize(function() {
+    $(window).resize(function () {
         if (board) board.resize();
-    });
-
-    $('#closeModalBtn').on('click', function() {
-        $('#timeoutModal').addClass('hidden'); // Скрываем окно
-        finishSession(); // Переходим к результатам
     });
 });
 
 function updateAvailableCount() {
-    // Читаем значение из выбранной radio кнопки сложности
     let diff = $('input[name="difficulty"]:checked').val();
-    
     let count = 0;
-    if (diff === 'all') {
-        count = puzzles.length;
-    } else {
-        count = puzzles.filter(p => (p.difficulty || 'medium') === diff).length;
-    }
+    if (diff === 'all') count = puzzles.length;
+    else count = puzzles.filter(p => (p.difficulty || 'medium') === diff).length;
+
     $('#maxPuzzlesCount').text(count);
     $('#taskCountInput').attr('max', count);
-    
+
     let currentVal = parseInt($('#taskCountInput').val()) || 0;
-    if (currentVal > count) {
-        $('#taskCountInput').val(count > 0 ? count : 1);
-    }
-    if (count === 0) $('#maxPuzzlesCount').text("0 (нет задач)");
+    if (currentVal > count) $('#taskCountInput').val(count > 0 ? count : 1);
 }
 
 function shuffleArray(array) {
@@ -129,7 +145,6 @@ function shuffleArray(array) {
 }
 
 function startSession() {
-    // Сбор настроек
     settings = {
         sequentialMode: $('#setSequential').is(':checked'),
         autoFlip: $('#setAutoFlip').is(':checked'),
@@ -137,13 +152,11 @@ function startSession() {
         showHints: $('#setHints').is(':checked'),
         showText: $('#setStatusText').is(':checked'),
         showLog: $('#setShowLog').is(':checked'),
-        showCoords: $('#setCoords').is(':checked'), 
+        showCoords: $('#setCoords').is(':checked'),
         timeLimit: parseInt($('#timeLimitInput').val()) || 0,
-        // Читаем radio кнопки ВРЕМЕНИ
-        timeMode: $('input[name="timeMode"]:checked').val() 
+        timeMode: $('input[name="timeMode"]:checked').val()
     };
 
-    // Фильтрация по сложности
     let diff = $('input[name="difficulty"]:checked').val();
     let filteredPuzzles = puzzles;
     if (diff !== 'all') {
@@ -155,10 +168,10 @@ function startSession() {
     let totalAvailable = filteredPuzzles.length;
     if (isNaN(inputVal) || inputVal < 1) inputVal = 1;
     if (inputVal > totalAvailable) inputVal = totalAvailable;
-    
+
     let shuffled = shuffleArray([...filteredPuzzles]);
     sessionPuzzles = shuffled.slice(0, inputVal);
-    
+
     sessionStats = {
         totalTimeSeconds: 0, totalClicks: 0, totalErrors: 0, solvedCount: 0,
         wChecks: { found: 0, total: 0 }, wCaps: { found: 0, total: 0 },
@@ -166,23 +179,15 @@ function startSession() {
     };
     currentPuzzleIndex = 0;
 
-    // Настройка видимости лога
-    if (settings.showLog) {
-        $('.log-container').removeClass('hidden');
-    } else {
-        $('.log-container').addClass('hidden');
-    }
+    if (settings.showLog) $('.log-container').removeClass('hidden');
+    else $('.log-container').addClass('hidden');
 
-    // Блокировка кнопки переворота при авто-повороте
     if (settings.sequentialMode && settings.autoFlip) {
-        $('#flipBoardBtn').prop('disabled', true).addClass('disabled-btn');
-        $('#flipBoardBtn').attr('title', 'Отключено авто-поворотом');
+        $('#flipBoardBtn').prop('disabled', true).css('opacity', '0.5');
     } else {
-        $('#flipBoardBtn').prop('disabled', false).removeClass('disabled-btn');
-        $('#flipBoardBtn').attr('title', 'Перевернуть доску');
+        $('#flipBoardBtn').prop('disabled', false).css('opacity', '1');
     }
 
-    // Создание доски
     if (board) board.destroy();
     board = Chessboard('board', {
         draggable: true,
@@ -193,23 +198,17 @@ function startSession() {
         onDrop: onDrop
     });
 
-    // Фикс скролла на мобильных
-    $('.board-wrapper').on('scroll touchmove touchend', function(e){
-        e.preventDefault();
-    }, { passive: false });
-
-    // Переключение экрана
+    $('.board-wrapper').on('scroll touchmove touchend', function (e) { e.preventDefault(); }, { passive: false });
     $('.view').removeClass('active').addClass('hidden');
     $('#gameScreen').removeClass('hidden').addClass('active');
 
     sessionStartTime = Date.now();
 
-    // Запуск таймера сессии (если выбран)
     if (settings.timeLimit > 0 && settings.timeMode === 'total') {
         limitEndTime = sessionStartTime + (settings.timeLimit * 1000);
-        startTimer(true); 
+        startTimer(true);
     } else if (settings.timeLimit === 0) {
-        startTimer(false); 
+        startTimer(false);
     }
 
     setTimeout(() => {
@@ -229,31 +228,28 @@ function loadPuzzle(index) {
     targets = { w: { checks: [], captures: [] }, b: { checks: [], captures: [] } };
     foundMoves.clear();
     currentStageIndex = 0;
-    
-    $('#board .square-55d63').removeClass('highlight-found'); 
-    
+
+    $('#board .square-55d63').removeClass('highlight-found');
     $('#log-white').html('');
     $('#log-black').html('');
 
-    if (!game.load(fen) && !game.load_pgn(fen)) {
-        console.error("Некорректный FEN:", fen);
-        nextPuzzle(); 
-        return;
-    }
+    if (!game.load(fen) && !game.load_pgn(fen)) { nextPuzzle(); return; }
 
     board.position(game.fen());
     board.orientation('white');
     board.resize();
 
     analyzeTargets(game.fen());
-    
+
     sessionStats.wChecks.total += targets.w.checks.length;
-    sessionStats.wCaps.total   += targets.w.captures.length;
+    sessionStats.wCaps.total += targets.w.captures.length;
     sessionStats.bChecks.total += targets.b.checks.length;
-    sessionStats.bCaps.total   += targets.b.captures.length;
-    
+    sessionStats.bCaps.total += targets.b.captures.length;
+
     updateGameUI();
-    setStatus("Удачи!", "#0050b3");
+
+    // ИСПОЛЬЗУЕМ ЯЗЫКОВУЮ ПЕРЕМЕННУЮ
+    setStatus(langData['status_luck'], "#0050b3");
 
     if (settings.timeLimit > 0 && settings.timeMode === 'per_puzzle') {
         limitEndTime = Date.now() + (settings.timeLimit * 1000);
@@ -283,17 +279,14 @@ function finishSession() {
 
     $('#resTotalSolved').text(`${sessionStats.solvedCount} / ${sessionPuzzles.length}`);
     $('#resTotalTime').text(formatTime(sessionStats.totalTimeSeconds));
-    
+
     let avg = (sessionPuzzles.length > 0) ? Math.floor(sessionStats.totalTimeSeconds / sessionPuzzles.length) : 0;
     $('#resAvgTime').text(formatTime(avg));
-    
-    $('#resTotalClicks').text(sessionStats.totalClicks);
-    $('#resTotalErrors').text(sessionStats.totalErrors);
 
     let successfulClicks = sessionStats.totalClicks - sessionStats.totalErrors;
     if (successfulClicks < 0) successfulClicks = 0;
-    let accuracy = (sessionStats.totalClicks > 0) 
-        ? Math.round((successfulClicks / sessionStats.totalClicks) * 100) 
+    let accuracy = (sessionStats.totalClicks > 0)
+        ? Math.round((successfulClicks / sessionStats.totalClicks) * 100)
         : 0;
 
     $('#resAccuracy').text(accuracy + "%");
@@ -313,7 +306,7 @@ function finishSession() {
 function updateResRow(prefix, obj) {
     const calcPct = (found, total) => total === 0 ? "—" : Math.round((found / total) * 100) + "%";
     $(`#res${prefix}Found`).text(obj.found);
-    $(`#res${prefix}Total`).text(obj.total); 
+    $(`#res${prefix}Total`).text(obj.total);
     $(`#res${prefix}Pct`).text(calcPct(obj.found, obj.total));
 }
 
@@ -329,7 +322,7 @@ function analyzeTargets(fen) {
 function getMovesForColor(fen, color) {
     let tempGame = new Chess(fen);
     let tokens = fen.split(' ');
-    tokens[1] = color; 
+    tokens[1] = color;
     if (!tempGame.load(tokens.join(' '))) return { checks: [], captures: [] };
 
     let checks = [], captures = [];
@@ -357,12 +350,11 @@ function onDrop(source, target) {
     if (target === 'offboard') return 'snapback';
 
     sessionStats.totalClicks++;
-
     let moveKey = source + '-' + target;
-    let pieceObj = game.get(source); 
+    let pieceObj = game.get(source);
     let pieceType = pieceObj ? pieceObj.type : '';
     let pieceColor = pieceObj ? pieceObj.color : '';
-    
+
     if (settings.sequentialMode) {
         let stage = STAGES[currentStageIndex];
         if (pieceColor !== stage.color) return 'snapback';
@@ -386,38 +378,37 @@ function onDrop(source, target) {
 
     if (isValid) {
         if (foundMoves.has(moveKey)) {
-            setStatus("Уже найдено", "orange");
+            setStatus(langData['status_already'], "orange");
         } else {
             foundMoves.add(moveKey);
             if (settings.highlightFound) $('#board .square-' + target).addClass('highlight-found');
-            
+
             if (isCheck && pieceColor === 'w') sessionStats.wChecks.found++;
             if (isCapture && pieceColor === 'w') sessionStats.wCaps.found++;
             if (isCheck && pieceColor === 'b') sessionStats.bChecks.found++;
             if (isCapture && pieceColor === 'b') sessionStats.bCaps.found++;
 
-            setStatus("Верно!", "green");
-            
+            setStatus(langData['status_correct'], "green");
+
             let moveObj = [...tColor.checks, ...tColor.captures].find(m => m.from === source && m.to === target);
             let san = moveObj ? moveObj.san : source + '-' + target;
 
             logMove(san, isCheck, isCapture, pieceColor, pieceType);
-            
             updateGameUI();
 
             if (settings.sequentialMode) {
                 checkStageCompletion();
             } else {
                 if (checkIfAllFound()) {
-                    setStatus("Задача решена!", "green");
+                    setStatus(langData['status_solved'], "green");
                     setTimeout(nextPuzzle, 800);
                 }
             }
         }
     } else {
         sessionStats.totalErrors++;
-        if (wrongCategory) setStatus("Не та категория", "#dc3545");
-        else setStatus("Мимо", "red");
+        if (wrongCategory) setStatus(langData['status_wrong_cat'], "#dc3545");
+        else setStatus(langData['status_wrong'], "red");
     }
     return 'snapback';
 }
@@ -430,19 +421,16 @@ function checkIfAllFound() {
 
 function updateGameUI() {
     $('#progressDisplay').text(`${currentPuzzleIndex + 1} / ${sessionPuzzles.length}`);
-    
+
     if (settings.sequentialMode) {
         if (currentStageIndex < STAGES.length) {
             let stage = STAGES[currentStageIndex];
             $('#taskIndicator').removeClass('hidden');
             $('#currentTaskName').text(stage.name);
-            $('.stat-row').removeClass('active-stage');
-            $('#row-' + stage.id).addClass('active-stage');
             if (settings.autoFlip) board.orientation(stage.color === 'w' ? 'white' : 'black');
         }
     } else {
         $('#taskIndicator').addClass('hidden');
-        $('.stat-row').removeClass('active-stage');
     }
 
     updateCounter('w-checks', targets.w.checks);
@@ -453,7 +441,7 @@ function updateGameUI() {
 
 function updateCounter(id, list) {
     let found = 0;
-    list.forEach(m => { if (foundMoves.has(m.from+'-'+m.to)) found++; });
+    list.forEach(m => { if (foundMoves.has(m.from + '-' + m.to)) found++; });
     let total = list.length;
     let el = $('#' + id);
     if (settings.showHints) {
@@ -473,12 +461,12 @@ function checkStageCompletion() {
         list.forEach(m => { if (foundMoves.has(m.from + '-' + m.to)) foundCount++; });
 
         if (foundCount >= list.length) currentStageIndex++;
-        else break; 
+        else break;
     }
     updateGameUI();
     if (currentStageIndex >= STAGES.length) {
-         setStatus("Все цели найдены!", "green");
-         setTimeout(nextPuzzle, 800);
+        setStatus(langData['status_done'], "green");
+        setTimeout(nextPuzzle, 800);
     }
 }
 
@@ -488,46 +476,41 @@ function setStatus(msg, color) {
 
 function toRussianSAN(san) {
     if (san === 'O-O' || san === 'O-O-O') return san;
-    let result = san
-        .replace(/N/g, 'К')   
-        .replace(/B/g, 'С')   
-        .replace(/R/g, 'Л')   
-        .replace(/Q/g, 'Ф')   
-        .replace(/K/g, 'Кр')  
-        .replace(/x/g, ':');  
-    return result;
+    return san.replace(/N/g, 'К').replace(/B/g, 'С').replace(/R/g, 'Л')
+        .replace(/Q/g, 'Ф').replace(/K/g, 'Кр').replace(/x/g, ':');
 }
 
 function logMove(san, isCheck, isCapture, color, pieceType) {
-    let russianSan = toRussianSAN(san);
+    // Если русский, конвертируем. Если английский - оставляем как есть.
+    let moveText = san;
+    if (currentLang === 'ru') {
+        moveText = toRussianSAN(san);
+    }
+
     let badges = '';
-    if (isCapture) badges += '<span class="badge bg-capture">ВЗЯТИЕ</span>';
-    if (isCheck) badges += '<span class="badge bg-check">ШАХ</span>';
+    if (isCapture) badges += `<span class="badge bg-capture">${langData['log_capture']}</span>`;
+    if (isCheck) badges += `<span class="badge bg-check">${langData['log_check']}</span>`;
 
     let html = `
         <div class="log-item">
-            <span class="move-text">${russianSan}</span>
+            <span class="move-text">${moveText}</span>
             <div style="display:flex;">${badges}</div>
         </div>
     `;
 
-    if (color === 'w') {
-        $('#log-white').prepend(html);
-    } else {
-        $('#log-black').prepend(html);
-    }
+    if (color === 'w') $('#log-white').prepend(html);
+    else $('#log-black').prepend(html);
 }
 
 function startTimer(isCountdown) {
     if (timerInterval) clearInterval(timerInterval);
-    
     const update = () => {
         let seconds;
         if (isCountdown) {
             let remaining = Math.ceil((limitEndTime - Date.now()) / 1000);
             if (remaining <= 0) {
                 remaining = 0;
-                handleTimeOut(); 
+                handleTimeOut();
             }
             seconds = remaining;
             $('#gameTimer').css('color', seconds <= 10 ? '#ff4444' : 'white');
@@ -537,35 +520,24 @@ function startTimer(isCountdown) {
         }
         $('#gameTimer').text(formatTime(seconds));
     };
-
     update();
     timerInterval = setInterval(update, 1000);
 }
 
-function stopTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-}
+function stopTimer() { if (timerInterval) clearInterval(timerInterval); }
 
 function handleTimeOut() {
     stopTimer();
-    
     if (settings.timeMode === 'total') {
-        // ВМЕСТО alert("Время сессии вышло!");
-        // Показываем наше красивое окно:
         $('#timeoutModal').removeClass('hidden');
-        
-        // (finishSession вызовется, когда пользователь нажмет кнопку в окне)
     } else {
-        // Если режим "На задачу" - оставляем как было (красная надпись и переход)
-        setStatus("Время вышло!", "red");
-        setTimeout(() => {
-            nextPuzzle(); 
-        }, 1000);
+        setStatus(langData['status_timeout'], "red");
+        setTimeout(() => { nextPuzzle(); }, 1000);
     }
 }
 
 function formatTime(s) {
     let m = Math.floor(s / 60);
     let sec = s % 60;
-    return (m<10?"0"+m:m) + ":" + (sec<10?"0"+sec:sec);
+    return (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec);
 }

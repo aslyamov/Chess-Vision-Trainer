@@ -14,99 +14,116 @@
 
     <div id="startScreen" class="view active">
         <div class="menu-box">
-            <h1>Chess Vision Trainer</h1>
+            <h1 data-lang="title">Chess Vision Trainer</h1>
 
             <div class="form-group">
-                <label class="section-label">🎯 Сложность</label>
+                <label class="section-label" data-lang="difficulty_label">🎯 Сложность</label>
                 <div class="tile-selector">
                     <label class="tile-option">
                         <input type="radio" name="difficulty" value="all">
-                        <span class="tile-card">🎲 Все</span>
+                        <span class="tile-card" data-lang="diff_all">🎲 Все</span>
                     </label>
                     <label class="tile-option">
                         <input type="radio" name="difficulty" value="easy">
-                        <span class="tile-card easy">🟢 Легко</span>
+                        <span class="tile-card easy" data-lang="diff_easy">🟢 Легко</span>
                     </label>
                     <label class="tile-option">
                         <input type="radio" name="difficulty" value="medium" checked>
-                        <span class="tile-card medium">🟡 Средне</span>
+                        <span class="tile-card medium" data-lang="diff_medium">🟡 Средне</span>
                     </label>
                     <label class="tile-option">
                         <input type="radio" name="difficulty" value="hard">
-                        <span class="tile-card hard">🔴 Сложно</span>
+                        <span class="tile-card hard" data-lang="diff_hard">🔴 Сложно</span>
                     </label>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="section-label">⏱ Режим времени</label>
+                <label class="section-label" data-lang="time_mode_label">⏱ Режим времени</label>
                 <div class="tile-selector two-cols">
                     <label class="tile-option">
                         <input type="radio" name="timeMode" value="per_puzzle" checked>
-                        <span class="tile-card">⏳ На задачу</span>
+                        <span class="tile-card" data-lang="mode_puzzle">⏳ На задачу</span>
                     </label>
                     <label class="tile-option">
                         <input type="radio" name="timeMode" value="total">
-                        <span class="tile-card">⚡ На сессию</span>
+                        <span class="tile-card" data-lang="mode_session">⚡ На сессию</span>
                     </label>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group small-group">
-                    <label class="input-label">🧩 Кол-во задач</label>
+                    <label class="input-label" data-lang="count_label">🧩 Кол-во задач</label>
                     <input type="number" id="taskCountInput" min="1" value="5" class="number-input">
-                    <div class="input-hint">Доступно: <span id="maxPuzzlesCount">...</span></div>
+                    <div class="input-hint"><span data-lang="available">Доступно:</span> <span
+                            id="maxPuzzlesCount">...</span></div>
                 </div>
 
                 <div class="form-group small-group">
-                    <label class="input-label">⏱ Лимит (сек)</label>
+                    <label class="input-label" data-lang="time_limit_label">⏱ Лимит (сек)</label>
                     <input type="number" id="timeLimitInput" min="0" value="0" class="number-input" placeholder="∞">
-                    <div class="input-hint">0 = безлимит</div>
+                    <div class="input-hint" data-lang="unlimited_hint">0 = безлимит</div>
                 </div>
             </div>
 
             <div class="settings-box">
-                <h3>⚙️ Настройки</h3>
+                <h3 data-lang="settings_title">⚙️ Настройки</h3>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="input-label" style="text-align: left; margin-bottom: 8px;" data-lang="lang_label">🌐
+                        Язык интерфейса</label>
+                    <div class="tile-selector two-cols">
+                        <label class="tile-option">
+                            <input type="radio" name="language" value="ru">
+                            <span class="tile-card">Русский</span>
+                        </label>
+                        <label class="tile-option">
+                            <input type="radio" name="language" value="en">
+                            <span class="tile-card">English</span>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="settings-list">
                     <label class="setting-item">
                         <input type="checkbox" id="setSequential">
-                        <span>🔄 Поочередный режим</span>
+                        <span data-lang="set_seq">🔄 Поочередный режим</span>
                     </label>
                     <label class="setting-item">
                         <input type="checkbox" id="setAutoFlip" checked>
-                        <span>🔁 Авто-поворот доски</span>
+                        <span data-lang="set_flip">🔁 Авто-поворот доски</span>
                     </label>
                     <label class="setting-item">
                         <input type="checkbox" id="setHighlights" checked>
-                        <span>🟩 Подсветка ходов</span>
+                        <span data-lang="set_high">🟩 Подсветка ходов</span>
                     </label>
                     <label class="setting-item">
                         <input type="checkbox" id="setHints" checked>
-                        <span>🔢 Счетчики целей</span>
+                        <span data-lang="set_hints">🔢 Счетчики целей</span>
                     </label>
                     <label class="setting-item">
                         <input type="checkbox" id="setStatusText" checked>
-                        <span>💬 Текстовые статусы</span>
+                        <span data-lang="set_status">💬 Текстовые статусы</span>
                     </label>
                     <label class="setting-item">
                         <input type="checkbox" id="setShowLog" checked>
-                        <span>📜 История ходов</span>
+                        <span data-lang="set_log">📜 История ходов</span>
                     </label>
                     <label class="setting-item">
                         <input type="checkbox" id="setCoords" checked>
-                        <span>🔠 Координаты</span>
+                        <span data-lang="set_coords">🔠 Координаты</span>
                     </label>
                 </div>
             </div>
 
-            <button id="startSessionBtn" class="big-btn">Начать тренировку</button>
+            <button id="startSessionBtn" class="big-btn" data-lang="btn_start">Начать тренировку</button>
         </div>
     </div>
 
     <div id="gameScreen" class="view hidden">
         <div class="main-container">
-            
+
             <div class="board-card">
                 <div class="board-wrapper">
                     <div id="board"></div>
@@ -114,53 +131,49 @@
             </div>
 
             <div class="sidebar-card">
-                
-                <h2 class="sidebar-title">Найдите все шахи и взятия!</h2>
+
+                <h2 class="sidebar-title" data-lang="game_title">Найдите все шахи и взятия!</h2>
 
                 <div class="game-dashboard">
-                    
                     <div class="info-pill timer-pill">
                         <span class="icon-spacer">⏱</span> <span id="gameTimer">00:00</span>
                     </div>
-
                     <div class="info-pill progress-pill">
                         <span id="progressDisplay">1 / 5</span>
                     </div>
-
-                    <div id="statusMessage" class="status-pill">
+                    <div id="statusMessage" class="status-pill" data-lang="status_luck">
                         Удачи!
                     </div>
-
                     <div class="dashboard-actions">
-                        <button id="flipBoardBtn" class="icon-only-btn btn-flip" title="Перевернуть">
+                        <button id="flipBoardBtn" class="icon-only-btn btn-flip" title="Flip Board">
                             🔄
                         </button>
-                        <button id="giveUpBtn" class="icon-only-btn btn-skip" title="Сдаться / Пропустить">
+                        <button id="giveUpBtn" class="icon-only-btn btn-skip" title="Skip Puzzle">
                             ⏭️
                         </button>
                     </div>
                 </div>
 
                 <div id="taskIndicator" class="task-indicator hidden">
-                    Цель: <span id="currentTaskName">...</span>
+                    <span data-lang="target_label">Цель:</span> <span id="currentTaskName">...</span>
                 </div>
 
                 <table class="game-stats-table">
                     <tbody>
                         <tr>
-                            <td>🏳️ Шахи</td>
+                            <td data-lang="w_checks">🏳️ Шахи</td>
                             <td id="w-checks">-</td>
                         </tr>
                         <tr>
-                            <td>🏳️ Взятия</td>
+                            <td data-lang="w_caps">🏳️ Взятия</td>
                             <td id="w-captures">-</td>
                         </tr>
                         <tr>
-                            <td>🏴 Шахи</td>
+                            <td data-lang="b_checks">🏴 Шахи</td>
                             <td id="b-checks">-</td>
                         </tr>
                         <tr>
-                            <td>🏴 Взятия</td>
+                            <td data-lang="b_caps">🏴 Взятия</td>
                             <td id="b-captures">-</td>
                         </tr>
                     </tbody>
@@ -168,74 +181,74 @@
 
                 <div class="log-container">
                     <div class="log-col">
-                        <div class="log-header">🏳️ Белые</div>
+                        <div class="log-header" data-lang="white_header">🏳️ Белые</div>
                         <div id="log-white" class="log-list"></div>
                     </div>
                     <div class="log-separator"></div>
                     <div class="log-col">
-                        <div class="log-header">🏴 Черные</div>
+                        <div class="log-header" data-lang="black_header">🏴 Черные</div>
                         <div id="log-black" class="log-list"></div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
     <div id="resultScreen" class="view hidden">
         <div class="result-box">
-            <h2 style="margin-bottom: 25px;">🎉 Сессия завершена!</h2>
+            <h2 style="margin-bottom: 25px;" data-lang="res_title">🎉 Сессия завершена!</h2>
 
             <div class="summary-grid">
                 <div class="sum-item">
-                    <span class="sum-label">Решено</span>
+                    <span class="sum-label" data-lang="res_solved">Решено</span>
                     <span class="sum-val" id="resTotalSolved">0</span>
                 </div>
                 <div class="sum-item">
-                    <span class="sum-label">Точность</span>
+                    <span class="sum-label" data-lang="res_acc">Точность</span>
                     <span class="sum-val" id="resAccuracy">0%</span>
                 </div>
                 <div class="sum-item">
-                    <span class="sum-label">Время</span>
+                    <span class="sum-label" data-lang="res_time">Время</span>
                     <span class="sum-val" id="resTotalTime">00:00</span>
                 </div>
                 <div class="sum-item">
-                    <span class="sum-label">Ср. время</span>
+                    <span class="sum-label" data-lang="res_avg">Ср. время</span>
                     <span class="sum-val" id="resAvgTime">00:00</span>
                 </div>
             </div>
 
-            <h3 style="font-size: 1rem; color: #555; margin-bottom: 10px;">Детализация ходов</h3>
+            <h3 style="font-size: 1rem; color: #555; margin-bottom: 10px;" data-lang="res_details">Детализация ходов
+            </h3>
             <table class="stats-table">
                 <thead>
                     <tr>
-                        <th>Категория</th>
-                        <th>Найдено</th>
-                        <th>Всего</th>
+                        <th data-lang="res_cat">Категория</th>
+                        <th data-lang="res_found">Найдено</th>
+                        <th data-lang="res_total">Всего</th>
                         <th>%</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>🏳️ Шахи белых</td>
+                        <td data-lang="w_checks">🏳️ Шахи белых</td>
                         <td id="resWCheckFound">0</td>
                         <td id="resWCheckTotal">0</td>
                         <td id="resWCheckPct">0%</td>
                     </tr>
                     <tr>
-                        <td>🏳️ Взятия белых</td>
+                        <td data-lang="w_caps">🏳️ Взятия белых</td>
                         <td id="resWCapFound">0</td>
                         <td id="resWCapTotal">0</td>
                         <td id="resWCapPct">0%</td>
                     </tr>
                     <tr>
-                        <td>🏴 Шахи черных</td>
+                        <td data-lang="b_checks">🏴 Шахи черных</td>
                         <td id="resBCheckFound">0</td>
                         <td id="resBCheckTotal">0</td>
                         <td id="resBCheckPct">0%</td>
                     </tr>
                     <tr>
-                        <td>🏴 Взятия черных</td>
+                        <td data-lang="b_caps">🏴 Взятия черных</td>
                         <td id="resBCapFound">0</td>
                         <td id="resBCapTotal">0</td>
                         <td id="resBCapPct">0%</td>
@@ -245,10 +258,10 @@
 
             <div class="result-actions">
                 <button id="shareBtn" class="action-btn btn-success">
-                    <span class="btn-icon">📸</span> <span class="btn-text">Скриншот</span>
+                    <span class="btn-icon">📸</span> <span class="btn-text" data-lang="btn_screenshot">Скриншот</span>
                 </button>
                 <button onclick="location.reload()" class="action-btn btn-primary">
-                    <span class="btn-icon">🔄</span> <span class="btn-text">Заново</span>
+                    <span class="btn-icon">🔄</span> <span class="btn-text" data-lang="btn_restart">Заново</span>
                 </button>
             </div>
         </div>
@@ -257,9 +270,10 @@
     <div id="timeoutModal" class="modal-overlay hidden">
         <div class="modal-box">
             <div style="font-size: 3rem; margin-bottom: 10px;">⌛</div>
-            <h2>Время вышло!</h2>
-            <p>Лимит времени на сессию исчерпан.</p>
-            <button id="closeModalBtn" class="big-btn" style="margin-top: 20px;">Посмотреть результаты</button>
+            <h2 data-lang="modal_title">Время вышло!</h2>
+            <p data-lang="modal_desc">Лимит времени на сессию исчерпан.</p>
+            <button id="closeModalBtn" class="big-btn" style="margin-top: 20px;" data-lang="modal_btn">Посмотреть
+                результаты</button>
         </div>
     </div>
 
