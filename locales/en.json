@@ -27,6 +27,7 @@
     "status_correct": "Correct!",
     "status_wrong": "Miss",
     "status_wrong_cat": "Wrong category",
+    "status_illegal": "Illegal",
     "status_solved": "Solved!",
     "status_done": "All targets found!",
     "status_timeout": "Time's up!",

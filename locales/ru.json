@@ -27,6 +27,7 @@
     "status_correct": "Верно!",
     "status_wrong": "Мимо",
     "status_wrong_cat": "Не та категория",
+    "status_illegal": "Нельзя",
     "status_solved": "Решено!",
     "status_done": "Все цели найдены!",
     "status_timeout": "Время вышло!",

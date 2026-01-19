@@ -13,7 +13,6 @@ async function loadLanguage(lang) {
 
         applyTranslations();
 
-        // Отмечаем плитку
         $(`input[name="language"][value="${lang}"]`).prop('checked', true);
 
     } catch (error) {
@@ -58,13 +57,11 @@ const STAGES = [
 var settings = {};
 
 $(document).ready(function () {
-    // 1. Грузим язык
     loadLanguage(currentLang);
     $('input[name="language"]').on('change', function () {
         loadLanguage($(this).val());
     });
 
-    // 2. Грузим задачи
     fetch('puzzles.json')
         .then(response => response.json())
         .then(data => {
@@ -72,10 +69,8 @@ $(document).ready(function () {
             updateAvailableCount();
         })
         .catch(err => {
-            console.warn("JSON не найден, используем тестовые данные");
-            puzzles = [
-                { fen: "r1bqkb1r/pppp1ppp/2n5/4P3/2Bp2n1/5N2/PPP2PPP/RNBQK2R w KQkq - 1 5", difficulty: "easy" }
-            ];
+            console.warn("JSON не найден");
+            puzzles = [{ fen: "r1bqkb1r/pppp1ppp/2n5/4P3/2Bp2n1/5N2/PPP2PPP/RNBQK2R w KQkq - 1 5", difficulty: "easy" }];
             updateAvailableCount();
         });
 
@@ -109,16 +104,15 @@ $(document).ready(function () {
                     setTimeout(() => btn.find('.btn-text').text(originalText), 2000);
                 } catch (err) {
                     $('.result-actions').show();
-                    alert("Ошибка копирования");
+                    alert("Error copying");
                 }
             });
         } catch (error) {
             $('.result-actions').show();
-            alert("Ошибка");
+            alert("Error");
         }
     });
 
-    // Улучшенная обработка ресайза (чтобы не тормозило)
     let resizeTimer;
     $(window).resize(function () {
         clearTimeout(resizeTimer);
@@ -348,28 +342,49 @@ function onDragStart(source, piece) {
     return true;
 }
 
+// --- НОВАЯ ВЕРСИЯ onDrop ---
+let statusTimeout; // Переменная для таймера сброса статуса
+
 function onDrop(source, target) {
     if (source === target) return;
     if (settings.timeLimit > 0 && Date.now() > limitEndTime) return 'snapback';
     if (target === 'offboard') return 'snapback';
 
-    // === НОВАЯ ПРОВЕРКА ЛЕГАЛЬНОСТИ ===
-    // Пытаемся сделать ход в движке (с ферзем, чтобы пешка не застряла)
-    let moveAttempt = game.move({ from: source, to: target, promotion: 'q' });
+    let piece = game.get(source);
+    if (!piece) return 'snapback';
 
-    // Если движок вернул null, значит ход не по правилам шахмат
-    if (moveAttempt === null) {
-        return 'snapback'; // Просто возвращаем фигуру, не считаем ошибкой
+    // Проверка легальности
+    let tempGame = new Chess(game.fen());
+    if (tempGame.turn() !== piece.color) {
+        let tokens = tempGame.fen().split(' ');
+        tokens[1] = piece.color;
+        tokens[3] = '-';
+        tempGame.load(tokens.join(' '));
     }
-    // Если ход легален, отменяем его, так как мы только проверяли
-    game.undo();
-    // ==================================
+
+    let moveAttempt = tempGame.move({ from: source, to: target, promotion: 'q' });
+
+    if (moveAttempt === null) {
+        // Показываем "Нельзя"
+        setStatus(langData['status_illegal'], "#dc3545");
+
+        // Через 1.5 секунды возвращаем "Удачи!" (если не было других сообщений)
+        clearTimeout(statusTimeout);
+        statusTimeout = setTimeout(() => {
+            // Проверяем, не сменился ли статус на что-то другое (например, победу)
+            let currentText = $('#statusMessage').text();
+            if (currentText === langData['status_illegal']) {
+                setStatus(langData['status_luck'], "#0050b3");
+            }
+        }, 1500);
+
+        return 'snapback';
+    }
 
     sessionStats.totalClicks++;
     let moveKey = source + '-' + target;
-    let pieceObj = game.get(source);
-    let pieceType = pieceObj ? pieceObj.type : '';
-    let pieceColor = pieceObj ? pieceObj.color : '';
+    let pieceType = piece.type;
+    let pieceColor = piece.color;
 
     if (settings.sequentialMode) {
         let stage = STAGES[currentStageIndex];
