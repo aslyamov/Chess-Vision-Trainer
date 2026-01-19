@@ -1,47 +1,35 @@
 import chess
 import chess.pgn
+import chess.engine
 import json
 import os
 import time
+import datetime
 
 # --- НАСТРОЙКИ ---
-INPUT_PGN_FILE = "mega2026_11.pgn"
-OUTPUT_JSON_FILE = "puzzles.json"
 
-# Минимальное кол-во целей (шахи + взятия), чтобы считать позицию задачей
-MIN_TOTAL_TARGETS = 4 
+# Файл с партиями
+INPUT_PGN_FILE = "mega.pgn" # Или "mega2026_11.pgn"
+STOCKFISH_PATH = "stockfish-windows-x86-64-avx2.exe" # <-- УКАЖИТЕ ПУТЬ К ДВИЖКУ
 
-MAX_PUZZLES = 1000        # Сколько всего задач собрать
-SKIP_OPENING = 20         # Пропускать первые 10 ходов (20 полуходов)
+# Настройки генератора
+MAX_PUZZLES = 10000        # Сколько задач собрать
+MIN_PIECES = 12            # Минимум фигур на доске
+ENGINE_DEPTH = 25         # Глубина анализа Stockfish
+BAD_MOVE_THRESHOLD = 100  # Порог ошибки (1.2 пешки)
+WINNING_SCORE = 150       # Порог выигрыша
+STRICT_WIN_CHECK = True   # Строго следить за упущенной победой
 
-def get_tactics_if_valid(board_fen, color):
-    """
-    Возвращает (checks, captures), если позиция легальна для этого цвета.
-    Иначе None.
-    """
-    board = chess.Board(board_fen)
-    board.turn = color 
-    
-    # Если позиция невозможна (король под шахом в чужой ход), выкидываем
-    if not board.is_valid():
-        return None
+# Настройки отбора (как в старом файле)
+MIN_TOTAL_TARGETS = 4     # Минимум целей (Good + Bad), чтобы сохранить задачу
 
-    checks = 0
-    captures = 0
-    
-    for move in board.legal_moves:
-        board.push(move)
-        if board.is_check():
-            checks += 1
-        board.pop()
-        
-        if board.is_capture(move):
-            captures += 1
-                
-    return checks, captures
+# ----------------------------
 
 def determine_difficulty(total_targets):
-    """Классификация сложности по числу целей."""
+    """
+    Определяет сложность на основе общего количества целей.
+    Как в generate_puzzles_strict.py
+    """
     if total_targets <= 8:
         return "easy"
     elif total_targets <= 14:
@@ -49,78 +37,195 @@ def determine_difficulty(total_targets):
     else:
         return "hard"
 
-def main():
+def count_games_in_pgn(file_path):
+    print("📊 Подсчет общего количества партий...", end="\r")
+    count = 0
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("[Event "): count += 1
+    except: pass
+    print(f"📊 Всего партий в файле: {count}            ")
+    return count
+
+def get_engine_score(board, engine, depth):
+    info = engine.analyse(board, chess.engine.Limit(depth=depth))
+    score = info["score"].relative
+    if score.is_mate():
+        return 10000 if score.mate() > 0 else -10000
+    return score.score()
+
+def format_time(seconds):
+    return str(datetime.timedelta(seconds=int(seconds)))
+
+def analyze_position_for_side(board, engine):
+    """
+    Ищет ходы (шахи и взятия) для стороны, чей сейчас ход на доске.
+    Возвращает два списка: good_moves_san, bad_moves_san.
+    """
+    legal_moves = list(board.legal_moves)
+    targets = []
+    
+    # 1. Отбираем кандидатов (шах или взятие)
+    for m in legal_moves:
+        if board.is_capture(m) or board.gives_check(m):
+            targets.append(m)
+    
+    if not targets:
+        return [], []
+
+    # 2. Оценка базовой позиции
+    base_score = get_engine_score(board, engine, depth=10)
+    
+    # Если позиция уже безнадежно проиграна (-3.0), не ищем ходы (экономим время)
+    if base_score < -300: 
+        return [], []
+
+    good = []
+    bad = []
+
+    for m in targets:
+        board.push(m)
+        move_score = -get_engine_score(board, engine, depth=ENGINE_DEPTH)
+        board.pop()
+
+        san = board.san(m)
+        diff = base_score - move_score 
+        
+        is_bad = False
+
+        # Критерий 1: Сильное ухудшение оценки
+        if diff > BAD_MOVE_THRESHOLD: 
+            is_bad = True
+        
+        # Критерий 2: Смена статуса (упустили победу или зевнули проигрыш)
+        if STRICT_WIN_CHECK:
+            if base_score >= WINNING_SCORE and move_score < WINNING_SCORE and move_score < 9000:
+                is_bad = True
+            if base_score > -50 and move_score < -150:
+                is_bad = True
+
+        if is_bad: bad.append(san)
+        else: good.append(san)
+        
+    return good, bad
+
+def generate():
+    if not os.path.exists(STOCKFISH_PATH):
+        print(f"❌ Ошибка: Не найден Stockfish: {STOCKFISH_PATH}")
+        return
     if not os.path.exists(INPUT_PGN_FILE):
-        print(f"❌ Файл {INPUT_PGN_FILE} не найден! Положите PGN файл рядом со скриптом.")
+        print(f"❌ Ошибка: Не найден PGN файл: {INPUT_PGN_FILE}")
         return
 
-    stats = {"easy": 0, "medium": 0, "hard": 0}
     puzzles = []
+    stats = {"easy": 0, "medium": 0, "hard": 0}
+
+    total_games = count_games_in_pgn(INPUT_PGN_FILE)
+
+    print(f"🚀 Генератор запущен (Умный анализ + Жесткий отбор)")
+    print(f"🎯 Цель: {MAX_PUZZLES} задач")
+    print(f"⚙️ Мин. целей: {MIN_TOTAL_TARGETS} | Мин. фигур: {MIN_PIECES}")
+    print("-" * 60)
+
+    try:
+        engine = chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH)
+    except Exception as e:
+        print(f"❌ Ошибка запуска движка: {e}")
+        return
+
+    pgn = open(INPUT_PGN_FILE, encoding="utf-8")
     games_processed = 0
     start_time = time.time()
     
-    print(f"🚀 Начинаю генерацию задач из {INPUT_PGN_FILE}...")
-    
-    with open(INPUT_PGN_FILE, encoding="utf-8") as pgn_file:
-        while len(puzzles) < MAX_PUZZLES:
-            game = chess.pgn.read_game(pgn_file)
-            if game is None: break 
+    while len(puzzles) < MAX_PUZZLES:
+        # Читаем партию с обработкой ошибок
+        try:
+            game = chess.pgn.read_game(pgn)
+        except Exception:
+            continue # Если партия битая, пропускаем
             
-            games_processed += 1
-            board = game.board()
+        if game is None: break
+
+        board = game.board()
+        games_processed += 1
+        
+        print(f"\n♟️ Партия {games_processed}/{total_games}")
+
+        move_count = 0
+        for move in game.mainline_moves():
+            board.push(move)
+            move_count += 1
             
-            move_count = 0
-            for move in game.mainline_moves():
-                board.push(move)
-                move_count += 1
-                
-                if move_count < SKIP_OPENING: continue
-                if len(puzzles) >= MAX_PUZZLES: break
+            # Пропускаем дебют и позиции с малым числом фигур
+            if move_count < 10: continue
+            if len(board.piece_map()) < MIN_PIECES: continue
 
-                current_fen = board.fen()
-                
-                # Анализ за Белых
-                w_stats = get_tactics_if_valid(current_fen, chess.WHITE)
-                if w_stats is None: continue
-                
-                # Анализ за Черных
-                b_stats = get_tactics_if_valid(current_fen, chess.BLACK)
-                if b_stats is None: continue
-                
-                # Суммируем
-                total_checks = w_stats[0] + b_stats[0]
-                total_captures = w_stats[1] + b_stats[1]
-                total_targets = total_checks + total_captures
-                
-                if total_targets >= MIN_TOTAL_TARGETS:
-                    # Проверка на дубликаты
-                    if not any(p['fen'] == current_fen for p in puzzles):
-                        
-                        difficulty = determine_difficulty(total_targets)
-                        
-                        desc = (f"W: {w_stats[0]}ch/{w_stats[1]}cp | "
-                                f"B: {b_stats[0]}ch/{b_stats[1]}cp")
-                                
-                        puzzles.append({
-                            "fen": current_fen,
-                            "difficulty": difficulty,
-                            "description": desc
-                        })
-                        stats[difficulty] += 1
-                        
-                        # Периодический отчет в консоль
-                        if len(puzzles) % 10 == 0:
-                            print(f"--> Собрано {len(puzzles)} (E:{stats['easy']} M:{stats['medium']} H:{stats['hard']})")
+            # === АНАЛИЗ ЗА ОБЕ СТОРОНЫ ===
+            
+            # 1. За текущую сторону
+            g1, b1 = analyze_position_for_side(board, engine)
 
-    with open(OUTPUT_JSON_FILE, "w", encoding="utf-8") as f:
-        json.dump(puzzles, f, indent=2, ensure_ascii=False)
+            # 2. За обратную сторону (переворачиваем ход)
+            fen_parts = board.fen().split(' ')
+            fen_parts[1] = 'w' if fen_parts[1] == 'b' else 'b'
+            fen_parts[3] = '-' 
+            board_flipped = chess.Board(" ".join(fen_parts))
+            
+            if board_flipped.is_valid():
+                g2, b2 = analyze_position_for_side(board_flipped, engine)
+            else:
+                g2, b2 = [], []
+
+            # Объединяем
+            all_good = g1 + g2
+            all_bad = b1 + b2
+            total_targets = len(all_good) + len(all_bad)
+
+            print(f"   ↳ Ход {move_count}: Целей {total_targets} (Good:{len(all_good)} Bad:{len(all_bad)})... ", end="", flush=True)
+
+            # === ФИЛЬТРАЦИЯ И СОХРАНЕНИЕ ===
+            
+            # 1. Должен быть хотя бы 1 хороший ход (иначе задача нерешаемая/скучная)
+            # 2. Общее число целей должно быть >= MIN_TOTAL_TARGETS (как в старом файле)
+            # 3. Убираем дубликаты (по FEN)
+            if len(all_good) > 0 and total_targets >= MIN_TOTAL_TARGETS:
+                if not any(p['fen'] == board.fen() for p in puzzles):
+                    
+                    difficulty = determine_difficulty(total_targets)
+                    stats[difficulty] += 1
+                    
+                    print(f"✅ [{difficulty.upper()}]")
+                    
+                    puzzles.append({
+                        "fen": board.fen(),
+                        "difficulty": difficulty,
+                        "good_moves": all_good,
+                        "bad_moves": all_bad
+                    })
+                    
+                    # Статистика времени
+                    elapsed = time.time() - start_time
+                    avg = elapsed / len(puzzles)
+                    rem = MAX_PUZZLES - len(puzzles)
+                    print(f"      [Итого: {len(puzzles)}/{MAX_PUZZLES}] [ETA: {format_time(avg * rem)}]")
+
+                    if len(puzzles) >= MAX_PUZZLES: break
+            else:
+                print(f"❌", end="\r")
+
+    engine.quit()
     
-    print(f"\n🎉 ГОТОВО! Сохранено в {OUTPUT_JSON_FILE}")
-    print(f"📊 Статистика:")
-    print(f"   🟢 Легкие (4-8 целей):   {stats['easy']}")
-    print(f"   🟡 Средние (9-14 целей): {stats['medium']}")
-    print(f"   🔴 Сложные (14+ целей):   {stats['hard']}")
-    print(f"⏱ Время работы: {time.time() - start_time:.1f} сек.")
+    with open("puzzles.json", "w", encoding="utf-8") as f:
+        json.dump(puzzles, f, indent=4, ensure_ascii=False)
+    
+    total_time = time.time() - start_time
+    print(f"\n\n🎉 Готово! Сохранено {len(puzzles)} задач.")
+    print(f"📊 Статистика сложности:")
+    print(f"   🟢 Легкие (<=8):   {stats['easy']}")
+    print(f"   🟡 Средние (<=14): {stats['medium']}")
+    print(f"   🔴 Сложные (>14):  {stats['hard']}")
+    print(f"⏱ Общее время: {format_time(total_time)}")
 
 if __name__ == "__main__":
-    main()
+    generate()
