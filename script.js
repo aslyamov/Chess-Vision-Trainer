@@ -118,8 +118,13 @@ $(document).ready(function () {
         }
     });
 
+    // Улучшенная обработка ресайза (чтобы не тормозило)
+    let resizeTimer;
     $(window).resize(function () {
-        if (board) board.resize();
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+            if (board) board.resize();
+        }, 100);
     });
 });
 
@@ -248,7 +253,6 @@ function loadPuzzle(index) {
 
     updateGameUI();
 
-    // ИСПОЛЬЗУЕМ ЯЗЫКОВУЮ ПЕРЕМЕННУЮ
     setStatus(langData['status_luck'], "#0050b3");
 
     if (settings.timeLimit > 0 && settings.timeMode === 'per_puzzle') {
@@ -348,6 +352,18 @@ function onDrop(source, target) {
     if (source === target) return;
     if (settings.timeLimit > 0 && Date.now() > limitEndTime) return 'snapback';
     if (target === 'offboard') return 'snapback';
+
+    // === НОВАЯ ПРОВЕРКА ЛЕГАЛЬНОСТИ ===
+    // Пытаемся сделать ход в движке (с ферзем, чтобы пешка не застряла)
+    let moveAttempt = game.move({ from: source, to: target, promotion: 'q' });
+
+    // Если движок вернул null, значит ход не по правилам шахмат
+    if (moveAttempt === null) {
+        return 'snapback'; // Просто возвращаем фигуру, не считаем ошибкой
+    }
+    // Если ход легален, отменяем его, так как мы только проверяли
+    game.undo();
+    // ==================================
 
     sessionStats.totalClicks++;
     let moveKey = source + '-' + target;
@@ -481,7 +497,6 @@ function toRussianSAN(san) {
 }
 
 function logMove(san, isCheck, isCapture, color, pieceType) {
-    // Если русский, конвертируем. Если английский - оставляем как есть.
     let moveText = san;
     if (currentLang === 'ru') {
         moveText = toRussianSAN(san);
