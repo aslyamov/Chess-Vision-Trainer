@@ -80,7 +80,7 @@ export class BoardRenderer {
     setOrientation(orientation) {
         if (!this.ground)
             return;
-        this.ground.setOrientation(orientation);
+        this.ground.set({ orientation });
     }
     /**
      * Toggles board orientation

@@ -114,7 +114,7 @@ export class BoardRenderer {
      */
     setOrientation(orientation: 'white' | 'black'): void {
         if (!this.ground) return;
-        this.ground.setOrientation(orientation);
+        this.ground.set({ orientation });
     }
 
     /**
