@@ -66,7 +66,7 @@
     </style>
 </head>
 
-<body class="bg-base-300 h-screen font-sans text-base-content overflow-hidden relative">
+<body class="bg-base-300 h-screen font-sans text-base-content overflow-y-auto relative">
 
     <!-- BACKGROUND GRADIENT -->
     <div class="absolute inset-0 bg-gradient-to-br from-base-300 to-base-100 -z-10"></div>
@@ -74,7 +74,7 @@
     <!-- ==========================================
          MENU SCREEN
          ========================================== -->
-    <main id="startScreen" class="view active w-full h-screen flex items-center justify-center p-4">
+    <main id="startScreen" class="view active w-full min-h-screen flex items-center justify-center p-4 pb-20">
         <div class="card w-full max-w-2xl bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md">
             <div class="card-body gap-6 text-center">
                 <!-- Header -->
@@ -139,7 +139,7 @@
                     <div class="bg-base-200/50 rounded-box p-6 border border-base-content/5 w-full">
                         <label class="label font-bold text-sm uppercase text-base-content/70 justify-center mb-3"
                             data-lang="settings_title">⚙️ Настройки</label>
-                        <div class="grid grid-cols-2 gap-x-8 gap-y-3 text-left max-w-md mx-auto">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-left max-w-md mx-auto">
                             <label class="cursor-pointer flex items-center gap-3">
                                 <input type="checkbox" id="setSequential" class="toggle toggle-sm toggle-secondary" />
                                 <span class="label-text whitespace-nowrap" data-lang="set_seq">🔄 Поочередно</span>
