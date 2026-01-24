@@ -1,286 +1,405 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Шахматный тренажер для развития тактического зрения. Находи шахи и взятия!">
     <title>Chess Vision Trainer</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+
+    <!-- Generic Chess Favicon -->
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/c/c3/Chess_klt45.svg" type="image/svg+xml">
+
+    <!-- Tailwind CSS & DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Google Fonts: Noto Sans (for Lichess-like look) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Chessground CSS -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/assets/chessground.base.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/assets/chessground.brown.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/assets/chessground.cburnett.css">
+    <!-- Custom Styles (Overrides) -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        chess: {
+                            board: '#b58863',
+                            dark: '#262421',
+                            highlight: '#a7c5eb'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Hide spinner for number inputs */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+    </style>
 </head>
 
-<body>
+<body class="bg-base-300 h-screen font-sans text-base-content overflow-hidden relative">
 
-    <div id="startScreen" class="view active">
-        <div class="menu-box">
-            <h1 data-lang="title">Chess Vision Trainer</h1>
+    <!-- BACKGROUND GRADIENT -->
+    <div class="absolute inset-0 bg-gradient-to-br from-base-300 to-base-100 -z-10"></div>
 
-            <div class="form-group">
-                <label class="section-label" data-lang="difficulty_label">🎯 Сложность</label>
-                <div class="tile-selector">
-                    <label class="tile-option">
-                        <input type="radio" name="difficulty" value="all">
-                        <span class="tile-card" data-lang="diff_all">🎲 Все</span>
-                    </label>
-                    <label class="tile-option">
-                        <input type="radio" name="difficulty" value="easy">
-                        <span class="tile-card easy" data-lang="diff_easy">🟢 Легко</span>
-                    </label>
-                    <label class="tile-option">
-                        <input type="radio" name="difficulty" value="medium" checked>
-                        <span class="tile-card medium" data-lang="diff_medium">🟡 Средне</span>
-                    </label>
-                    <label class="tile-option">
-                        <input type="radio" name="difficulty" value="hard">
-                        <span class="tile-card hard" data-lang="diff_hard">🔴 Сложно</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="section-label" data-lang="time_mode_label">⏱ Режим времени</label>
-                <div class="tile-selector two-cols">
-                    <label class="tile-option">
-                        <input type="radio" name="timeMode" value="per_puzzle" checked>
-                        <span class="tile-card" data-lang="mode_puzzle">⏳ На задачу</span>
-                    </label>
-                    <label class="tile-option">
-                        <input type="radio" name="timeMode" value="total">
-                        <span class="tile-card" data-lang="mode_session">⚡ На сессию</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group small-group">
-                    <label class="input-label" data-lang="count_label">🧩 Кол-во задач</label>
-                    <input type="number" id="taskCountInput" min="1" value="5" class="number-input">
-                    <div class="input-hint"><span data-lang="available">Доступно:</span> <span
-                            id="maxPuzzlesCount">...</span></div>
+    <!-- ==========================================
+         MENU SCREEN
+         ========================================== -->
+    <main id="startScreen" class="view active w-full h-screen flex items-center justify-center p-4">
+        <div class="card w-full max-w-2xl bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md">
+            <div class="card-body gap-6 text-center">
+                <!-- Header -->
+                <div class="pb-2 border-b border-base-content/10">
+                    <h1
+                        class="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent inline-flex items-center justify-center">
+                        <i class="fa-solid fa-chess-knight mr-2 text-primary"></i>Chess Vision
+                    </h1>
+                    <p class="text-base-content/60 mt-1">Тренировка тактического зрения</p>
                 </div>
 
-                <div class="form-group small-group">
-                    <label class="input-label" data-lang="time_limit_label">⏱ Лимит (сек)</label>
-                    <input type="number" id="timeLimitInput" min="0" value="0" class="number-input" placeholder="∞">
-                    <div class="input-hint" data-lang="unlimited_hint">0 = безлимит</div>
-                </div>
-            </div>
+                <h2 id="lobby-setup-modal-title" class="sr-only">Параметры</h2>
 
-            <div class="settings-box">
-                <h3 data-lang="settings_title">⚙️ Настройки</h3>
+                <!-- Main Settings Container (Centered) -->
+                <div class="flex flex-col items-center gap-6 w-full max-w-lg mx-auto">
 
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label class="input-label" style="text-align: left; margin-bottom: 8px;" data-lang="lang_label">🌐
-                        Язык интерфейса</label>
-                    <div class="tile-selector two-cols">
-                        <label class="tile-option">
-                            <input type="radio" name="language" value="ru">
-                            <span class="tile-card">Русский</span>
-                        </label>
-                        <label class="tile-option">
-                            <input type="radio" name="language" value="en">
-                            <span class="tile-card">English</span>
-                        </label>
+                    <!-- Difficulty -->
+                    <div class="form-control w-full">
+                        <label class="label font-bold text-sm uppercase text-base-content/70 justify-center pb-2"
+                            data-lang="difficulty_label">🎯 Сложность</label>
+                        <div class="join w-full grid grid-cols-4">
+                            <input id="diff_easy" class="join-item btn btn-sm btn-outline" type="radio"
+                                name="difficulty" value="easy" aria-label="Легко" data-lang="diff_easy" />
+                            <input id="diff_medium" class="join-item btn btn-sm btn-outline" type="radio"
+                                name="difficulty" value="medium" checked aria-label="Средне" data-lang="diff_medium" />
+                            <input id="diff_hard" class="join-item btn btn-sm btn-outline" type="radio"
+                                name="difficulty" value="hard" aria-label="Сложно" data-lang="diff_hard" />
+                            <input id="diff_all" class="join-item btn btn-sm btn-outline" type="radio" name="difficulty"
+                                value="all" aria-label="Все" data-lang="diff_all" />
+                        </div>
+                    </div>
+
+                    <!-- Numeric Inputs Section -->
+                    <div class="grid grid-cols-2 gap-4 w-full">
+                        <!-- Task Count -->
+                        <div class="form-control">
+                            <label class="label font-bold text-sm uppercase text-base-content/70 justify-center"
+                                data-lang="count_label">🧩 Задач</label>
+                            <input id="taskCountInput" type="number" min="1" max="100" value="10"
+                                class="input input-bordered input-primary w-full text-center font-mono text-lg" />
+                            <div class="label justify-center pt-1 pb-0">
+                                <span class="text-xs text-base-content/50">
+                                    <span data-lang="available">Доступно:</span> <span id="maxPuzzlesCount"
+                                        class="font-bold">...</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Time Limit -->
+                        <div class="form-control">
+                            <label class="label font-bold text-sm uppercase text-base-content/70 justify-center"
+                                data-lang="time_limit_label">⏱ Время (сек)</label>
+                            <input id="timeLimitInput" type="number" min="0" max="600" step="10" value="0"
+                                placeholder="0 = безлимит"
+                                class="input input-bordered input-secondary w-full text-center font-mono text-lg" />
+                            <label class="label text-xs text-base-content/50 justify-center pt-1"
+                                data-lang="unlimited_hint">0 = безлимит</label>
+                        </div>
+                    </div>
+
+                    <!-- Settings Toggles (Centered) -->
+                    <div class="bg-base-200/50 rounded-box p-6 border border-base-content/5 w-full">
+                        <label class="label font-bold text-sm uppercase text-base-content/70 justify-center mb-3"
+                            data-lang="settings_title">⚙️ Настройки</label>
+                        <div class="grid grid-cols-2 gap-x-8 gap-y-3 text-left max-w-md mx-auto">
+                            <label class="cursor-pointer flex items-center gap-3">
+                                <input type="checkbox" id="setSequential" class="toggle toggle-sm toggle-secondary" />
+                                <span class="label-text whitespace-nowrap" data-lang="set_seq">🔄 Поочередно</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center gap-3">
+                                <input type="checkbox" id="setAutoFlip" checked
+                                    class="toggle toggle-sm toggle-secondary" />
+                                <span class="label-text whitespace-nowrap" data-lang="set_flip">🔁 Авто-поворот</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center gap-3">
+                                <input type="checkbox" id="setHighlights" checked
+                                    class="toggle toggle-sm toggle-secondary" />
+                                <span class="label-text whitespace-nowrap" data-lang="set_high">🟩 Подсветка</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center gap-3">
+                                <input type="checkbox" id="setHints" checked
+                                    class="toggle toggle-sm toggle-secondary" />
+                                <span class="label-text whitespace-nowrap" data-lang="set_hints">🔢 Счетчики</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center gap-3">
+                                <input type="checkbox" id="setStatusText" checked
+                                    class="toggle toggle-sm toggle-secondary" />
+                                <span class="label-text whitespace-nowrap" data-lang="set_status">💬 Статусы</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center gap-3">
+                                <input type="checkbox" id="setShowLog" checked
+                                    class="toggle toggle-sm toggle-secondary" />
+                                <span class="label-text whitespace-nowrap" data-lang="set_log">📜 Лог ходов</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center gap-3">
+                                <input type="checkbox" id="setGoodMoves" class="toggle toggle-sm toggle-secondary" />
+                                <span class="label-text whitespace-nowrap" data-lang="set_good">✨ Только хорошие
+                                    ходы</span>
+                            </label>
+                        </div>
+
+                        <!-- Language Selector -->
+                        <div class="divider my-4"></div>
+                        <div class="form-control w-full max-w-xs mx-auto">
+                            <label class="label font-bold text-sm uppercase text-base-content/70 justify-center mb-2"
+                                data-lang="lang_label">🌐 Язык интерфейса</label>
+                            <div class="join w-full grid grid-cols-2">
+                                <input class="join-item btn btn-sm btn-outline" type="radio" name="language" value="ru"
+                                    aria-label="🇷🇺 Русский" checked />
+                                <input class="join-item btn btn-sm btn-outline" type="radio" name="language" value="en"
+                                    aria-label="🇬🇧 English" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="settings-list">
-                    <label class="setting-item">
-                        <input type="checkbox" id="setSequential">
-                        <span data-lang="set_seq">🔄 Поочередный режим</span>
-                    </label>
-                    <label class="setting-item">
-                        <input type="checkbox" id="setAutoFlip" checked>
-                        <span data-lang="set_flip">🔁 Авто-поворот доски</span>
-                    </label>
-                    <label class="setting-item">
-                        <input type="checkbox" id="setHighlights" checked>
-                        <span data-lang="set_high">🟩 Подсветка ходов</span>
-                    </label>
-                    <label class="setting-item">
-                        <input type="checkbox" id="setHints" checked>
-                        <span data-lang="set_hints">🔢 Счетчики целей</span>
-                    </label>
-                    <label class="setting-item">
-                        <input type="checkbox" id="setStatusText" checked>
-                        <span data-lang="set_status">💬 Текстовые статусы</span>
-                    </label>
-                    <label class="setting-item">
-                        <input type="checkbox" id="setShowLog" checked>
-                        <span data-lang="set_log">📜 История ходов</span>
-                    </label>
-                    <label class="setting-item">
-                        <input type="checkbox" id="setCoords" checked>
-                        <span data-lang="set_coords">🔠 Координаты</span>
-                    </label>
-                </div>
-            </div>
-
-            <button id="startSessionBtn" class="big-btn" data-lang="btn_start">Начать тренировку</button>
-        </div>
-    </div>
-
-    <div id="gameScreen" class="view hidden">
-        <div class="main-container">
-
-            <div class="board-card">
-                <div class="board-wrapper">
-                    <div id="board"></div>
-                </div>
-            </div>
-
-            <div class="sidebar-card">
-
-                <h2 class="sidebar-title" data-lang="game_title">Найдите все шахи и взятия!</h2>
-
-                <div class="game-dashboard">
-                    <div class="info-pill timer-pill">
-                        <span class="icon-spacer">⏱</span> <span id="gameTimer">00:00</span>
-                    </div>
-                    <div class="info-pill progress-pill">
-                        <span id="progressDisplay">1 / 5</span>
-                    </div>
-                    <div id="statusMessage" class="status-pill" data-lang="status_luck">
-                        Удачи!
-                    </div>
-                    <div class="dashboard-actions">
-                        <button id="flipBoardBtn" class="icon-only-btn btn-flip" title="Flip Board">
-                            🔄
-                        </button>
-                        <button id="giveUpBtn" class="icon-only-btn btn-skip" title="Skip Puzzle">
-                            ⏭️
-                        </button>
-                    </div>
-                </div>
-
-                <div id="taskIndicator" class="task-indicator hidden">
-                    <span data-lang="target_label">Цель:</span> <span id="currentTaskName">...</span>
-                </div>
-
-                <table class="game-stats-table">
-                    <tbody>
-                        <tr>
-                            <td data-lang="w_checks">🏳️ Шахи</td>
-                            <td id="w-checks">-</td>
-                        </tr>
-                        <tr>
-                            <td data-lang="w_caps">🏳️ Взятия</td>
-                            <td id="w-captures">-</td>
-                        </tr>
-                        <tr>
-                            <td data-lang="b_checks">🏴 Шахи</td>
-                            <td id="b-checks">-</td>
-                        </tr>
-                        <tr>
-                            <td data-lang="b_caps">🏴 Взятия</td>
-                            <td id="b-captures">-</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="log-container">
-                    <div class="log-col">
-                        <div class="log-header" data-lang="white_header">🏳️ Белые</div>
-                        <div id="log-white" class="log-list"></div>
-                    </div>
-                    <div class="log-separator"></div>
-                    <div class="log-col">
-                        <div class="log-header" data-lang="black_header">🏴 Черные</div>
-                        <div id="log-black" class="log-list"></div>
-                    </div>
+                <!-- Start Button -->
+                <div class="card-actions mt-4 justify-center">
+                    <button id="startGameBtn"
+                        class="btn btn-primary btn-lg w-full max-w-sm shadow-lg hover:scale-[1.01] transition-transform text-lg">
+                        <i class="fa-solid fa-play mr-2"></i> <span data-lang="btn_start">Начать тренировку</span>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
+        <!-- Dialog wrapper for JS compatibility if needed, but not strictly used by current JS view logic -->
+        <dialog class="hidden"></dialog>
+    </main>
 
-    <div id="resultScreen" class="view hidden">
-        <div class="result-box">
-            <h2 style="margin-bottom: 25px;" data-lang="res_title">🎉 Сессия завершена!</h2>
+    <!-- ==========================================
+         GAME SCREEN
+         ========================================== -->
+    <div id="gameScreen" class="view hidden h-screen">
+        <div class="flex flex-col lg:flex-row gap-6 p-4 w-full max-w-[1600px] mx-auto items-center justify-center">
 
-            <div class="summary-grid">
-                <div class="sum-item">
-                    <span class="sum-label" data-lang="res_solved">Решено</span>
-                    <span class="sum-val" id="resTotalSolved">0</span>
-                </div>
-                <div class="sum-item">
-                    <span class="sum-label" data-lang="res_acc">Точность</span>
-                    <span class="sum-val" id="resAccuracy">0%</span>
-                </div>
-                <div class="sum-item">
-                    <span class="sum-label" data-lang="res_time">Время</span>
-                    <span class="sum-val" id="resTotalTime">00:00</span>
-                </div>
-                <div class="sum-item">
-                    <span class="sum-label" data-lang="res_avg">Ср. время</span>
-                    <span class="sum-val" id="resAvgTime">00:00</span>
-                </div>
+            <!-- CHESS BOARD -->
+            <div class="relative w-full max-w-[80vh] aspect-square rounded-lg overflow-hidden">
+                <div id="board" class="w-full h-full"></div>
             </div>
 
-            <h3 style="font-size: 1rem; color: #555; margin-bottom: 10px;" data-lang="res_details">Детализация ходов
+            <!-- SIDEBAR -->
+            <div class="flex flex-col gap-4 w-full lg:w-[400px] h-full max-h-[80vh]">
+
+                <!-- Dashboard Card -->
+                <div class="card bg-base-100 shadow-xl border border-base-content/10">
+                    <div class="card-body p-4">
+                        <h2
+                            class="card-title text-sm uppercase text-base-content/50 border-b border-base-content/10 pb-2 justify-center">
+                            <i class="fa-solid fa-bullseye text-secondary"></i> <span data-lang="game_title">Найди шахи
+                                и взятия</span>
+                        </h2>
+
+                        <!-- Status & Progress -->
+                        <div class="grid grid-cols-2 gap-3 mt-2">
+                            <!-- Timer -->
+                            <div
+                                class="bg-neutral text-neutral-content rounded-xl flex items-center justify-center p-3 font-mono text-2xl font-bold border border-base-content/10 h-14">
+                                <i class="fa-regular fa-clock mr-2 text-sm opacity-70"></i>
+                                <span id="gameTimer">00:00</span>
+                            </div>
+                            <!-- Progress -->
+                            <div
+                                class="bg-base-200 text-base-content rounded-xl flex items-center justify-center p-3 font-mono text-xl font-bold border border-base-content/10 h-14">
+                                <span id="progressDisplay">0 / 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Status + Actions Row (aligned with timer/progress above) -->
+                        <div class="grid grid-cols-2 gap-3 mt-3">
+                            <!-- Status Message (same width as timer) -->
+                            <div class="bg-success/10 text-success rounded-xl p-3 text-center font-bold border border-base-content/10 flex items-center justify-center h-14"
+                                id="statusMessage">
+                                Удачи!
+                            </div>
+                            <!-- Buttons (same width as progress) -->
+                            <div class="flex gap-2 h-14">
+                                <button id="flipBoardBtn"
+                                    class="btn btn-ghost rounded-xl flex-1 border border-base-content/10 h-full"
+                                    title="Перевернуть">
+                                    <i class="fa-solid fa-rotate"></i>
+                                </button>
+                                <button id="giveUpBtn"
+                                    class="btn btn-ghost rounded-xl flex-1 border border-error/30 text-error h-full"
+                                    title="Пропустить">
+                                    <i class="fa-solid fa-forward-step"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Task Indicator (Sequential Mode) -->
+                        <div id="taskIndicator" class="alert alert-warning mt-4 py-2 hidden justify-center">
+                            <i class="fa-solid fa-crosshairs"></i>
+                            <div>
+                                <span class="text-xs uppercase font-bold opacity-70"
+                                    data-lang="target_label">Цель:</span>
+                                <div class="font-bold" id="currentTaskName">White Checks</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Card -->
+                <div id="statsContainer"
+                    class="card bg-base-100 shadow-xl border border-base-content/10 flex-1 overflow-hidden">
+                    <div class="card-body p-4 overflow-y-auto">
+                        <h3
+                            class="card-title text-sm uppercase text-base-content/50 border-b border-base-content/10 pb-2 mb-3 justify-center">
+                            <i class="fa-solid fa-chart-simple text-primary"></i> Статистика
+                        </h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center p-2 bg-base-200 rounded-lg">
+                                <span class="text-sm"><i class="fa-regular fa-flag text-base-content/60 mr-2"></i> <span
+                                        data-lang="w_checks">🏳️ Шахи</span></span>
+                                <span id="w-checks" class="badge badge-lg">0/0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-base-200 rounded-lg">
+                                <span class="text-sm"><i class="fa-solid fa-xmark text-base-content/60 mr-2"></i> <span
+                                        data-lang="w_caps">🏳️ Взятия</span></span>
+                                <span id="w-captures" class="badge badge-lg">0/0</span>
+                            </div>
+                            <div class="divider my-1"></div>
+                            <div class="flex justify-between items-center p-2 bg-base-200 rounded-lg">
+                                <span class="text-sm"><i class="fa-solid fa-square-full text-base-content/80 mr-2"></i>
+                                    <span data-lang="b_checks">🏴 Шахи</span></span>
+                                <span id="b-checks" class="badge badge-lg">0/0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-base-200 rounded-lg">
+                                <span class="text-sm"><i class="fa-solid fa-xmark text-base-content/80 mr-2"></i> <span
+                                        data-lang="b_caps">🏴 Взятия</span></span>
+                                <span id="b-captures" class="badge badge-lg">0/0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Log Container -->
+                <div id="logContainer"
+                    class="card bg-base-100 shadow-xl border border-base-content/10 h-48 overflow-hidden">
+                    <div class="card-body p-0 flex flex-col h-full">
+                        <h3
+                            class="card-title text-sm uppercase text-base-content/50 border-b border-base-content/10 p-3 pb-2 justify-center">
+                            <i class="fa-solid fa-list-check text-accent"></i> Найденные ходы
+                        </h3>
+                        <div class="flex flex-row flex-1 overflow-hidden">
+                            <!-- White Log -->
+                            <div class="flex-1 bg-base-200/30 p-2 overflow-y-auto border-r border-base-content/10"
+                                id="log-white">
+                                <div class="text-xs font-bold text-center text-base-content/50 sticky top-0 bg-base-100/90 backdrop-blur w-full py-1 mb-2"
+                                    data-lang="white_header">
+                                    🏳️ Белые</div>
+                            </div>
+                            <!-- Black Log -->
+                            <div class="flex-1 bg-base-200/30 p-2 overflow-y-auto" id="log-black">
+                                <div class="text-xs font-bold text-center text-base-content/50 sticky top-0 bg-base-100/90 backdrop-blur w-full py-1 mb-2"
+                                    data-lang="black_header">
+                                    🏴 Черные</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         RESULT SCREEN (вынесен за пределы gameScreen)
+         ========================================== -->
+    <div id="resultScreen" class="view hidden w-full h-screen flex items-center justify-center p-4">
+        <div class="card w-96 bg-base-100 shadow-2xl text-center border border-base-content/10">
+            <div class="card-body items-center">
+                <div
+                    class="w-20 h-20 rounded-full bg-success/20 flex items-center justify-center mb-4 text-success text-4xl">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h2 class="card-title text-2xl mb-2" data-lang="res_title">🎉 Сессия завершена!</h2>
+
+                <div class="grid grid-cols-2 gap-4 w-full my-4">
+                    <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                        <div class="text-xs uppercase font-bold opacity-60 mb-1" data-lang="res_solved">Решено</div>
+                        <div class="text-3xl font-bold text-primary" id="resTotalSolved">0</div>
+                    </div>
+                    <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                        <div class="text-xs uppercase font-bold opacity-60 mb-1" data-lang="res_time">Время</div>
+                        <div class="text-3xl font-bold text-secondary font-mono" id="resTotalTime">00:00</div>
+                    </div>
+                    <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                        <div class="text-xs uppercase font-bold opacity-60 mb-1" data-lang="res_accuracy">Точность</div>
+                        <div class="text-3xl font-bold text-accent font-mono" id="resAccuracy">0%</div>
+                    </div>
+                    <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                        <div class="text-xs uppercase font-bold opacity-60 mb-1" data-lang="res_avg">Среднее</div>
+                        <div class="text-3xl font-bold text-info font-mono" id="resAvgTime">00:00</div>
+                    </div>
+                </div>
+
+                <div class="card-actions w-full mt-4">
+                    <button id="restartBtn" class="btn btn-primary w-full">
+                        <i class="fa-solid fa-rotate-left mr-2"></i> <span data-lang="btn_restart">Заново</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         TIMEOUT MODAL
+         ========================================== -->
+    <dialog id="timeoutModal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box text-center">
+            <h3 id="modalTitle" class="font-bold text-lg text-error">
+                <i class="fa-solid fa-hourglass-end mr-2"></i> <span data-lang="modal_title">Время вышло!</span>
             </h3>
-            <table class="stats-table">
-                <thead>
-                    <tr>
-                        <th data-lang="res_cat">Категория</th>
-                        <th data-lang="res_found">Найдено</th>
-                        <th data-lang="res_total">Всего</th>
-                        <th>%</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td data-lang="w_checks">🏳️ Шахи белых</td>
-                        <td id="resWCheckFound">0</td>
-                        <td id="resWCheckTotal">0</td>
-                        <td id="resWCheckPct">0%</td>
-                    </tr>
-                    <tr>
-                        <td data-lang="w_caps">🏳️ Взятия белых</td>
-                        <td id="resWCapFound">0</td>
-                        <td id="resWCapTotal">0</td>
-                        <td id="resWCapPct">0%</td>
-                    </tr>
-                    <tr>
-                        <td data-lang="b_checks">🏴 Шахи черных</td>
-                        <td id="resBCheckFound">0</td>
-                        <td id="resBCheckTotal">0</td>
-                        <td id="resBCheckPct">0%</td>
-                    </tr>
-                    <tr>
-                        <td data-lang="b_caps">🏴 Взятия черных</td>
-                        <td id="resBCapFound">0</td>
-                        <td id="resBCapTotal">0</td>
-                        <td id="resBCapPct">0%</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="result-actions">
-                <button id="shareBtn" class="action-btn btn-success">
-                    <span class="btn-icon">📸</span> <span class="btn-text" data-lang="btn_screenshot">Скриншот</span>
-                </button>
-                <button onclick="location.reload()" class="action-btn btn-primary">
-                    <span class="btn-icon">🔄</span> <span class="btn-text" data-lang="btn_restart">Заново</span>
-                </button>
+            <p class="py-4" data-lang="modal_desc">Лимит времени на сессию исчерпан.</p>
+            <div class="modal-action justify-center">
+                <form method="dialog">
+                    <!-- if there is a button in form, it will close the modal -->
+                    <button id="closeModalBtn" class="btn btn-wide" data-lang="modal_btn">Посмотреть
+                        результаты</button>
+                </form>
             </div>
         </div>
-    </div>
+    </dialog>
 
-    <div id="timeoutModal" class="modal-overlay hidden">
-        <div class="modal-box">
-            <div style="font-size: 3rem; margin-bottom: 10px;">⌛</div>
-            <h2 data-lang="modal_title">Время вышло!</h2>
-            <p data-lang="modal_desc">Лимит времени на сессию исчерпан.</p>
-            <button id="closeModalBtn" class="big-btn" style="margin-top: 20px;" data-lang="modal_btn">Посмотреть
-                результаты</button>
-        </div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <!-- SCRIPTS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script src="script.js"></script>
+    <script type="module" src="dist/main.js"></script>
+
 </body>
 
 </html>

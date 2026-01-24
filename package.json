@@ -1,0 +1,24 @@
+{
+    "name": "chess-vision-trainer",
+    "version": "2.0.0",
+    "description": "Шахматный тренажёр для развития тактического зрения",
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "build:watch": "tsc --watch",
+        "serve": "python -m http.server 5500",
+        "dev": "npm run build:watch"
+    },
+    "keywords": [
+        "chess",
+        "training",
+        "tactics",
+        "vision"
+    ],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "typescript": "^5.3.0"
+    }
+}

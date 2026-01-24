@@ -1,3 +1,19 @@
-*.pgn
+# Dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System
+.DS_Store
+Thumbs.db
 *.exe
-puzzles_1.json
+
+# IDE
+.vscode/
+.idea/
+
+# Optional: Large puzzle dumps (keep main puzzles.json!)
+# puzzles_raw.json
