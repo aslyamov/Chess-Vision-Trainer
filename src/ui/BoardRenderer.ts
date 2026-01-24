@@ -70,6 +70,12 @@ export class BoardRenderer {
             });
 
             console.log('✅ Board initialized');
+            
+            // Force redraw after a microtask to handle layout shifts
+            setTimeout(() => {
+                (this.ground as any).redrawAll?.();
+            }, 50);
+
             return this.ground!;
         } catch (error) {
             logError(

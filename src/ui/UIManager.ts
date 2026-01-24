@@ -78,6 +78,12 @@ export class UIManager {
         if (target) {
             target.classList.remove('hidden');
             target.classList.add('active');
+            
+            // Reset scroll position to prevent layout shifts
+            window.scrollTo(0, 0);
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+            if (target.scrollTop) target.scrollTop = 0;
         }
     }
 

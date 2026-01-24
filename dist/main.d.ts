@@ -8,6 +8,7 @@ declare global {
     interface Window {
         Chessground: any;
         chessApp: ChessVisionTrainer;
+        debugLayout: () => void;
     }
 }
 //# sourceMappingURL=main.d.ts.map

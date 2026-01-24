@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         // Create global instance (for console debugging)
         window.chessApp = new ChessVisionTrainer(Chessground);
+        // Prevent browser from restoring scroll position on reload
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
         // Initialize application
         await window.chessApp.init();
         console.log('🚀 Chess Vision Trainer запущен');
@@ -64,6 +69,96 @@ window.addEventListener('beforeunload', () => {
         window.chessApp.destroy();
     }
 });
+/**
+ * Handle window resize (fixes board orientation on mobile address bar collapse)
+ */
+/**
+ * DEBUG: Layout Analysis
+ */
+function debugLayout() {
+    const boardWrapper = document.querySelector('.board-wrapper');
+    const gameScreen = document.getElementById('gameScreen');
+    const startScreen = document.getElementById('startScreen');
+    console.group('🔍 LAYOUT DEBUG INFO');
+    // 1. Viewport & Window
+    console.log('📱 Window:', {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        outerHeight: window.outerHeight,
+        scrollY: window.scrollY,
+        dpr: window.devicePixelRatio
+    });
+    // 2. Visual Viewport (checking for virtual keyboard/address bar)
+    if (window.visualViewport) {
+        console.log('👁️ VisualViewport:', {
+            width: window.visualViewport.width,
+            height: window.visualViewport.height,
+            offsetTop: window.visualViewport.offsetTop,
+            pageTop: window.visualViewport.pageTop,
+            scale: window.visualViewport.scale
+        });
+    }
+    // 3. Document & Body
+    console.log('📄 Document:', {
+        docClientHeight: document.documentElement.clientHeight,
+        bodyClientHeight: document.body.clientHeight,
+        bodyScrollHeight: document.body.scrollHeight,
+        bodyScrollTop: document.body.scrollTop,
+        docScrollTop: document.documentElement.scrollTop
+    });
+    // 4. Target Elements
+    if (boardWrapper) {
+        const rect = boardWrapper.getBoundingClientRect();
+        console.log('♟️ Board Wrapper:', {
+            top: rect.top,
+            bottom: rect.bottom,
+            height: rect.height,
+            y: rect.y,
+            inViewport: rect.top >= 0 && rect.bottom <= window.innerHeight
+        });
+    }
+    if (gameScreen && !gameScreen.classList.contains('hidden')) {
+        console.log('🎮 Game View (Active):', {
+            scrollTop: gameScreen.scrollTop,
+            scrollHeight: gameScreen.scrollHeight,
+            clientHeight: gameScreen.clientHeight
+        });
+    }
+    if (startScreen && !startScreen.classList.contains('hidden')) {
+        console.log('🏠 Start Screen (Active):', {
+            scrollTop: startScreen.scrollTop,
+            scrollHeight: startScreen.scrollHeight,
+            clientHeight: startScreen.clientHeight
+        });
+    }
+    console.groupEnd();
+}
+// Run debug on specific events
+// Simple debounce implementation to avoid dependency issues if utils not loaded
+let timeoutId = null;
+const debouncedDebug = () => {
+    if (timeoutId)
+        clearTimeout(timeoutId);
+    timeoutId = setTimeout(debugLayout, 500);
+};
+window.addEventListener('resize', () => {
+    // Redraw board logic
+    if (window.chessApp) {
+        window.chessApp.boardRenderer?.ground?.redrawAll();
+        // Reset scroll on significant resize (orientation change/mobile toggle)
+        // This ensures the top-aligned UI stays visible
+        window.scrollTo(0, 0);
+    }
+    console.log('[Event] Resize triggered');
+    debouncedDebug();
+});
+window.addEventListener('scroll', () => {
+    // debouncedDebug(); // Optional: uncomment if scroll tracking is needed, usually noisy
+});
+// Run once on start
+setTimeout(debugLayout, 1000);
+// Expose globally for manual triggering
+window.debugLayout = debugLayout;
 /**
  * Global error handler
  */
