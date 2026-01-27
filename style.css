@@ -1,4 +1,20 @@
 /* ==========================================
+   Global Styles
+   ========================================== */
+
+/* Hide spinner for number inputs */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* ==========================================
    CSS Classes for JS-driven styles
    ========================================== */
 
@@ -52,6 +68,16 @@ cg-board {
 /* Remove ring/border from board container */
 #board {
     box-shadow: none !important;
+}
+
+/* CRITICAL: Board wrapper must be square for Chessground */
+.board-wrapper {
+    aspect-ratio: 1 / 1 !important;
+}
+
+/* CSS variable for synchronized sizing */
+:root {
+    --board-size: min(80vh, 800px);
 }
 
 /* --- Coordinates (Lichess Style - Inside Squares) --- */
@@ -210,14 +236,10 @@ cg-board {
 .view {
     display: none;
     width: 100%;
-    height: 100%;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
 }
 
 .view.active {
     display: flex;
-    opacity: 1;
 }
 
 .hidden {

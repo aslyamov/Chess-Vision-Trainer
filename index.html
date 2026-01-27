@@ -33,40 +33,13 @@
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/assets/chessground.cburnett.css">
     <!-- Custom Styles (Overrides) -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=3">
 
     <!-- Tailwind Config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        chess: {
-                            board: '#b58863',
-                            dark: '#262421',
-                            highlight: '#a7c5eb'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Hide spinner for number inputs */
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        input[type=number] {
-            -moz-appearance: textfield;
-            appearance: textfield;
-        }
-    </style>
+    <script src="tailwind-config.js"></script>
 </head>
 
-<body class="bg-base-300 h-[100dvh] font-sans text-base-content overflow-y-auto relative">
+<body class="bg-base-300 min-h-[100dvh] font-sans text-base-content relative">
 
     <!-- BACKGROUND GRADIENT -->
     <div class="absolute inset-0 bg-gradient-to-br from-base-300 to-base-100 -z-10"></div>
@@ -74,7 +47,7 @@
     <!-- ==========================================
          MENU SCREEN
          ========================================== -->
-    <main id="startScreen" class="view active w-full min-h-[100dvh] flex flex-col items-center pt-12 pb-12 px-4">
+    <main id="startScreen" class="view active w-full min-h-[100dvh] flex flex-col items-center justify-center py-8 px-4">
         <div class="card w-full max-w-2xl bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md">
             <div class="card-body gap-6 text-center">
                 <!-- Header -->
@@ -211,16 +184,15 @@
     <div id="gameScreen"
         class="view hidden w-full min-h-[100dvh] flex flex-col items-center p-4 pb-20 pt-4 md:pt-8 lg:justify-center">
         <div
-            class="flex flex-col lg:flex-row gap-8 lg:gap-16 w-full max-w-[1600px] mx-auto items-center justify-center">
+            class="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full max-w-[1400px] mx-auto items-center justify-center">
 
-            <!-- CHESS BOARD -->
-            <div class="relative w-[90vw] max-w-[500px] lg:w-[85dvh] lg:max-w-[800px] max-h-[60dvh] lg:max-h-[85dvh] mx-auto lg:mx-0 shadow-2xl rounded-lg board-wrapper"
-                style="aspect-ratio: 1 / 1;">
+            <!-- CHESS BOARD: width only, aspect-ratio in CSS ensures square -->
+            <div class="relative w-[min(90vw,500px)] lg:w-[var(--board-size)] mx-auto lg:mx-0 shadow-2xl rounded-lg board-wrapper">
                 <div id="board" class="w-full h-full block"></div>
             </div>
 
-            <!-- SIDEBAR -->
-            <div class="flex flex-col gap-4 w-full lg:w-[400px] lg:h-[80vh]">
+            <!-- SIDEBAR: height matches board via CSS variable -->
+            <div class="flex flex-col gap-4 w-full lg:w-[400px] lg:h-[var(--board-size)]">
 
                 <!-- Dashboard Card -->
                 <div class="card bg-base-100 shadow-xl border border-base-content/10">
@@ -282,32 +254,38 @@
 
                 <!-- Stats Card -->
                 <div id="statsContainer"
-                    class="card bg-base-100 shadow-xl border border-base-content/10 flex-1 overflow-hidden">
-                    <div class="card-body p-4 overflow-y-auto">
+                    class="card bg-base-100 shadow-xl border border-base-content/10 shrink-0 overflow-hidden">
+                    <div class="card-body p-4">
                         <h3
                             class="card-title text-sm uppercase text-base-content/50 border-b border-base-content/10 pb-2 mb-3 justify-center">
-                            <i class="fa-solid fa-chart-simple text-primary"></i> Статистика
+                            <i class="fa-solid fa-chart-simple text-primary"></i> <span data-lang="stats_title">Статистика</span>
                         </h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center p-2 bg-base-200 rounded-lg">
-                                <span class="text-sm"><i class="fa-regular fa-flag text-base-content/60 mr-2"></i> <span
-                                        data-lang="w_checks">🏳️ Шахи</span></span>
+                        <!-- Compact table layout -->
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <!-- Header row -->
+                            <div></div>
+                            <div class="text-xs font-bold text-base-content/50 uppercase" data-lang="col_white">🏳️ Белые</div>
+                            <div class="text-xs font-bold text-base-content/50 uppercase" data-lang="col_black">🏴 Чёрные</div>
+                            <!-- Checks row -->
+                            <div class="text-sm text-left flex items-center">
+                                <i class="fa-regular fa-flag text-base-content/60 mr-2"></i>
+                                <span data-lang="row_checks">Шахи</span>
+                            </div>
+                            <div class="bg-base-200 rounded-lg p-2">
                                 <span id="w-checks" class="badge badge-lg">0/0</span>
                             </div>
-                            <div class="flex justify-between items-center p-2 bg-base-200 rounded-lg">
-                                <span class="text-sm"><i class="fa-solid fa-xmark text-base-content/60 mr-2"></i> <span
-                                        data-lang="w_caps">🏳️ Взятия</span></span>
-                                <span id="w-captures" class="badge badge-lg">0/0</span>
-                            </div>
-                            <div class="divider my-1"></div>
-                            <div class="flex justify-between items-center p-2 bg-base-200 rounded-lg">
-                                <span class="text-sm"><i class="fa-solid fa-square-full text-base-content/80 mr-2"></i>
-                                    <span data-lang="b_checks">🏴 Шахи</span></span>
+                            <div class="bg-base-200 rounded-lg p-2">
                                 <span id="b-checks" class="badge badge-lg">0/0</span>
                             </div>
-                            <div class="flex justify-between items-center p-2 bg-base-200 rounded-lg">
-                                <span class="text-sm"><i class="fa-solid fa-xmark text-base-content/80 mr-2"></i> <span
-                                        data-lang="b_caps">🏴 Взятия</span></span>
+                            <!-- Captures row -->
+                            <div class="text-sm text-left flex items-center">
+                                <i class="fa-solid fa-xmark text-base-content/60 mr-2"></i>
+                                <span data-lang="row_captures">Взятия</span>
+                            </div>
+                            <div class="bg-base-200 rounded-lg p-2">
+                                <span id="w-captures" class="badge badge-lg">0/0</span>
+                            </div>
+                            <div class="bg-base-200 rounded-lg p-2">
                                 <span id="b-captures" class="badge badge-lg">0/0</span>
                             </div>
                         </div>
@@ -316,7 +294,7 @@
 
                 <!-- Log Container -->
                 <div id="logContainer"
-                    class="card bg-base-100 shadow-xl border border-base-content/10 h-48 overflow-hidden">
+                    class="card bg-base-100 shadow-xl border border-base-content/10 flex-1 min-h-48 overflow-hidden">
                     <div class="card-body p-0 flex flex-col h-full">
                         <h3
                             class="card-title text-sm uppercase text-base-content/50 border-b border-base-content/10 p-3 pb-2 justify-center">
@@ -347,8 +325,8 @@
     <!-- ==========================================
          RESULT SCREEN (вынесен за пределы gameScreen)
          ========================================== -->
-    <div id="resultScreen" class="view hidden w-full h-screen flex items-center justify-center p-4">
-        <div class="card w-96 bg-base-100 shadow-2xl text-center border border-base-content/10">
+    <div id="resultScreen" class="view hidden w-full h-[100dvh] flex items-center justify-center p-4 fixed inset-0 bg-base-300 z-50">
+        <div class="card w-full max-w-md bg-base-100 shadow-2xl text-center border border-base-content/10">
             <div class="card-body items-center">
                 <div
                     class="w-20 h-20 rounded-full bg-success/20 flex items-center justify-center mb-4 text-success text-4xl">
