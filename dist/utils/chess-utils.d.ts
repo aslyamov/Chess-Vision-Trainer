@@ -46,8 +46,18 @@ export declare function isBadMove(san: string, badMovesList: Array<string | BadM
  */
 export declare function findBadMoveObj(san: string, badMovesList: Array<string | BadMove>): string | BadMove | undefined;
 /**
+ * Clears the getAllDests cache
+ * Call this when loading a new puzzle
+ */
+export declare function clearDestsCache(): void;
+/**
  * Получает все возможные ходы для всех фигур на доске
  * Включает ходы для ОБОИХ цветов (для режима свободной игры)
+ *
+ * ОПТИМИЗАЦИЯ: Результаты кэшируются по FEN
+ * - Первый вызов: полный расчёт (2 Chess инстанса)
+ * - Повторные вызовы: мгновенный возврат из кэша
+ *
  * @param fen - Позиция в FEN нотации
  * @returns Map: поле → возможные назначения
  */

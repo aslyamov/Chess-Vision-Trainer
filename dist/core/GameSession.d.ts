@@ -3,6 +3,57 @@
  * TypeScript версия
  */
 import type { Puzzle, SessionConfig, LocaleData } from '../types/index.js';
+interface IUIManager {
+    showGameScreen(): void;
+    showResults(stats: {
+        solved: number;
+        total: number;
+        time: number;
+        accuracy: number;
+        avgTime: number;
+    }): void;
+    applySettings(config: SessionConfig): void;
+    updateProgress(current: number, total: number): void;
+    updateTaskIndicator(visible: boolean, name?: string): void;
+    updateCounter(id: string, found: number, total: number): void;
+    showTimeoutModal(): void;
+}
+interface IBoardRenderer {
+    initialize(config: {
+        onMove: (orig: string, dest: string) => void;
+    }): void;
+    setPosition(fen: string, options: any): void;
+    clearPersistentShapes(): void;
+    clearUserShapes(): void;
+    addPersistentShape(shape: {
+        brush: string;
+        orig: string;
+        dest: string;
+    }): void;
+    updateShapes(shapes: Array<{
+        orig: string;
+        dest: string;
+        brush: string;
+    }>): void;
+    undoVisual(fen: string, options: {
+        showDests?: boolean;
+    }): void;
+    destroy(): void;
+}
+interface IStatusManager {
+    updateSettings(config: SessionConfig): void;
+    setSessionStartTime(time: number): void;
+    setLimitEndTime(time: number): void;
+    startTimer(isCountdown: boolean, onTimeout?: () => void): void;
+    stopTimer(): void;
+    pauseTimer(): void;
+    resumeTimer(isCountdown: boolean, onTimeout?: () => void): void;
+    getElapsedTime(): number;
+    setStatus(message: string, color: string): void;
+    logMove(san: string, isCheck: boolean, isCapture: boolean, color: 'w' | 'b', lang: string): void;
+    clearLogs(): void;
+    readonly limitEndTimeValue: number;
+}
 export declare class GameSession {
     private puzzles;
     private config;
@@ -19,8 +70,7 @@ export declare class GameSession {
     private currentStageIndex;
     private isDelayActive;
     private timers;
-    private intervals;
-    constructor(puzzles: Puzzle[], config: SessionConfig, uiManager: any, boardRenderer: any, statusManager: any, langData: LocaleData, currentLang: string);
+    constructor(puzzles: Puzzle[], config: SessionConfig, uiManager: IUIManager, boardRenderer: IBoardRenderer, statusManager: IStatusManager, langData: LocaleData, currentLang: string);
     /**
      * Starts the game session
      */
@@ -34,9 +84,29 @@ export declare class GameSession {
      */
     finish(): void;
     /**
-     * Cleanup - clears all timers and intervals
+     * Cleanup - clears all timers
      */
     destroy(): void;
+    /**
+     * Checks if a move should be counted (not a bad move in goodMovesOnly mode)
+     * @private
+     */
+    private _isValidMove;
+    /**
+     * Creates empty targets object
+     * @private
+     */
+    private _createEmptyTargets;
+    /**
+     * Gets bad moves list for current puzzle
+     * @private
+     */
+    private _getCurrentBadMoves;
+    /**
+     * Counts valid moves (excluding bad moves in goodMovesOnly mode)
+     * @private
+     */
+    private _countValidMoves;
     /**
      * Loads puzzle by index
      * @private
@@ -83,4 +153,5 @@ export declare class GameSession {
      */
     private _setTimeout;
 }
+export {};
 //# sourceMappingURL=GameSession.d.ts.map

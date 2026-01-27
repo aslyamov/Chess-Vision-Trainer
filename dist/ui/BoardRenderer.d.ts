@@ -48,6 +48,10 @@ export declare class BoardRenderer {
      */
     clearPersistentShapes(): void;
     /**
+     * Clears user-drawn shapes (right-click arrows)
+     */
+    clearUserShapes(): void;
+    /**
      * Updates shapes on board
      * @param temporaryShapes - Temporary shapes to show
      */

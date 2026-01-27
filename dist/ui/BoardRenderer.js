@@ -113,6 +113,17 @@ export class BoardRenderer {
         this.updateShapes();
     }
     /**
+     * Clears user-drawn shapes (right-click arrows)
+     */
+    clearUserShapes() {
+        if (!this.ground)
+            return;
+        // shapes = user drawings, autoShapes = system arrows
+        this.ground.set({
+            drawable: { shapes: [] }
+        });
+    }
+    /**
      * Updates shapes on board
      * @param temporaryShapes - Temporary shapes to show
      */
@@ -120,8 +131,9 @@ export class BoardRenderer {
         if (!this.ground)
             return;
         const allShapes = [...this.persistentShapes, ...temporaryShapes];
+        // Use autoShapes for system arrows (not shapes - those are for user drawing)
         this.ground.set({
-            drawable: { shapes: allShapes, visible: true }
+            drawable: { autoShapes: allShapes, visible: true }
         });
     }
     /**
@@ -134,7 +146,10 @@ export class BoardRenderer {
             return;
         this.ground.set({
             fen,
-            drawable: { shapes: this.persistentShapes },
+            drawable: {
+                shapes: [], // Clear user-drawn shapes
+                autoShapes: this.persistentShapes // Keep system shapes
+            },
             movable: {
                 color: 'both',
                 dests: getAllDests(fen),

@@ -95,13 +95,38 @@ export function findBadMoveObj(san: string, badMovesList: Array<string | BadMove
     });
 }
 
+// ==========================================
+// CACHING FOR getAllDests()
+// ==========================================
+
+/** Cache for getAllDests() results */
+const destsCache = new Map<string, Map<string, string[]>>();
+
+/**
+ * Clears the getAllDests cache
+ * Call this when loading a new puzzle
+ */
+export function clearDestsCache(): void {
+    destsCache.clear();
+}
+
 /**
  * Получает все возможные ходы для всех фигур на доске
  * Включает ходы для ОБОИХ цветов (для режима свободной игры)
+ *
+ * ОПТИМИЗАЦИЯ: Результаты кэшируются по FEN
+ * - Первый вызов: полный расчёт (2 Chess инстанса)
+ * - Повторные вызовы: мгновенный возврат из кэша
+ *
  * @param fen - Позиция в FEN нотации
  * @returns Map: поле → возможные назначения
  */
 export function getAllDests(fen: string): Map<string, string[]> {
+    // Check cache first
+    if (destsCache.has(fen)) {
+        return destsCache.get(fen)!;
+    }
+
     const dests = new Map<string, string[]>();
 
     // Добавляем ходы для текущей стороны
@@ -119,6 +144,9 @@ export function getAllDests(fen: string): Map<string, string[]> {
     } catch (e) {
         // Невалидная позиция для противоположной стороны
     }
+
+    // Store in cache
+    destsCache.set(fen, dests);
 
     return dests;
 }

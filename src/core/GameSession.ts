@@ -7,16 +7,60 @@ import {
     analyzeTargets,
     getMoveKey,
     isBadMove,
-    findBadMoveObj
+    findBadMoveObj,
+    clearDestsCache
 } from '../utils/chess-utils.js';
 
-import type { 
-    Puzzle, 
-    SessionConfig, 
+import { DELAYS, TIME, BRUSHES } from '../constants.js';
+
+import type {
+    Puzzle,
+    SessionConfig,
     MoveData,
     TargetColors,
-    LocaleData
+    LocaleData,
+    BadMove
 } from '../types/index.js';
+
+// ==========================================
+// INTERFACES FOR DEPENDENCIES
+// ==========================================
+
+interface IUIManager {
+    showGameScreen(): void;
+    showResults(stats: { solved: number; total: number; time: number; accuracy: number; avgTime: number }): void;
+    applySettings(config: SessionConfig): void;
+    updateProgress(current: number, total: number): void;
+    updateTaskIndicator(visible: boolean, name?: string): void;
+    updateCounter(id: string, found: number, total: number): void;
+    showTimeoutModal(): void;
+}
+
+interface IBoardRenderer {
+    initialize(config: { onMove: (orig: string, dest: string) => void }): void;
+    setPosition(fen: string, options: any): void;
+    clearPersistentShapes(): void;
+    clearUserShapes(): void;
+    addPersistentShape(shape: { brush: string; orig: string; dest: string }): void;
+    updateShapes(shapes: Array<{ orig: string; dest: string; brush: string }>): void;
+    undoVisual(fen: string, options: { showDests?: boolean }): void;
+    destroy(): void;
+}
+
+interface IStatusManager {
+    updateSettings(config: SessionConfig): void;
+    setSessionStartTime(time: number): void;
+    setLimitEndTime(time: number): void;
+    startTimer(isCountdown: boolean, onTimeout?: () => void): void;
+    stopTimer(): void;
+    pauseTimer(): void;
+    resumeTimer(isCountdown: boolean, onTimeout?: () => void): void;
+    getElapsedTime(): number;
+    setStatus(message: string, color: string): void;
+    logMove(san: string, isCheck: boolean, isCapture: boolean, color: 'w' | 'b', lang: string): void;
+    clearLogs(): void;
+    readonly limitEndTimeValue: number;
+}
 
 interface Stage {
     id: string;
@@ -43,9 +87,9 @@ interface SessionStats {
 export class GameSession {
     private puzzles: Puzzle[];
     private config: SessionConfig;
-    private ui: any; // TODO: import UIManager type
-    private board: any; // TODO: import BoardRenderer type
-    private status: any; // TODO: import StatusManager type
+    private ui: IUIManager;
+    private board: IBoardRenderer;
+    private status: IStatusManager;
     private langData: LocaleData;
     private currentLang: string;
 
@@ -62,14 +106,13 @@ export class GameSession {
 
     // Timer management
     private timers: Set<ReturnType<typeof setTimeout>> = new Set();
-    private intervals: Set<ReturnType<typeof setInterval>> = new Set();
 
     constructor(
         puzzles: Puzzle[],
         config: SessionConfig,
-        uiManager: any,
-        boardRenderer: any,
-        statusManager: any,
+        uiManager: IUIManager,
+        boardRenderer: IBoardRenderer,
+        statusManager: IStatusManager,
         langData: LocaleData,
         currentLang: string
     ) {
@@ -92,10 +135,7 @@ export class GameSession {
 
         // Puzzle state
         this.game = new Chess();
-        this.targets = { 
-            w: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() }, 
-            b: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() }
-        };
+        this.targets = this._createEmptyTargets();
     }
 
     /**
@@ -117,7 +157,7 @@ export class GameSession {
 
         // Start timer
         if (this.config.timeLimit > 0 && this.config.timeMode === 'total') {
-            this.status.setLimitEndTime(Date.now() + (this.config.timeLimit * 1000));
+            this.status.setLimitEndTime(Date.now() + (this.config.timeLimit * TIME.MS_PER_SECOND));
             this.status.startTimer(true, () => this._handleTimeout());
         } else {
             this.status.startTimer(false);
@@ -165,16 +205,62 @@ export class GameSession {
     }
 
     /**
-     * Cleanup - clears all timers and intervals
+     * Cleanup - clears all timers
      */
     destroy(): void {
         this.timers.forEach(clearTimeout);
-        this.intervals.forEach(clearInterval);
         this.timers.clear();
-        this.intervals.clear();
 
         this.status.stopTimer();
         this.board.destroy();
+    }
+
+    // ==========================================
+    // HELPER METHODS
+    // ==========================================
+
+    /**
+     * Checks if a move should be counted (not a bad move in goodMovesOnly mode)
+     * @private
+     */
+    private _isValidMove(move: MoveData, badMovesList: Array<string | BadMove>): boolean {
+        if (this.config.goodMovesOnly && isBadMove(move.san, badMovesList)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Creates empty targets object
+     * @private
+     */
+    private _createEmptyTargets(): TargetColors {
+        return {
+            w: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() },
+            b: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() }
+        };
+    }
+
+    /**
+     * Gets bad moves list for current puzzle
+     * @private
+     */
+    private _getCurrentBadMoves(): Array<string | BadMove> {
+        return this.puzzles[this.currentPuzzleIndex]?.bad_moves || [];
+    }
+
+    /**
+     * Counts valid moves (excluding bad moves in goodMovesOnly mode)
+     * @private
+     */
+    private _countValidMoves(moves: MoveData[], badMovesList: Array<string | BadMove>): number {
+        const unique = new Set<string>();
+        moves.forEach(m => {
+            if (this._isValidMove(m, badMovesList)) {
+                unique.add(getMoveKey(m.from, m.to));
+            }
+        });
+        return unique.size;
     }
 
     // ==========================================
@@ -194,13 +280,13 @@ export class GameSession {
         const puzzle = this.puzzles[index];
         this.game.load(puzzle.fen);
 
+        // Clear dests cache for new puzzle
+        clearDestsCache();
+
         // Reset state
         this.foundMoves.clear();
         this.board.clearPersistentShapes();
-        this.targets = { 
-            w: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() }, 
-            b: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() }
-        };
+        this.targets = this._createEmptyTargets();
         this.currentStageIndex = 0;
         this.isDelayActive = false;
 
@@ -213,21 +299,11 @@ export class GameSession {
         // Count available moves for statistics
         const badMovesList = puzzle.bad_moves || [];
         let taskMovesCount = 0;
-        
-        // Helper to count valid moves
-        const countValid = (moves: MoveData[]) => {
-            const unique = new Set();
-            moves.forEach(m => {
-                if (this.config.goodMovesOnly && isBadMove(m.san, badMovesList)) return;
-                unique.add(getMoveKey(m.from, m.to));
-            });
-            return unique.size;
-        };
 
-        taskMovesCount += countValid(this.targets.w.checks);
-        taskMovesCount += countValid(this.targets.w.captures);
-        taskMovesCount += countValid(this.targets.b.checks);
-        taskMovesCount += countValid(this.targets.b.captures);
+        taskMovesCount += this._countValidMoves(this.targets.w.checks, badMovesList);
+        taskMovesCount += this._countValidMoves(this.targets.w.captures, badMovesList);
+        taskMovesCount += this._countValidMoves(this.targets.b.checks, badMovesList);
+        taskMovesCount += this._countValidMoves(this.targets.b.captures, badMovesList);
         
         this.stats.totalMovesAvailable += taskMovesCount;
 
@@ -250,7 +326,7 @@ export class GameSession {
 
         // Per-puzzle timer
         if (this.config.timeLimit > 0 && this.config.timeMode === 'per_puzzle') {
-            this.status.setLimitEndTime(Date.now() + (this.config.timeLimit * 1000));
+            this.status.setLimitEndTime(Date.now() + (this.config.timeLimit * TIME.MS_PER_SECOND));
             this.status.startTimer(true, () => this._handleTimeout());
         }
     }
@@ -261,7 +337,7 @@ export class GameSession {
      */
     private _handleMove(orig: string, dest: string): void {
         // Check if time expired
-        if (this.config.timeLimit > 0 && Date.now() > this.status.limitEndTime) {
+        if (this.config.timeLimit > 0 && Date.now() > this.status.limitEndTimeValue) {
             this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
             return;
         }
@@ -348,9 +424,12 @@ export class GameSession {
         this.stats.totalMovesFound++;
         this.status.logMove(san, !!foundCheck, !!foundCapture, pieceColor, this.currentLang);
 
+        // Clear user-drawn arrows
+        this.board.clearUserShapes();
+
         // Highlight found move
         if (this.config.highlightFound) {
-            this.board.addPersistentShape({ brush: 'green', orig, dest });
+            this.board.addPersistentShape({ brush: BRUSHES.FOUND_MOVE, orig, dest });
         }
 
         // Status message
@@ -368,7 +447,7 @@ export class GameSession {
 
         this._setTimeout(() => {
             this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
-        }, 300);
+        }, DELAYS.MOVE_HIGHLIGHT);
 
         // Check completion
         if (this.config.sequentialMode) {
@@ -376,7 +455,7 @@ export class GameSession {
         } else if (this._checkIfAllFound()) {
             this.status.setStatus(this.langData.status_done || 'Всё найдено! Следующая...', 'green');
             this.stats.solvedCount++;
-            this._setTimeout(() => this.nextPuzzle(), 800);
+            this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
         }
     }
 
@@ -450,7 +529,7 @@ export class GameSession {
                 }
 
                 if (move) {
-                    shapes.push({ orig: move.from, dest: move.to, brush: 'red' });
+                    shapes.push({ orig: move.from, dest: move.to, brush: BRUSHES.REFUTATION });
                 } else {
                     this.status.setStatus(
                         (this.langData.status_refutation_error || 'Ошибка: Не могу показать ход') + ' ' + refutationSan,
@@ -465,7 +544,7 @@ export class GameSession {
         // Draw shapes
         if (shapes.length > 0) {
             this.board.updateShapes(shapes);
-            this._setTimeout(() => this.board.updateShapes(shapes), 50);
+            this._setTimeout(() => this.board.updateShapes(shapes), DELAYS.SHAPE_UPDATE);
         }
 
         this._setTimeout(() => {
@@ -475,10 +554,10 @@ export class GameSession {
             this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
             this.status.setStatus(this.langData.status_try_another || 'Ищи другой ход', '#333');
             this.isDelayActive = false;
-            
+
             const isCountdown = this.config.timeLimit > 0;
             this.status.resumeTimer(isCountdown, () => this._handleTimeout());
-        }, 2000);
+        }, DELAYS.BAD_MOVE_REFUTATION);
     }
 
     /**
@@ -507,7 +586,7 @@ export class GameSession {
      * @private
      */
     private _updateCounter(id: string, list: MoveData[]): void {
-        const badMovesList = this.puzzles[this.currentPuzzleIndex]?.bad_moves || [];
+        const badMovesList = this._getCurrentBadMoves();
         const uniqueMoves = new Map<string, MoveData>();
 
         list.forEach(m => uniqueMoves.set(getMoveKey(m.from, m.to), m));
@@ -516,7 +595,7 @@ export class GameSession {
         let found = 0;
 
         uniqueMoves.forEach((moveObj, key) => {
-            if (this.config.goodMovesOnly && isBadMove(moveObj.san, badMovesList)) {
+            if (!this._isValidMove(moveObj, badMovesList)) {
                 return;
             }
             total++;
@@ -538,12 +617,13 @@ export class GameSession {
             ...this.targets.b.captures
         ];
 
-        const badMovesList = this.puzzles[this.currentPuzzleIndex]?.bad_moves || [];
+        const badMovesList = this._getCurrentBadMoves();
         const requiredMoves = new Set<string>();
 
         allTargets.forEach(m => {
-            if (this.config.goodMovesOnly && isBadMove(m.san, badMovesList)) return;
-            requiredMoves.add(getMoveKey(m.from, m.to));
+            if (this._isValidMove(m, badMovesList)) {
+                requiredMoves.add(getMoveKey(m.from, m.to));
+            }
         });
 
         for (const req of requiredMoves) {
@@ -558,7 +638,7 @@ export class GameSession {
      * @private
      */
     private _checkStageCompletion(): void {
-        const badMovesList = this.puzzles[this.currentPuzzleIndex]?.bad_moves || [];
+        const badMovesList = this._getCurrentBadMoves();
 
         while (this.currentStageIndex < STAGES.length) {
             const stage = STAGES[this.currentStageIndex];
@@ -570,7 +650,7 @@ export class GameSession {
             let found = 0;
 
             rawList.forEach(m => {
-                if (this.config.goodMovesOnly && isBadMove(m.san, badMovesList)) return;
+                if (!this._isValidMove(m, badMovesList)) return;
                 required++;
                 if (this.foundMoves.has(getMoveKey(m.from, m.to))) found++;
             });
@@ -587,7 +667,7 @@ export class GameSession {
         if (this.currentStageIndex >= STAGES.length) {
             this.status.setStatus(this.langData.status_solved || 'Готово!', 'green');
             this.stats.solvedCount++;
-            this._setTimeout(() => this.nextPuzzle(), 800);
+            this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
         }
     }
 
@@ -601,7 +681,7 @@ export class GameSession {
             this.ui.showTimeoutModal();
         } else {
             this.status.setStatus(this.langData.status_timeout || 'Время вышло!', 'red');
-            this._setTimeout(() => this.nextPuzzle(), 1000);
+            this._setTimeout(() => this.nextPuzzle(), DELAYS.TIMEOUT_DISPLAY);
         }
     }
 

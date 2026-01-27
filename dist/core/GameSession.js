@@ -2,7 +2,8 @@
  * Manages a single game session - puzzle iteration, move validation, statistics
  * TypeScript версия
  */
-import { analyzeTargets, getMoveKey, isBadMove, findBadMoveObj } from '../utils/chess-utils.js';
+import { analyzeTargets, getMoveKey, isBadMove, findBadMoveObj, clearDestsCache } from '../utils/chess-utils.js';
+import { DELAYS, TIME, BRUSHES } from '../constants.js';
 const STAGES = Object.freeze([
     { id: 'w-checks', color: 'w', type: 'checks', name: 'Белые: Шахи' },
     { id: 'w-captures', color: 'w', type: 'captures', name: 'Белые: Взятия' },
@@ -18,7 +19,6 @@ export class GameSession {
         this.isDelayActive = false;
         // Timer management
         this.timers = new Set();
-        this.intervals = new Set();
         this.puzzles = puzzles;
         this.config = config;
         this.ui = uiManager;
@@ -36,10 +36,7 @@ export class GameSession {
         };
         // Puzzle state
         this.game = new Chess();
-        this.targets = {
-            w: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() },
-            b: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() }
-        };
+        this.targets = this._createEmptyTargets();
     }
     /**
      * Starts the game session
@@ -57,7 +54,7 @@ export class GameSession {
         });
         // Start timer
         if (this.config.timeLimit > 0 && this.config.timeMode === 'total') {
-            this.status.setLimitEndTime(Date.now() + (this.config.timeLimit * 1000));
+            this.status.setLimitEndTime(Date.now() + (this.config.timeLimit * TIME.MS_PER_SECOND));
             this.status.startTimer(true, () => this._handleTimeout());
         }
         else {
@@ -96,15 +93,56 @@ export class GameSession {
         console.log('✅ Сессия завершена. Решено:', this.stats.solvedCount);
     }
     /**
-     * Cleanup - clears all timers and intervals
+     * Cleanup - clears all timers
      */
     destroy() {
         this.timers.forEach(clearTimeout);
-        this.intervals.forEach(clearInterval);
         this.timers.clear();
-        this.intervals.clear();
         this.status.stopTimer();
         this.board.destroy();
+    }
+    // ==========================================
+    // HELPER METHODS
+    // ==========================================
+    /**
+     * Checks if a move should be counted (not a bad move in goodMovesOnly mode)
+     * @private
+     */
+    _isValidMove(move, badMovesList) {
+        if (this.config.goodMovesOnly && isBadMove(move.san, badMovesList)) {
+            return false;
+        }
+        return true;
+    }
+    /**
+     * Creates empty targets object
+     * @private
+     */
+    _createEmptyTargets() {
+        return {
+            w: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() },
+            b: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() }
+        };
+    }
+    /**
+     * Gets bad moves list for current puzzle
+     * @private
+     */
+    _getCurrentBadMoves() {
+        return this.puzzles[this.currentPuzzleIndex]?.bad_moves || [];
+    }
+    /**
+     * Counts valid moves (excluding bad moves in goodMovesOnly mode)
+     * @private
+     */
+    _countValidMoves(moves, badMovesList) {
+        const unique = new Set();
+        moves.forEach(m => {
+            if (this._isValidMove(m, badMovesList)) {
+                unique.add(getMoveKey(m.from, m.to));
+            }
+        });
+        return unique.size;
     }
     // ==========================================
     // PRIVATE METHODS
@@ -120,13 +158,12 @@ export class GameSession {
         }
         const puzzle = this.puzzles[index];
         this.game.load(puzzle.fen);
+        // Clear dests cache for new puzzle
+        clearDestsCache();
         // Reset state
         this.foundMoves.clear();
         this.board.clearPersistentShapes();
-        this.targets = {
-            w: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() },
-            b: { checks: [], captures: [], checksMap: new Map(), capturesMap: new Map() }
-        };
+        this.targets = this._createEmptyTargets();
         this.currentStageIndex = 0;
         this.isDelayActive = false;
         // Clear logs
@@ -136,20 +173,10 @@ export class GameSession {
         // Count available moves for statistics
         const badMovesList = puzzle.bad_moves || [];
         let taskMovesCount = 0;
-        // Helper to count valid moves
-        const countValid = (moves) => {
-            const unique = new Set();
-            moves.forEach(m => {
-                if (this.config.goodMovesOnly && isBadMove(m.san, badMovesList))
-                    return;
-                unique.add(getMoveKey(m.from, m.to));
-            });
-            return unique.size;
-        };
-        taskMovesCount += countValid(this.targets.w.checks);
-        taskMovesCount += countValid(this.targets.w.captures);
-        taskMovesCount += countValid(this.targets.b.checks);
-        taskMovesCount += countValid(this.targets.b.captures);
+        taskMovesCount += this._countValidMoves(this.targets.w.checks, badMovesList);
+        taskMovesCount += this._countValidMoves(this.targets.w.captures, badMovesList);
+        taskMovesCount += this._countValidMoves(this.targets.b.checks, badMovesList);
+        taskMovesCount += this._countValidMoves(this.targets.b.captures, badMovesList);
         this.stats.totalMovesAvailable += taskMovesCount;
         // Set board orientation
         const orientation = this.config.autoFlip
@@ -167,7 +194,7 @@ export class GameSession {
         this.status.setStatus(this.langData.status_luck || 'Удачи!', '#0050b3');
         // Per-puzzle timer
         if (this.config.timeLimit > 0 && this.config.timeMode === 'per_puzzle') {
-            this.status.setLimitEndTime(Date.now() + (this.config.timeLimit * 1000));
+            this.status.setLimitEndTime(Date.now() + (this.config.timeLimit * TIME.MS_PER_SECOND));
             this.status.startTimer(true, () => this._handleTimeout());
         }
     }
@@ -177,7 +204,7 @@ export class GameSession {
      */
     _handleMove(orig, dest) {
         // Check if time expired
-        if (this.config.timeLimit > 0 && Date.now() > this.status.limitEndTime) {
+        if (this.config.timeLimit > 0 && Date.now() > this.status.limitEndTimeValue) {
             this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
             return;
         }
@@ -253,9 +280,11 @@ export class GameSession {
         this.foundMoves.add(moveKey);
         this.stats.totalMovesFound++;
         this.status.logMove(san, !!foundCheck, !!foundCapture, pieceColor, this.currentLang);
+        // Clear user-drawn arrows
+        this.board.clearUserShapes();
         // Highlight found move
         if (this.config.highlightFound) {
-            this.board.addPersistentShape({ brush: 'green', orig, dest });
+            this.board.addPersistentShape({ brush: BRUSHES.FOUND_MOVE, orig, dest });
         }
         // Status message
         if (this.config.goodMovesOnly) {
@@ -271,7 +300,7 @@ export class GameSession {
         this._updateGameUI();
         this._setTimeout(() => {
             this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
-        }, 300);
+        }, DELAYS.MOVE_HIGHLIGHT);
         // Check completion
         if (this.config.sequentialMode) {
             this._checkStageCompletion();
@@ -279,7 +308,7 @@ export class GameSession {
         else if (this._checkIfAllFound()) {
             this.status.setStatus(this.langData.status_done || 'Всё найдено! Следующая...', 'green');
             this.stats.solvedCount++;
-            this._setTimeout(() => this.nextPuzzle(), 800);
+            this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
         }
     }
     /**
@@ -334,7 +363,7 @@ export class GameSession {
                     }
                 }
                 if (move) {
-                    shapes.push({ orig: move.from, dest: move.to, brush: 'red' });
+                    shapes.push({ orig: move.from, dest: move.to, brush: BRUSHES.REFUTATION });
                 }
                 else {
                     this.status.setStatus((this.langData.status_refutation_error || 'Ошибка: Не могу показать ход') + ' ' + refutationSan, 'red');
@@ -347,7 +376,7 @@ export class GameSession {
         // Draw shapes
         if (shapes.length > 0) {
             this.board.updateShapes(shapes);
-            this._setTimeout(() => this.board.updateShapes(shapes), 50);
+            this._setTimeout(() => this.board.updateShapes(shapes), DELAYS.SHAPE_UPDATE);
         }
         this._setTimeout(() => {
             if (moveSuccessful) {
@@ -358,7 +387,7 @@ export class GameSession {
             this.isDelayActive = false;
             const isCountdown = this.config.timeLimit > 0;
             this.status.resumeTimer(isCountdown, () => this._handleTimeout());
-        }, 2000);
+        }, DELAYS.BAD_MOVE_REFUTATION);
     }
     /**
      * Updates all game UI elements
@@ -384,13 +413,13 @@ export class GameSession {
      * @private
      */
     _updateCounter(id, list) {
-        const badMovesList = this.puzzles[this.currentPuzzleIndex]?.bad_moves || [];
+        const badMovesList = this._getCurrentBadMoves();
         const uniqueMoves = new Map();
         list.forEach(m => uniqueMoves.set(getMoveKey(m.from, m.to), m));
         let total = 0;
         let found = 0;
         uniqueMoves.forEach((moveObj, key) => {
-            if (this.config.goodMovesOnly && isBadMove(moveObj.san, badMovesList)) {
+            if (!this._isValidMove(moveObj, badMovesList)) {
                 return;
             }
             total++;
@@ -410,12 +439,12 @@ export class GameSession {
             ...this.targets.b.checks,
             ...this.targets.b.captures
         ];
-        const badMovesList = this.puzzles[this.currentPuzzleIndex]?.bad_moves || [];
+        const badMovesList = this._getCurrentBadMoves();
         const requiredMoves = new Set();
         allTargets.forEach(m => {
-            if (this.config.goodMovesOnly && isBadMove(m.san, badMovesList))
-                return;
-            requiredMoves.add(getMoveKey(m.from, m.to));
+            if (this._isValidMove(m, badMovesList)) {
+                requiredMoves.add(getMoveKey(m.from, m.to));
+            }
         });
         for (const req of requiredMoves) {
             if (!this.foundMoves.has(req))
@@ -428,7 +457,7 @@ export class GameSession {
      * @private
      */
     _checkStageCompletion() {
-        const badMovesList = this.puzzles[this.currentPuzzleIndex]?.bad_moves || [];
+        const badMovesList = this._getCurrentBadMoves();
         while (this.currentStageIndex < STAGES.length) {
             const stage = STAGES[this.currentStageIndex];
             const rawList = (stage.type === 'checks')
@@ -437,7 +466,7 @@ export class GameSession {
             let required = 0;
             let found = 0;
             rawList.forEach(m => {
-                if (this.config.goodMovesOnly && isBadMove(m.san, badMovesList))
+                if (!this._isValidMove(m, badMovesList))
                     return;
                 required++;
                 if (this.foundMoves.has(getMoveKey(m.from, m.to)))
@@ -454,7 +483,7 @@ export class GameSession {
         if (this.currentStageIndex >= STAGES.length) {
             this.status.setStatus(this.langData.status_solved || 'Готово!', 'green');
             this.stats.solvedCount++;
-            this._setTimeout(() => this.nextPuzzle(), 800);
+            this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
         }
     }
     /**
@@ -468,7 +497,7 @@ export class GameSession {
         }
         else {
             this.status.setStatus(this.langData.status_timeout || 'Время вышло!', 'red');
-            this._setTimeout(() => this.nextPuzzle(), 1000);
+            this._setTimeout(() => this.nextPuzzle(), DELAYS.TIMEOUT_DISPLAY);
         }
     }
     // ==========================================
