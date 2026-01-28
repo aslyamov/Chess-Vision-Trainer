@@ -4,6 +4,7 @@
  */
 import { analyzeTargets, getMoveKey, isBadMove, findBadMoveObj, clearDestsCache } from '../utils/chess-utils.js';
 import { DELAYS, TIME, BRUSHES } from '../constants.js';
+import { soundManager } from './SoundManager.js';
 const STAGES = Object.freeze([
     { id: 'w-checks', color: 'w', type: 'checks', name: 'Белые: Шахи' },
     { id: 'w-captures', color: 'w', type: 'captures', name: 'Белые: Взятия' },
@@ -273,9 +274,17 @@ export class GameSession {
         }
         // --- SUCCESS ---
         if (this.foundMoves.has(moveKey)) {
+            soundManager.playAlready();
             this.status.setStatus(this.langData.status_already || 'Уже нашли!', 'blue');
             this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
             return;
+        }
+        // Play sound for found move (check has priority)
+        if (foundCheck) {
+            soundManager.playCheck();
+        }
+        else if (foundCapture) {
+            soundManager.playCapture();
         }
         this.foundMoves.add(moveKey);
         this.stats.totalMovesFound++;
@@ -318,6 +327,7 @@ export class GameSession {
     _handleBadMoveRefutation(refutationSan, playerColor, userMove, moveSuccessful) {
         this.isDelayActive = true;
         this.status.pauseTimer();
+        soundManager.playError();
         this.status.setStatus(this.langData.status_error || 'ОШИБКА! Смотри почему...', 'red');
         const shapes = [];
         if (refutationSan) {

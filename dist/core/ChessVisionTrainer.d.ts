@@ -75,5 +75,17 @@ export declare class ChessVisionTrainer {
      * Обновляет количество доступных пазлов
      */
     private _updateAvailableCount;
+    /**
+     * Загружает и применяет сохранённую тему
+     */
+    private _loadTheme;
+    /**
+     * Устанавливает тему и сохраняет в localStorage
+     */
+    private _setTheme;
+    /**
+     * Применяет тему к документу
+     */
+    private _applyTheme;
 }
 //# sourceMappingURL=ChessVisionTrainer.d.ts.map

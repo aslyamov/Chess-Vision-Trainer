@@ -6,6 +6,7 @@
 
 import { PuzzleManager } from './PuzzleManager.js';
 import { GameSession } from './GameSession.js';
+import { soundManager } from './SoundManager.js';
 import { UIManager } from '../ui/UIManager.js';
 import { BoardRenderer } from '../ui/BoardRenderer.js';
 import { StatusManager } from '../ui/StatusManager.js';
@@ -20,8 +21,11 @@ import { logError } from '../utils/error-handler.js';
 import { debounce } from '../utils/performance-utils.js';
 import type { LocaleData, SupportedLocale } from '../types/index.js';
 
-// Ключ для localStorage
+// Ключи для localStorage
 const SETTINGS_KEY = 'chess_vision_settings';
+const THEME_KEY = 'chess_theme';
+
+type Theme = 'light' | 'dark';
 
 export class ChessVisionTrainer {
     private Chessground: any;
@@ -55,6 +59,9 @@ export class ChessVisionTrainer {
         try {
             // Load puzzles
             await this.puzzleManager.loadPuzzles('puzzles.json');
+
+            // Load and apply theme
+            this._loadTheme();
 
             // Load saved language
             this.currentLang = loadLanguagePreference('ru');
@@ -110,6 +117,13 @@ export class ChessVisionTrainer {
     startSession(): void {
         // Get config
         const config = this.uiManager.getSessionConfig();
+
+        // Preload sounds after user interaction (to avoid browser autoplay block)
+        soundManager.preload();
+
+        // Update sound setting
+        const soundEnabled = (document.getElementById('setSound') as HTMLInputElement)?.checked ?? true;
+        soundManager.setEnabled(soundEnabled);
 
         // Destroy existing
         if (this.gameSession) {
@@ -219,6 +233,11 @@ export class ChessVisionTrainer {
             radio.addEventListener('change', (e) => this.loadLanguage((e.target as HTMLInputElement).value as SupportedLocale));
         });
 
+        // Theme switching
+        document.querySelectorAll('input[name="theme"]').forEach(radio => {
+            radio.addEventListener('change', (e) => this._setTheme((e.target as HTMLInputElement).value as Theme));
+        });
+
         // Difficulty change
         document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
             radio.addEventListener('change', () => this._updateAvailableCount());
@@ -252,7 +271,7 @@ export class ChessVisionTrainer {
 
         // Checkboxes
         const checkboxIds = ['setSequential', 'setAutoFlip', 'setHighlights',
-            'setHints', 'setStatusText', 'setShowLog', 'setGoodMoves'];
+            'setHints', 'setStatusText', 'setShowLog', 'setGoodMoves', 'setSound'];
         checkboxIds.forEach(id => {
             document.getElementById(id)?.addEventListener('change', () => this._saveSettingsDebounced());
         });
@@ -283,7 +302,8 @@ export class ChessVisionTrainer {
                 hints: (document.getElementById('setHints') as HTMLInputElement)?.checked ?? true,
                 statusText: (document.getElementById('setStatusText') as HTMLInputElement)?.checked ?? true,
                 showLog: (document.getElementById('setShowLog') as HTMLInputElement)?.checked ?? true,
-                goodMoves: (document.getElementById('setGoodMoves') as HTMLInputElement)?.checked ?? false
+                goodMoves: (document.getElementById('setGoodMoves') as HTMLInputElement)?.checked ?? false,
+                sound: (document.getElementById('setSound') as HTMLInputElement)?.checked ?? true
             };
 
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -333,6 +353,7 @@ export class ChessVisionTrainer {
             if (settings.statusText !== undefined) setCheckbox('setStatusText', settings.statusText);
             if (settings.showLog !== undefined) setCheckbox('setShowLog', settings.showLog);
             if (settings.goodMoves !== undefined) setCheckbox('setGoodMoves', settings.goodMoves);
+            if (settings.sound !== undefined) setCheckbox('setSound', settings.sound);
 
             console.log('✅ Настройки восстановлены');
         } catch (e) {
@@ -351,5 +372,48 @@ export class ChessVisionTrainer {
         const count = this.puzzleManager.getCount(difficulty);
 
         this.uiManager.updateAvailableCount(count);
+    }
+
+    // ====================
+    // THEME METHODS
+    // ====================
+
+    /**
+     * Загружает и применяет сохранённую тему
+     */
+    private _loadTheme(): void {
+        try {
+            const savedTheme = localStorage.getItem(THEME_KEY) as Theme | null;
+            const theme: Theme = savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'dark';
+            this._applyTheme(theme);
+        } catch (e) {
+            this._applyTheme('dark');
+        }
+    }
+
+    /**
+     * Устанавливает тему и сохраняет в localStorage
+     */
+    private _setTheme(theme: Theme): void {
+        this._applyTheme(theme);
+        try {
+            localStorage.setItem(THEME_KEY, theme);
+            console.log(`🎨 Тема изменена на: ${theme}`);
+        } catch (e) {
+            console.warn('Не удалось сохранить тему:', e);
+        }
+    }
+
+    /**
+     * Применяет тему к документу
+     */
+    private _applyTheme(theme: Theme): void {
+        document.documentElement.setAttribute('data-theme', theme);
+
+        // Update radio button
+        const themeRadio = document.querySelector<HTMLInputElement>(`input[name="theme"][value="${theme}"]`);
+        if (themeRadio) {
+            themeRadio.checked = true;
+        }
     }
 }

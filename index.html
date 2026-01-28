@@ -114,6 +114,10 @@
                             data-lang="settings_title">⚙️ Настройки</label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-left max-w-md mx-auto">
                             <label class="cursor-pointer flex items-center gap-3">
+                                <input type="checkbox" id="setGoodMoves" class="toggle toggle-sm toggle-secondary" />
+                                <span class="label-text whitespace-nowrap" data-lang="set_good">🚫 Без зевков</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center gap-3">
                                 <input type="checkbox" id="setSequential" class="toggle toggle-sm toggle-secondary" />
                                 <span class="label-text whitespace-nowrap" data-lang="set_seq">🔄 Поочередно</span>
                             </label>
@@ -143,9 +147,9 @@
                                 <span class="label-text whitespace-nowrap" data-lang="set_log">📜 Лог ходов</span>
                             </label>
                             <label class="cursor-pointer flex items-center gap-3">
-                                <input type="checkbox" id="setGoodMoves" class="toggle toggle-sm toggle-secondary" />
-                                <span class="label-text whitespace-nowrap" data-lang="set_good">✨ Только хорошие
-                                    ходы</span>
+                                <input type="checkbox" id="setSound" checked
+                                    class="toggle toggle-sm toggle-secondary" />
+                                <span class="label-text whitespace-nowrap" data-lang="set_sound">🔊 Звуки</span>
                             </label>
                         </div>
 
@@ -156,9 +160,21 @@
                                 data-lang="lang_label">🌐 Язык интерфейса</label>
                             <div class="join w-full grid grid-cols-2">
                                 <input class="join-item btn btn-sm btn-outline" type="radio" name="language" value="ru"
-                                    aria-label="🇷🇺 Русский" checked />
+                                    aria-label="RU Русский" checked />
                                 <input class="join-item btn btn-sm btn-outline" type="radio" name="language" value="en"
-                                    aria-label="🇬🇧 English" />
+                                    aria-label="EN English" />
+                            </div>
+                        </div>
+
+                        <!-- Theme Selector -->
+                        <div class="form-control w-full max-w-xs mx-auto mt-4">
+                            <label class="label font-bold text-sm uppercase text-base-content/70 justify-center mb-2"
+                                data-lang="set_theme">🎨 Тема</label>
+                            <div class="join w-full grid grid-cols-2">
+                                <input class="join-item btn btn-sm btn-outline" type="radio" name="theme" value="light"
+                                    aria-label="☀️ Светлая" data-lang-aria="theme_light" />
+                                <input class="join-item btn btn-sm btn-outline" type="radio" name="theme" value="dark"
+                                    aria-label="🌙 Тёмная" data-lang-aria="theme_dark" checked />
                             </div>
                         </div>
                     </div>
