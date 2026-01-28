@@ -26,12 +26,13 @@ export function getMoveKey(from: string, to: string): string {
 
 /**
  * Форматирует секунды в MM:SS
- * @param seconds - Количество секунд
+ * @param seconds - Количество секунд (может быть дробным)
  * @returns Отформатированная строка времени
  */
 export function formatTime(seconds: number): string {
-    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
+    const totalSeconds = Math.round(seconds);
+    const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    const s = (totalSeconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
 }
 

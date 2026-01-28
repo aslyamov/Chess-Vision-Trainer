@@ -13,7 +13,7 @@ export declare const SQUARES: readonly string[];
 export declare function getMoveKey(from: string, to: string): string;
 /**
  * Форматирует секунды в MM:SS
- * @param seconds - Количество секунд
+ * @param seconds - Количество секунд (может быть дробным)
  * @returns Отформатированная строка времени
  */
 export declare function formatTime(seconds: number): string;
