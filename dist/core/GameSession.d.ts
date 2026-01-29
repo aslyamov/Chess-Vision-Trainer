@@ -3,6 +3,28 @@
  * TypeScript версия
  */
 import type { Puzzle, SessionConfig, LocaleData } from '../types/index.js';
+interface OverallStats {
+    totalSolved: number;
+    totalPuzzles: number;
+    easy: {
+        solved: number;
+        total: number;
+    };
+    medium: {
+        solved: number;
+        total: number;
+    };
+    hard: {
+        solved: number;
+        total: number;
+    };
+}
+interface MoveStatsResult {
+    wChecks: MoveStats;
+    wCaptures: MoveStats;
+    bChecks: MoveStats;
+    bCaptures: MoveStats;
+}
 interface IUIManager {
     showGameScreen(): void;
     showResults(stats: {
@@ -11,7 +33,9 @@ interface IUIManager {
         time: number;
         accuracy: number;
         avgTime: number;
-    }): void;
+        newPuzzles: number;
+        moveStats: MoveStatsResult;
+    }, overallStats?: OverallStats): void;
     applySettings(config: SessionConfig): void;
     updateProgress(current: number, total: number): void;
     updateTaskIndicator(visible: boolean, name?: string): void;
@@ -54,6 +78,10 @@ interface IStatusManager {
     clearLogs(): void;
     readonly limitEndTimeValue: number;
 }
+interface MoveStats {
+    found: number;
+    total: number;
+}
 export declare class GameSession {
     private puzzles;
     private config;
@@ -70,7 +98,9 @@ export declare class GameSession {
     private currentStageIndex;
     private isDelayActive;
     private timers;
-    constructor(puzzles: Puzzle[], config: SessionConfig, uiManager: IUIManager, boardRenderer: IBoardRenderer, statusManager: IStatusManager, langData: LocaleData, currentLang: string);
+    private previouslySolvedIds;
+    private getOverallStats?;
+    constructor(puzzles: Puzzle[], config: SessionConfig, uiManager: IUIManager, boardRenderer: IBoardRenderer, statusManager: IStatusManager, langData: LocaleData, currentLang: string, getOverallStats?: () => OverallStats);
     /**
      * Starts the game session
      */

@@ -44,6 +44,18 @@ export declare class ChessVisionTrainer {
      */
     closeTimeoutModal(): void;
     /**
+     * Показать модал подтверждения сброса прогресса
+     */
+    resetProgress(): void;
+    /**
+     * Подтверждение сброса прогресса
+     */
+    confirmReset(): void;
+    /**
+     * Отмена сброса прогресса
+     */
+    cancelReset(): void;
+    /**
      * Cleanup - уничтожает все ресурсы
      */
     destroy(): void;
@@ -75,6 +87,10 @@ export declare class ChessVisionTrainer {
      * Обновляет количество доступных пазлов
      */
     private _updateAvailableCount;
+    /**
+     * Обновляет индикатор прогресса (решённые задачи)
+     */
+    private _updateProgress;
     /**
      * Загружает и применяет сохранённую тему
      */

@@ -14,9 +14,10 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+.claude
 
 # Optional: Large puzzle dumps (keep main puzzles.json!)
 # puzzles_raw.json
 
 # Internal Docs
-TEAM_LEAD_REVIEW.md
+ROADMAP.md

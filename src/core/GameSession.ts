@@ -13,6 +13,8 @@ import {
 
 import { DELAYS, TIME, BRUSHES } from '../constants.js';
 import { soundManager } from './SoundManager.js';
+import { puzzleProgress } from './PuzzleProgressManager.js';
+import { statsManager } from './StatsManager.js';
 
 import type {
     Puzzle,
@@ -27,9 +29,27 @@ import type {
 // INTERFACES FOR DEPENDENCIES
 // ==========================================
 
+interface OverallStats {
+    totalSolved: number;
+    totalPuzzles: number;
+    easy: { solved: number; total: number };
+    medium: { solved: number; total: number };
+    hard: { solved: number; total: number };
+}
+
+interface MoveStatsResult {
+    wChecks: MoveStats;
+    wCaptures: MoveStats;
+    bChecks: MoveStats;
+    bCaptures: MoveStats;
+}
+
 interface IUIManager {
     showGameScreen(): void;
-    showResults(stats: { solved: number; total: number; time: number; accuracy: number; avgTime: number }): void;
+    showResults(
+        stats: { solved: number; total: number; time: number; accuracy: number; avgTime: number; newPuzzles: number; moveStats: MoveStatsResult },
+        overallStats?: OverallStats
+    ): void;
     applySettings(config: SessionConfig): void;
     updateProgress(current: number, total: number): void;
     updateTaskIndicator(visible: boolean, name?: string): void;
@@ -77,12 +97,23 @@ const STAGES: readonly Stage[] = Object.freeze([
     { id: 'b-captures', color: 'b', type: 'captures', name: 'Черные: Взятия' }
 ]);
 
+interface MoveStats {
+    found: number;
+    total: number;
+}
+
 interface SessionStats {
     solvedCount: number;
+    newPuzzlesSolved: number;
     totalClicks: number;
     totalErrors: number;
     totalMovesFound: number;
     totalMovesAvailable: number;
+    // Move stats by category
+    wChecks: MoveStats;
+    wCaptures: MoveStats;
+    bChecks: MoveStats;
+    bCaptures: MoveStats;
 }
 
 export class GameSession {
@@ -108,6 +139,12 @@ export class GameSession {
     // Timer management
     private timers: Set<ReturnType<typeof setTimeout>> = new Set();
 
+    // Track puzzles that were already solved before session started
+    private previouslySolvedIds: Set<number>;
+
+    // Callback to get overall stats
+    private getOverallStats?: () => OverallStats;
+
     constructor(
         puzzles: Puzzle[],
         config: SessionConfig,
@@ -115,7 +152,8 @@ export class GameSession {
         boardRenderer: IBoardRenderer,
         statusManager: IStatusManager,
         langData: LocaleData,
-        currentLang: string
+        currentLang: string,
+        getOverallStats?: () => OverallStats
     ) {
         this.puzzles = puzzles;
         this.config = config;
@@ -124,15 +162,24 @@ export class GameSession {
         this.status = statusManager;
         this.langData = langData;
         this.currentLang = currentLang;
+        this.getOverallStats = getOverallStats;
 
         // Session state
         this.stats = {
             solvedCount: 0,
+            newPuzzlesSolved: 0,
             totalClicks: 0,
             totalErrors: 0,
             totalMovesFound: 0,
-            totalMovesAvailable: 0
+            totalMovesAvailable: 0,
+            wChecks: { found: 0, total: 0 },
+            wCaptures: { found: 0, total: 0 },
+            bChecks: { found: 0, total: 0 },
+            bCaptures: { found: 0, total: 0 }
         };
+
+        // Store which puzzles were already solved before session
+        this.previouslySolvedIds = puzzleProgress.getSolvedIds();
 
         // Puzzle state
         this.game = new Chess();
@@ -194,12 +241,50 @@ export class GameSession {
             ? totalTime / puzzlesCount 
             : 0;
 
+        const overallStats = this.getOverallStats ? this.getOverallStats() : undefined;
+
+        // Собираем статистику по ходам
+        const moveStats = {
+            wChecks: this.stats.wChecks,
+            wCaptures: this.stats.wCaptures,
+            bChecks: this.stats.bChecks,
+            bCaptures: this.stats.bCaptures
+        };
+
+        // Показываем результаты
         this.ui.showResults({
             solved: this.stats.solvedCount,
             total: this.puzzles.length,
             time: totalTime,
             accuracy: accuracy,
-            avgTime: avgTime
+            avgTime: avgTime,
+            newPuzzles: this.stats.newPuzzlesSolved,
+            moveStats
+        }, overallStats);
+
+        // Сохраняем сессию в StatsManager
+        const mode = this.config.goodMovesOnly ? 'goodMoves' :
+                     this.config.sequentialMode ? 'sequential' : 'normal';
+
+        statsManager.saveSession({
+            difficulty: this.config.difficulty || 'all',
+            puzzleCount: this.puzzles.length,
+            puzzlesSolved: this.stats.solvedCount,
+            newPuzzlesSolved: this.stats.newPuzzlesSolved,
+            totalTime: totalTime,
+            avgTime: avgTime,
+            accuracy: accuracy,
+            moveStats: {
+                checksFound: moveStats.wChecks.found + moveStats.bChecks.found,
+                capturesFound: moveStats.wCaptures.found + moveStats.bCaptures.found,
+                totalChecks: moveStats.wChecks.total + moveStats.bChecks.total,
+                totalCaptures: moveStats.wCaptures.total + moveStats.bCaptures.total,
+                wChecks: moveStats.wChecks,
+                wCaptures: moveStats.wCaptures,
+                bChecks: moveStats.bChecks,
+                bCaptures: moveStats.bCaptures
+            },
+            mode
         });
 
         console.log('✅ Сессия завершена. Решено:', this.stats.solvedCount);
@@ -297,16 +382,20 @@ export class GameSession {
         // Analyze targets (checks and captures)
         this.targets = analyzeTargets(this.game.fen());
 
-        // Count available moves for statistics
+        // Count available moves for statistics (by category)
         const badMovesList = puzzle.bad_moves || [];
-        let taskMovesCount = 0;
 
-        taskMovesCount += this._countValidMoves(this.targets.w.checks, badMovesList);
-        taskMovesCount += this._countValidMoves(this.targets.w.captures, badMovesList);
-        taskMovesCount += this._countValidMoves(this.targets.b.checks, badMovesList);
-        taskMovesCount += this._countValidMoves(this.targets.b.captures, badMovesList);
-        
-        this.stats.totalMovesAvailable += taskMovesCount;
+        const wChecksCount = this._countValidMoves(this.targets.w.checks, badMovesList);
+        const wCapturesCount = this._countValidMoves(this.targets.w.captures, badMovesList);
+        const bChecksCount = this._countValidMoves(this.targets.b.checks, badMovesList);
+        const bCapturesCount = this._countValidMoves(this.targets.b.captures, badMovesList);
+
+        this.stats.wChecks.total += wChecksCount;
+        this.stats.wCaptures.total += wCapturesCount;
+        this.stats.bChecks.total += bChecksCount;
+        this.stats.bCaptures.total += bCapturesCount;
+
+        this.stats.totalMovesAvailable += wChecksCount + wCapturesCount + bChecksCount + bCapturesCount;
 
         // Set board orientation
         const orientation = this.config.autoFlip
@@ -431,6 +520,23 @@ export class GameSession {
 
         this.foundMoves.add(moveKey);
         this.stats.totalMovesFound++;
+
+        // Track found moves by category
+        if (foundCheck) {
+            if (pieceColor === 'w') {
+                this.stats.wChecks.found++;
+            } else {
+                this.stats.bChecks.found++;
+            }
+        }
+        if (foundCapture) {
+            if (pieceColor === 'w') {
+                this.stats.wCaptures.found++;
+            } else {
+                this.stats.bCaptures.found++;
+            }
+        }
+
         this.status.logMove(san, !!foundCheck, !!foundCapture, pieceColor, this.currentLang);
 
         // Clear user-drawn arrows
@@ -464,6 +570,15 @@ export class GameSession {
         } else if (this._checkIfAllFound()) {
             this.status.setStatus(this.langData.status_done || 'Всё найдено! Следующая...', 'green');
             this.stats.solvedCount++;
+            // Отмечаем задачу как решённую
+            const puzzle = this.puzzles[this.currentPuzzleIndex];
+            if (puzzle?.id) {
+                // Проверяем, была ли задача НОВОЙ (не решённой до начала сессии)
+                if (!this.previouslySolvedIds.has(puzzle.id)) {
+                    this.stats.newPuzzlesSolved++;
+                }
+                puzzleProgress.markSolved(puzzle.id);
+            }
             this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
         }
     }
@@ -677,6 +792,15 @@ export class GameSession {
         if (this.currentStageIndex >= STAGES.length) {
             this.status.setStatus(this.langData.status_solved || 'Готово!', 'green');
             this.stats.solvedCount++;
+            // Отмечаем задачу как решённую
+            const puzzle = this.puzzles[this.currentPuzzleIndex];
+            if (puzzle?.id) {
+                // Проверяем, была ли задача НОВОЙ (не решённой до начала сессии)
+                if (!this.previouslySolvedIds.has(puzzle.id)) {
+                    this.stats.newPuzzlesSolved++;
+                }
+                puzzleProgress.markSolved(puzzle.id);
+            }
             this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
         }
     }

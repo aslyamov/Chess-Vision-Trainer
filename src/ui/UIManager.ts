@@ -4,6 +4,7 @@
  */
 
 import { formatTime } from '../utils/chess-utils.js';
+import { statsManager } from '../core/StatsManager.js';
 import type { CachedDOM, SessionConfig } from '../types/index.js';
 
 export class UIManager {
@@ -42,6 +43,7 @@ export class UIManager {
             resTotalTime: document.getElementById('resTotalTime'),
             resAccuracy: document.getElementById('resAccuracy'),
             resAvgTime: document.getElementById('resAvgTime'),
+            resNewPuzzles: document.getElementById('resNewPuzzles'),
             
             // Buttons map for easier access if needed
             startGameBtn: document.getElementById('startGameBtn') as HTMLButtonElement,
@@ -108,8 +110,32 @@ export class UIManager {
     /**
      * Shows result screen
      * @param stats - Session statistics
+     * @param overallStats - Overall progress stats (optional)
      */
-    showResults(stats: { solved: number; total: number; time: number; accuracy: number; avgTime: number }): void {
+    showResults(
+        stats: {
+            solved: number;
+            total: number;
+            time: number;
+            accuracy: number;
+            avgTime: number;
+            newPuzzles: number;
+            moveStats: {
+                wChecks: { found: number; total: number };
+                wCaptures: { found: number; total: number };
+                bChecks: { found: number; total: number };
+                bCaptures: { found: number; total: number };
+            };
+        },
+        overallStats?: {
+            totalSolved: number;
+            totalPuzzles: number;
+            easy: { solved: number; total: number };
+            medium: { solved: number; total: number };
+            hard: { solved: number; total: number };
+        }
+    ): void {
+        // Session stats
         if (this.dom.resTotalSolved) {
             this.dom.resTotalSolved.textContent = stats.solved.toString();
         }
@@ -122,6 +148,17 @@ export class UIManager {
         if (this.dom.resAvgTime) {
             this.dom.resAvgTime.textContent = formatTime(stats.avgTime);
         }
+
+        // Move stats by category
+        this._updateMoveStats(stats.moveStats);
+
+        // Overall progress stats
+        if (overallStats) {
+            this._updateOverallProgress(overallStats);
+        }
+
+        // All-time stats from StatsManager
+        this._updateAllTimeStats();
 
         // Special handling - result screen is inside game screen
         const gameScreen = document.getElementById('gameScreen');
@@ -261,6 +298,88 @@ export class UIManager {
         if (taskInput) {
             taskInput.setAttribute('max', count.toString());
         }
+    }
+
+    /**
+     * Updates move stats by category on result screen
+     */
+    private _updateMoveStats(moveStats: {
+        wChecks: { found: number; total: number };
+        wCaptures: { found: number; total: number };
+        bChecks: { found: number; total: number };
+        bCaptures: { found: number; total: number };
+    }): void {
+        const update = (foundId: string, totalId: string, found: number, total: number) => {
+            const foundEl = document.getElementById(foundId);
+            const totalEl = document.getElementById(totalId);
+            if (foundEl) foundEl.textContent = found.toString();
+            if (totalEl) totalEl.textContent = total.toString();
+        };
+
+        update('resWChecks', 'resWChecksTotal', moveStats.wChecks.found, moveStats.wChecks.total);
+        update('resWCaptures', 'resWCapturesTotal', moveStats.wCaptures.found, moveStats.wCaptures.total);
+        update('resBChecks', 'resBChecksTotal', moveStats.bChecks.found, moveStats.bChecks.total);
+        update('resBCaptures', 'resBCapturesTotal', moveStats.bCaptures.found, moveStats.bCaptures.total);
+    }
+
+    /**
+     * Updates all-time stats from StatsManager
+     */
+    private _updateAllTimeStats(): void {
+        const stats = statsManager.getAllTimeStats();
+
+        // Key stats
+        const sessionsEl = document.getElementById('allTimeSessions');
+        const accuracyEl = document.getElementById('allTimeAccuracy');
+        const streakEl = document.getElementById('allTimeStreak');
+
+        if (sessionsEl) sessionsEl.textContent = stats.totalSessions.toString();
+        if (accuracyEl) accuracyEl.textContent = `${Math.round(stats.avgAccuracy)}%`;
+        if (streakEl) streakEl.textContent = stats.currentStreak.toString();
+
+        // Move stats
+        const ms = stats.moveStats;
+        const update = (foundId: string, totalId: string, found: number, total: number) => {
+            const foundEl = document.getElementById(foundId);
+            const totalEl = document.getElementById(totalId);
+            if (foundEl) foundEl.textContent = found.toString();
+            if (totalEl) totalEl.textContent = total.toString();
+        };
+
+        update('allWChecks', 'allWChecksTotal', ms.wChecks.found, ms.wChecks.total);
+        update('allWCaptures', 'allWCapturesTotal', ms.wCaptures.found, ms.wCaptures.total);
+        update('allBChecks', 'allBChecksTotal', ms.bChecks.found, ms.bChecks.total);
+        update('allBCaptures', 'allBCapturesTotal', ms.bCaptures.found, ms.bCaptures.total);
+    }
+
+    /**
+     * Updates overall progress bars on result screen
+     */
+    private _updateOverallProgress(stats: {
+        totalSolved: number;
+        totalPuzzles: number;
+        easy: { solved: number; total: number };
+        medium: { solved: number; total: number };
+        hard: { solved: number; total: number };
+    }): void {
+        // Helper to update progress bar
+        const updateBar = (barId: string, countId: string, totalId: string, solved: number, total: number) => {
+            const bar = document.getElementById(barId) as HTMLProgressElement;
+            const countEl = document.getElementById(countId);
+            const totalEl = document.getElementById(totalId);
+
+            if (bar) bar.value = total > 0 ? (solved / total) * 100 : 0;
+            if (countEl) countEl.textContent = solved.toString();
+            if (totalEl) totalEl.textContent = total.toString();
+        };
+
+        // Overall progress
+        updateBar('overallProgressBar', 'overallSolved', 'overallTotal', stats.totalSolved, stats.totalPuzzles);
+
+        // By difficulty
+        updateBar('easyProgressBar', 'easyCount', 'easyTotal', stats.easy.solved, stats.easy.total);
+        updateBar('mediumProgressBar', 'mediumCount', 'mediumTotal', stats.medium.solved, stats.medium.total);
+        updateBar('hardProgressBar', 'hardCount', 'hardTotal', stats.hard.solved, stats.hard.total);
     }
 
     /**

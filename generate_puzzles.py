@@ -199,6 +199,7 @@ def generate():
                     print(f"✅ [{difficulty.upper()}]")
                     
                     puzzles.append({
+                        "id": len(puzzles) + 1,  # Уникальный ID задачи
                         "fen": board.fen(),
                         "difficulty": difficulty,
                         "good_moves": all_good,

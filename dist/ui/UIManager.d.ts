@@ -26,6 +26,7 @@ export declare class UIManager {
     /**
      * Shows result screen
      * @param stats - Session statistics
+     * @param overallStats - Overall progress stats (optional)
      */
     showResults(stats: {
         solved: number;
@@ -33,6 +34,40 @@ export declare class UIManager {
         time: number;
         accuracy: number;
         avgTime: number;
+        newPuzzles: number;
+        moveStats: {
+            wChecks: {
+                found: number;
+                total: number;
+            };
+            wCaptures: {
+                found: number;
+                total: number;
+            };
+            bChecks: {
+                found: number;
+                total: number;
+            };
+            bCaptures: {
+                found: number;
+                total: number;
+            };
+        };
+    }, overallStats?: {
+        totalSolved: number;
+        totalPuzzles: number;
+        easy: {
+            solved: number;
+            total: number;
+        };
+        medium: {
+            solved: number;
+            total: number;
+        };
+        hard: {
+            solved: number;
+            total: number;
+        };
     }): void;
     /**
      * Updates progress display
@@ -68,6 +103,18 @@ export declare class UIManager {
      * @param count - Number of available puzzles
      */
     updateAvailableCount(count: number): void;
+    /**
+     * Updates move stats by category on result screen
+     */
+    private _updateMoveStats;
+    /**
+     * Updates all-time stats from StatsManager
+     */
+    private _updateAllTimeStats;
+    /**
+     * Updates overall progress bars on result screen
+     */
+    private _updateOverallProgress;
     /**
      * Shows timeout modal
      */

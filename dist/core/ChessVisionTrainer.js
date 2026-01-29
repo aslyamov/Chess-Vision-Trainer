@@ -6,6 +6,7 @@
 import { PuzzleManager } from './PuzzleManager.js';
 import { GameSession } from './GameSession.js';
 import { soundManager } from './SoundManager.js';
+import { puzzleProgress } from './PuzzleProgressManager.js';
 import { UIManager } from '../ui/UIManager.js';
 import { BoardRenderer } from '../ui/BoardRenderer.js';
 import { StatusManager } from '../ui/StatusManager.js';
@@ -49,8 +50,9 @@ export class ChessVisionTrainer {
             this.statusManager = new StatusManager(dom, this.langData);
             // Restore settings
             this._loadSettings();
-            // Update puzzle count
+            // Update puzzle count and progress
             this._updateAvailableCount();
+            this._updateProgress();
             console.log('✅ Chess Vision Trainer initialized');
             console.log('💡 Доступ через window.chessApp');
         }
@@ -100,8 +102,8 @@ export class ChessVisionTrainer {
         // Create board
         const dom = this.uiManager.getDOM();
         this.boardRenderer = new BoardRenderer(dom.board, this.Chessground);
-        // Create session
-        this.gameSession = new GameSession(puzzles, config, this.uiManager, this.boardRenderer, this.statusManager, this.langData, this.currentLang);
+        // Create session with callback for overall stats
+        this.gameSession = new GameSession(puzzles, config, this.uiManager, this.boardRenderer, this.statusManager, this.langData, this.currentLang, () => this.puzzleManager.getStatsByDifficulty(puzzleProgress.getSolvedIds()));
         this.gameSession.start();
         // Save settings
         this._saveSettings();
@@ -135,6 +137,36 @@ export class ChessVisionTrainer {
         this.uiManager.closeTimeoutModal();
         if (this.gameSession) {
             this.gameSession.finish();
+        }
+    }
+    /**
+     * Показать модал подтверждения сброса прогресса
+     */
+    resetProgress() {
+        const modal = document.getElementById('confirmResetModal');
+        if (modal && modal.showModal) {
+            modal.showModal();
+        }
+    }
+    /**
+     * Подтверждение сброса прогресса
+     */
+    confirmReset() {
+        const modal = document.getElementById('confirmResetModal');
+        if (modal && modal.close) {
+            modal.close();
+        }
+        puzzleProgress.reset();
+        this._updateProgress();
+        this.restart();
+    }
+    /**
+     * Отмена сброса прогресса
+     */
+    cancelReset() {
+        const modal = document.getElementById('confirmResetModal');
+        if (modal && modal.close) {
+            modal.close();
         }
     }
     /**
@@ -192,6 +224,9 @@ export class ChessVisionTrainer {
         document.getElementById('flipBoardBtn')?.addEventListener('click', () => this.flipBoard());
         document.getElementById('closeModalBtn')?.addEventListener('click', () => this.closeTimeoutModal());
         document.getElementById('restartBtn')?.addEventListener('click', () => this.restart());
+        document.getElementById('resetProgressBtn')?.addEventListener('click', () => this.resetProgress());
+        document.getElementById('confirmResetBtn')?.addEventListener('click', () => this.confirmReset());
+        document.getElementById('cancelResetBtn')?.addEventListener('click', () => this.cancelReset());
         // Auto-save
         this._setupAutoSave();
     }
@@ -311,6 +346,16 @@ export class ChessVisionTrainer {
         const difficulty = diffEl.value;
         const count = this.puzzleManager.getCount(difficulty);
         this.uiManager.updateAvailableCount(count);
+    }
+    /**
+     * Обновляет индикатор прогресса (решённые задачи)
+     */
+    _updateProgress() {
+        const total = this.puzzleManager.getTotalCount();
+        const stats = puzzleProgress.getStats(total);
+        const progressBar = document.getElementById('progressBar');
+        if (progressBar)
+            progressBar.value = stats.percentage;
     }
     // ====================
     // THEME METHODS

@@ -6,6 +6,7 @@
  * Шахматная позиция-задача
  */
 export interface Puzzle {
+    id: number;
     fen: string;
     difficulty: 'easy' | 'medium' | 'hard';
     bad_moves?: Array<string | BadMove>;
@@ -127,6 +128,7 @@ export interface CachedDOM {
     resTotalTime: HTMLElement | null;
     resAccuracy: HTMLElement | null;
     resAvgTime: HTMLElement | null;
+    resNewPuzzles: HTMLElement | null;
     startGameBtn: HTMLButtonElement | null;
     restartBtn: HTMLButtonElement | null;
     flipBoardBtn: HTMLButtonElement | null;

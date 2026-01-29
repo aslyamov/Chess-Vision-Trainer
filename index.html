@@ -10,8 +10,9 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 
-    <!-- Generic Chess Favicon -->
-    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/c/c3/Chess_klt45.svg" type="image/svg+xml">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/icon-192.png">
 
     <!-- Tailwind CSS & DaisyUI -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
@@ -369,9 +370,120 @@
                     </div>
                 </div>
 
+                <!-- Move Stats by Category -->
+                <div class="w-full p-3 bg-base-200 rounded-box">
+                    <div class="text-sm font-bold uppercase opacity-70 mb-2 text-center" data-lang="res_move_stats">Найдено ходов</div>
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <!-- White -->
+                        <div class="flex flex-col gap-1">
+                            <div class="flex justify-between">
+                                <span class="opacity-70">🏳️ Шахи:</span>
+                                <span><span id="resWChecks" class="font-bold">0</span>/<span id="resWChecksTotal">0</span></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="opacity-70">🏳️ Взятия:</span>
+                                <span><span id="resWCaptures" class="font-bold">0</span>/<span id="resWCapturesTotal">0</span></span>
+                            </div>
+                        </div>
+                        <!-- Black -->
+                        <div class="flex flex-col gap-1">
+                            <div class="flex justify-between">
+                                <span class="opacity-70">🏴 Шахи:</span>
+                                <span><span id="resBChecks" class="font-bold">0</span>/<span id="resBChecksTotal">0</span></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="opacity-70">🏴 Взятия:</span>
+                                <span><span id="resBCaptures" class="font-bold">0</span>/<span id="resBCapturesTotal">0</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All-Time Stats Section -->
+                <div class="w-full mt-4 p-3 bg-base-200 rounded-box">
+                    <div class="text-sm font-bold uppercase opacity-70 mb-3 text-center" data-lang="all_time_stats">Статистика за всё время</div>
+
+                    <!-- Key stats row -->
+                    <div class="grid grid-cols-3 gap-2 text-xs mb-3">
+                        <div class="text-center">
+                            <div class="opacity-60">Сессий</div>
+                            <div id="allTimeSessions" class="font-bold text-lg">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="opacity-60">Точность</div>
+                            <div id="allTimeAccuracy" class="font-bold text-lg text-accent">0%</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="opacity-60">Streak</div>
+                            <div class="font-bold text-lg text-warning"><span id="allTimeStreak">0</span> 🔥</div>
+                        </div>
+                    </div>
+
+                    <!-- All-time move stats -->
+                    <div class="grid grid-cols-2 gap-3 text-xs mb-3">
+                        <div class="flex flex-col gap-1">
+                            <div class="flex justify-between">
+                                <span class="opacity-70">🏳️ Шахи:</span>
+                                <span><span id="allWChecks" class="font-bold">0</span>/<span id="allWChecksTotal">0</span></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="opacity-70">🏳️ Взятия:</span>
+                                <span><span id="allWCaptures" class="font-bold">0</span>/<span id="allWCapturesTotal">0</span></span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <div class="flex justify-between">
+                                <span class="opacity-70">🏴 Шахи:</span>
+                                <span><span id="allBChecks" class="font-bold">0</span>/<span id="allBChecksTotal">0</span></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="opacity-70">🏴 Взятия:</span>
+                                <span><span id="allBCaptures" class="font-bold">0</span>/<span id="allBCapturesTotal">0</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Puzzle progress -->
+                    <div class="mb-2">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="opacity-70" data-lang="total_solved">Задач решено:</span>
+                            <span><span id="overallSolved" class="font-bold">0</span>/<span id="overallTotal">0</span></span>
+                        </div>
+                        <progress id="overallProgressBar" class="progress progress-primary w-full h-2" value="0" max="100"></progress>
+                    </div>
+
+                    <!-- By difficulty -->
+                    <div class="grid grid-cols-3 gap-2 text-xs">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-success">Легко</span>
+                                <span><span id="easyCount">0</span>/<span id="easyTotal">0</span></span>
+                            </div>
+                            <progress id="easyProgressBar" class="progress progress-success w-full h-1" value="0" max="100"></progress>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-warning">Средне</span>
+                                <span><span id="mediumCount">0</span>/<span id="mediumTotal">0</span></span>
+                            </div>
+                            <progress id="mediumProgressBar" class="progress progress-warning w-full h-1" value="0" max="100"></progress>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-error">Сложно</span>
+                                <span><span id="hardCount">0</span>/<span id="hardTotal">0</span></span>
+                            </div>
+                            <progress id="hardProgressBar" class="progress progress-error w-full h-1" value="0" max="100"></progress>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card-actions w-full mt-4">
-                    <button id="restartBtn" class="btn btn-primary w-full">
-                        <i class="fa-solid fa-rotate-left mr-2"></i> <span data-lang="btn_restart">Заново</span>
+                    <button id="restartBtn" class="btn btn-primary flex-1">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> <span data-lang="btn_restart">Заново</span>
+                    </button>
+                    <button id="resetProgressBtn" class="btn btn-outline btn-error flex-none w-12">
+                        <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
             </div>
@@ -395,6 +507,27 @@
                 </form>
             </div>
         </div>
+    </dialog>
+
+    <!-- ==========================================
+         CONFIRM RESET MODAL
+         ========================================== -->
+    <dialog id="confirmResetModal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box text-center">
+            <h3 class="font-bold text-lg text-warning">
+                <i class="fa-solid fa-triangle-exclamation mr-2"></i> <span data-lang="reset_title">Сброс прогресса</span>
+            </h3>
+            <p class="py-4" data-lang="reset_confirm">Сбросить весь прогресс? Это действие необратимо!</p>
+            <div class="modal-action justify-center gap-3">
+                <button id="confirmResetBtn" class="btn btn-error">
+                    <i class="fa-solid fa-trash-can mr-1"></i> <span data-lang="reset_yes">Сбросить</span>
+                </button>
+                <button id="cancelResetBtn" class="btn btn-ghost" data-lang="reset_no">Отмена</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
     </dialog>
 
     <!-- SCRIPTS -->
