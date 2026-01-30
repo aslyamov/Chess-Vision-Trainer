@@ -48,8 +48,8 @@
     <!-- ==========================================
          MENU SCREEN
          ========================================== -->
-    <main id="startScreen" class="view active w-full min-h-[100dvh] flex flex-col items-center justify-center py-8 px-4">
-        <div class="card w-full max-w-2xl bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md">
+    <main id="startScreen" class="view active w-full min-h-[100dvh] flex flex-col items-center py-8 px-4 overflow-y-auto">
+        <div class="card w-full max-w-2xl bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md my-auto">
             <div class="card-body gap-6 text-center">
                 <!-- Header -->
                 <div class="pb-2 border-b border-base-content/10">
@@ -342,9 +342,9 @@
     <!-- ==========================================
          RESULT SCREEN (вынесен за пределы gameScreen)
          ========================================== -->
-    <div id="resultScreen" class="view hidden w-full h-[100dvh] flex items-center justify-center p-4 fixed inset-0 bg-base-300 z-50">
-        <div class="card w-full max-w-md bg-base-100 shadow-2xl text-center border border-base-content/10">
-            <div class="card-body items-center">
+    <div id="resultScreen" class="view hidden w-full min-h-[100dvh] flex flex-col items-center py-6 px-4 fixed inset-0 bg-base-300 z-50 overflow-y-auto">
+        <div class="card w-full max-w-md bg-base-100 shadow-2xl text-center border border-base-content/10 my-auto">
+            <div class="card-body items-center p-4">
                 <div
                     class="w-20 h-20 rounded-full bg-success/20 flex items-center justify-center mb-4 text-success text-4xl">
                     <i class="fa-solid fa-trophy"></i>

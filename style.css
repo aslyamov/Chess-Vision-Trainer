@@ -2,6 +2,24 @@
    Global Styles
    ========================================== */
 
+/* Prevent iOS bounce/overscroll on body */
+html, body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Scrollable containers should handle their own touch */
+#resultScreen,
+#startScreen .card-body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Result screen scroll fix */
+#resultScreen {
+    touch-action: pan-y;
+}
+
 /* Hide spinner for number inputs */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {

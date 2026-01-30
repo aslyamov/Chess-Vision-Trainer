@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chess-vision-v2';
+const CACHE_NAME = 'chess-vision-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
