@@ -34,7 +34,7 @@
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/assets/chessground.cburnett.css">
     <!-- Custom Styles (Overrides) -->
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
 
     <!-- Tailwind Config -->
     <script src="tailwind-config.js"></script>
@@ -130,7 +130,12 @@
                             <label class="cursor-pointer flex items-center gap-3">
                                 <input type="checkbox" id="setHighlights" checked
                                     class="toggle toggle-sm toggle-secondary" />
-                                <span class="label-text whitespace-nowrap" data-lang="set_high">🟩 Подсветка</span>
+                                <span class="label-text whitespace-nowrap" data-lang="set_high">➡️ Стрелки</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center gap-3">
+                                <input type="checkbox" id="setShowDests" checked
+                                    class="toggle toggle-sm toggle-secondary" />
+                                <span class="label-text whitespace-nowrap" data-lang="set_dests">👁 Подсказки</span>
                             </label>
                             <label class="cursor-pointer flex items-center gap-3">
                                 <input type="checkbox" id="setHints" checked

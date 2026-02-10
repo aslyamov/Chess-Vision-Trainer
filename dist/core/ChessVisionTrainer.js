@@ -11,6 +11,7 @@ import { UIManager } from '../ui/UIManager.js';
 import { BoardRenderer } from '../ui/BoardRenderer.js';
 import { StatusManager } from '../ui/StatusManager.js';
 import { loadLanguageData, applyTranslations, saveLanguagePreference, loadLanguagePreference, updateLanguageUI } from '../utils/localization.js';
+import { statsManager } from './StatsManager.js';
 import { logError } from '../utils/error-handler.js';
 import { debounce } from '../utils/performance-utils.js';
 // Ключи для localStorage
@@ -157,6 +158,7 @@ export class ChessVisionTrainer {
             modal.close();
         }
         puzzleProgress.reset();
+        statsManager.clearAllStats();
         this._updateProgress();
         this.restart();
     }
@@ -242,7 +244,7 @@ export class ChessVisionTrainer {
         document.getElementById('taskCountInput')?.addEventListener('change', () => this._saveSettings());
         document.getElementById('timeLimitInput')?.addEventListener('change', () => this._saveSettings());
         // Checkboxes
-        const checkboxIds = ['setSequential', 'setAutoFlip', 'setHighlights',
+        const checkboxIds = ['setSequential', 'setAutoFlip', 'setHighlights', 'setShowDests',
             'setHints', 'setStatusText', 'setShowLog', 'setGoodMoves', 'setSound'];
         checkboxIds.forEach(id => {
             document.getElementById(id)?.addEventListener('change', () => this._saveSettingsDebounced());
@@ -272,7 +274,8 @@ export class ChessVisionTrainer {
                 statusText: document.getElementById('setStatusText')?.checked ?? true,
                 showLog: document.getElementById('setShowLog')?.checked ?? true,
                 goodMoves: document.getElementById('setGoodMoves')?.checked ?? false,
-                sound: document.getElementById('setSound')?.checked ?? true
+                sound: document.getElementById('setSound')?.checked ?? true,
+                showDests: document.getElementById('setShowDests')?.checked ?? true
             };
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
             console.log('💾 Настройки сохранены:', settings);
@@ -330,6 +333,8 @@ export class ChessVisionTrainer {
                 setCheckbox('setGoodMoves', settings.goodMoves);
             if (settings.sound !== undefined)
                 setCheckbox('setSound', settings.sound);
+            if (settings.showDests !== undefined)
+                setCheckbox('setShowDests', settings.showDests);
             console.log('✅ Настройки восстановлены');
         }
         catch (e) {

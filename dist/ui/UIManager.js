@@ -227,7 +227,7 @@ export class UIManager {
             showText: isChecked('setStatusText'),
             goodMovesOnly: isChecked('setGoodMoves'),
             showCoordinates: true,
-            hideLegalMoves: false,
+            hideLegalMoves: !isChecked('setShowDests'),
             timeMode: 'per_puzzle' // Always per puzzle for now
         };
     }

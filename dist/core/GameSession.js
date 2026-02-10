@@ -88,8 +88,8 @@ export class GameSession {
         this.destroy();
         const totalTime = this.status.getElapsedTime();
         const puzzlesCount = Math.max(1, this.currentPuzzleIndex);
-        const accuracy = this.stats.totalMovesAvailable > 0
-            ? (this.stats.totalMovesFound / this.stats.totalMovesAvailable) * 100
+        const accuracy = this.stats.totalClicks > 0
+            ? (this.stats.totalMovesFound / this.stats.totalClicks) * 100
             : 0;
         const avgTime = puzzlesCount > 0
             ? totalTime / puzzlesCount
@@ -321,6 +321,7 @@ export class GameSession {
         }
         // --- SUCCESS ---
         if (this.foundMoves.has(moveKey)) {
+            this.stats.totalClicks--; // Don't count repeated moves
             soundManager.playAlready();
             this.status.setStatus(this.langData.status_already || 'Уже нашли!', 'blue');
             this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });

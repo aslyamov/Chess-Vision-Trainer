@@ -18,6 +18,7 @@ import {
     loadLanguagePreference,
     updateLanguageUI
 } from '../utils/localization.js';
+import { statsManager } from './StatsManager.js';
 import { logError } from '../utils/error-handler.js';
 import { debounce } from '../utils/performance-utils.js';
 import type { LocaleData, SupportedLocale } from '../types/index.js';
@@ -211,6 +212,7 @@ export class ChessVisionTrainer {
             modal.close();
         }
         puzzleProgress.reset();
+        statsManager.clearAllStats();
         this._updateProgress();
         this.restart();
     }
@@ -309,7 +311,7 @@ export class ChessVisionTrainer {
         document.getElementById('timeLimitInput')?.addEventListener('change', () => this._saveSettings());
 
         // Checkboxes
-        const checkboxIds = ['setSequential', 'setAutoFlip', 'setHighlights',
+        const checkboxIds = ['setSequential', 'setAutoFlip', 'setHighlights', 'setShowDests',
             'setHints', 'setStatusText', 'setShowLog', 'setGoodMoves', 'setSound'];
         checkboxIds.forEach(id => {
             document.getElementById(id)?.addEventListener('change', () => this._saveSettingsDebounced());
@@ -342,7 +344,8 @@ export class ChessVisionTrainer {
                 statusText: (document.getElementById('setStatusText') as HTMLInputElement)?.checked ?? true,
                 showLog: (document.getElementById('setShowLog') as HTMLInputElement)?.checked ?? true,
                 goodMoves: (document.getElementById('setGoodMoves') as HTMLInputElement)?.checked ?? false,
-                sound: (document.getElementById('setSound') as HTMLInputElement)?.checked ?? true
+                sound: (document.getElementById('setSound') as HTMLInputElement)?.checked ?? true,
+                showDests: (document.getElementById('setShowDests') as HTMLInputElement)?.checked ?? true
             };
 
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -393,6 +396,7 @@ export class ChessVisionTrainer {
             if (settings.showLog !== undefined) setCheckbox('setShowLog', settings.showLog);
             if (settings.goodMoves !== undefined) setCheckbox('setGoodMoves', settings.goodMoves);
             if (settings.sound !== undefined) setCheckbox('setSound', settings.sound);
+            if (settings.showDests !== undefined) setCheckbox('setShowDests', settings.showDests);
 
             console.log('✅ Настройки восстановлены');
         } catch (e) {
