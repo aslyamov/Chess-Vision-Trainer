@@ -307,7 +307,7 @@ export class GameSession {
             }
             if (!targetMove) {
                 this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
-                this.status.setStatus('Мимо! Это не цель.', 'orange');
+                this.status.setStatus(this.langData.status_wrong || 'Мимо!', 'orange');
                 return;
             }
         }
@@ -315,7 +315,7 @@ export class GameSession {
             // Normal mode - only target moves count
             if (!targetMove) {
                 this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
-                this.status.setStatus(this.langData.status_wrong || 'Мимо! Это не цель.', 'orange');
+                this.status.setStatus(this.langData.status_wrong || 'Мимо!', 'orange');
                 return;
             }
         }
@@ -323,7 +323,7 @@ export class GameSession {
         if (this.foundMoves.has(moveKey)) {
             this.stats.totalClicks--; // Don't count repeated moves
             soundManager.playAlready();
-            this.status.setStatus(this.langData.status_already || 'Уже нашли!', 'blue');
+            this.status.setStatus(this.langData.status_already || 'Было!', 'blue');
             this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
             return;
         }
@@ -366,7 +366,7 @@ export class GameSession {
         }
         else {
             const statusText = moveIsBad
-                ? (this.langData.status_dangerous || 'Взятие (но опасное!)')
+                ? (this.langData.status_dangerous || 'Опасно!')
                 : (this.langData.status_correct || 'Верно!');
             const statusColor = moveIsBad ? '#d97706' : 'green';
             this.status.setStatus(statusText, statusColor);
@@ -380,7 +380,7 @@ export class GameSession {
             this._checkStageCompletion();
         }
         else if (this._checkIfAllFound()) {
-            this.status.setStatus(this.langData.status_done || 'Всё найдено! Следующая...', 'green');
+            this.status.setStatus(this.langData.status_done || 'Всё!', 'green');
             this.stats.solvedCount++;
             // Отмечаем задачу как решённую
             const puzzle = this.puzzles[this.currentPuzzleIndex];
@@ -402,7 +402,7 @@ export class GameSession {
         this.isDelayActive = true;
         this.status.pauseTimer();
         soundManager.playError();
-        this.status.setStatus(this.langData.status_error || 'ОШИБКА! Смотри почему...', 'red');
+        this.status.setStatus(this.langData.status_error || 'Зевок!', 'red');
         const shapes = [];
         if (refutationSan) {
             // Simulate position after bad move
@@ -450,7 +450,7 @@ export class GameSession {
                     shapes.push({ orig: move.from, dest: move.to, brush: BRUSHES.REFUTATION });
                 }
                 else {
-                    this.status.setStatus((this.langData.status_refutation_error || 'Ошибка: Не могу показать ход') + ' ' + refutationSan, 'red');
+                    this.status.setStatus((this.langData.status_refutation_error || 'Ошибка') + ' ' + refutationSan, 'red');
                 }
             }
             catch (e) {
@@ -467,7 +467,7 @@ export class GameSession {
                 this.game.undo();
             }
             this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
-            this.status.setStatus(this.langData.status_try_another || 'Ищи другой ход', '#333');
+            this.status.setStatus(this.langData.status_try_another || 'Ищи ещё', '#333');
             this.isDelayActive = false;
             const isCountdown = this.config.timeLimit > 0;
             this.status.resumeTimer(isCountdown, () => this._handleTimeout());
@@ -565,7 +565,7 @@ export class GameSession {
         }
         this._updateGameUI();
         if (this.currentStageIndex >= STAGES.length) {
-            this.status.setStatus(this.langData.status_solved || 'Готово!', 'green');
+            this.status.setStatus(this.langData.status_solved || 'Решено!', 'green');
             this.stats.solvedCount++;
             // Отмечаем задачу как решённую
             const puzzle = this.puzzles[this.currentPuzzleIndex];
@@ -589,7 +589,7 @@ export class GameSession {
             this.ui.showTimeoutModal();
         }
         else {
-            this.status.setStatus(this.langData.status_timeout || 'Время вышло!', 'red');
+            this.status.setStatus(this.langData.status_timeout || 'Время!', 'red');
             this._setTimeout(() => this.nextPuzzle(), DELAYS.TIMEOUT_DISPLAY);
         }
     }

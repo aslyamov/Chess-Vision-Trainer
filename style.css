@@ -9,8 +9,7 @@ html, body {
 }
 
 /* Scrollable containers should handle their own touch */
-#resultScreen,
-#startScreen .card-body {
+#resultScreen {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
 }
