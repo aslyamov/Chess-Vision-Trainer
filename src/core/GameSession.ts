@@ -440,6 +440,25 @@ export class GameSession {
 
         this.stats.totalMovesAvailable += wChecksCount + wCapturesCount + bChecksCount + bCapturesCount;
 
+        // In sequential mode, skip stages with no valid moves (e.g. all moves are bad)
+        if (this.config.sequentialMode) {
+            const stageCounts = [wChecksCount, wCapturesCount, bChecksCount, bCapturesCount];
+            while (this.currentStageIndex < STAGES.length && stageCounts[this.currentStageIndex] === 0) {
+                this.currentStageIndex++;
+            }
+            // All stages empty — auto-complete puzzle
+            if (this.currentStageIndex >= STAGES.length) {
+                this.stats.solvedCount++;
+                const p = this.puzzles[this.currentPuzzleIndex];
+                if (p?.id) {
+                    if (!this.previouslySolvedIds.has(p.id)) this.stats.newPuzzlesSolved++;
+                    puzzleProgress.markSolved(p.id);
+                }
+                this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
+                return;
+            }
+        }
+
         // Set board orientation and movable color
         const movableColor = this._getMovableColor();
         const orientation = movableColor !== 'both' ? movableColor : 'white';
