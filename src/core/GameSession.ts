@@ -495,7 +495,19 @@ export class GameSession {
         const moveKey = getMoveKey(orig, dest);
         const foundCheck = tColor.checksMap?.get(moveKey);
         const foundCapture = tColor.capturesMap?.get(moveKey);
-        const targetMove = foundCheck || foundCapture;
+
+        // In sequential mode, only accept moves matching current stage type and color
+        let targetMove: MoveData | undefined;
+        if (this.config.sequentialMode && this.currentStageIndex < STAGES.length) {
+            const stage = STAGES[this.currentStageIndex];
+            if (stage.color !== pieceColor) {
+                targetMove = undefined;
+            } else {
+                targetMove = stage.type === 'checks' ? foundCheck : foundCapture;
+            }
+        } else {
+            targetMove = foundCheck || foundCapture;
+        }
 
         // Get SAN of move
         let san: string | null = null;
@@ -739,8 +751,9 @@ export class GameSession {
         // Task indicator (sequential mode)
         if (this.config.sequentialMode && this.currentStageIndex < STAGES.length) {
             const stage = STAGES[this.currentStageIndex];
+            const targetLabel = this.langData.target_label || 'Цель:';
             const stageName = this.langData[stage.langKey] || stage.fallback;
-            this.ui.updateTaskIndicator(true, stageName);
+            this.ui.updateTaskIndicator(true, `${targetLabel} ${stageName}`);
         } else {
             this.ui.updateTaskIndicator(false);
         }

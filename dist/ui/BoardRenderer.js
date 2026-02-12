@@ -76,6 +76,10 @@ export class BoardRenderer {
                 dests: getAllDests(fen)
             };
         }
+        // Chessground requires turnColor to match movable.color for single-color mode
+        if (config.movable?.color && config.movable.color !== 'both') {
+            config.turnColor = config.movable.color;
+        }
         this.ground.set(config);
     }
     /**
@@ -145,14 +149,17 @@ export class BoardRenderer {
     undoVisual(fen, options = {}) {
         if (!this.ground)
             return;
+        const movableColor = options.movableColor || 'both';
         this.ground.set({
             fen,
+            // Chessground requires turnColor to match movable.color for single-color mode
+            ...(movableColor !== 'both' ? { turnColor: movableColor } : {}),
             drawable: {
                 shapes: [], // Clear user-drawn shapes
                 autoShapes: this.persistentShapes // Keep system shapes
             },
             movable: {
-                color: options.movableColor || 'both',
+                color: movableColor,
                 dests: getAllDests(fen),
                 showDests: options.showDests !== false
             }
