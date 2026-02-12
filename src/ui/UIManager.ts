@@ -244,6 +244,9 @@ export class UIManager {
         if (this.dom.logContainer) {
             this.dom.logContainer.classList.toggle('hidden', !settings.showLog);
         }
+        if (this.dom.statusMessage) {
+            this.dom.statusMessage.classList.toggle('invisible', !settings.showText);
+        }
     }
 
     /**
@@ -272,7 +275,6 @@ export class UIManager {
             taskCount: validatedCount,
             timeLimit: parseInt(timeLimitInput?.value || '0'),
             sequentialMode: isChecked('setSequential'),
-            autoFlip: isChecked('setAutoFlip'),
             highlightFound: isChecked('setHighlights'),
             showLog: isChecked('setShowLog'),
             showHints: isChecked('setHints'),

@@ -63,6 +63,7 @@ export declare class BoardRenderer {
      */
     undoVisual(fen: string, options?: {
         showDests?: boolean;
+        movableColor?: 'white' | 'black' | 'both';
     }): void;
     /**
      * Gets current board orientation

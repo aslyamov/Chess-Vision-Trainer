@@ -8,10 +8,10 @@ import { soundManager } from './SoundManager.js';
 import { puzzleProgress } from './PuzzleProgressManager.js';
 import { statsManager } from './StatsManager.js';
 const STAGES = Object.freeze([
-    { id: 'w-checks', color: 'w', type: 'checks', name: 'Белые: Шахи' },
-    { id: 'w-captures', color: 'w', type: 'captures', name: 'Белые: Взятия' },
-    { id: 'b-checks', color: 'b', type: 'checks', name: 'Черные: Шахи' },
-    { id: 'b-captures', color: 'b', type: 'captures', name: 'Черные: Взятия' }
+    { id: 'w-checks', color: 'w', type: 'checks', langKey: 'stage_w_checks', fallback: 'Белые: Шахи' },
+    { id: 'w-captures', color: 'w', type: 'captures', langKey: 'stage_w_captures', fallback: 'Белые: Взятия' },
+    { id: 'b-checks', color: 'b', type: 'checks', langKey: 'stage_b_checks', fallback: 'Чёрные: Шахи' },
+    { id: 'b-captures', color: 'b', type: 'captures', langKey: 'stage_b_captures', fallback: 'Чёрные: Взятия' }
 ]);
 export class GameSession {
     constructor(puzzles, config, uiManager, boardRenderer, statusManager, langData, currentLang, getOverallStats) {
@@ -138,6 +138,32 @@ export class GameSession {
         console.log('✅ Сессия завершена. Решено:', this.stats.solvedCount);
     }
     /**
+     * Updates config for live settings changes during game
+     */
+    updateLiveConfig(config) {
+        const showDestsChanged = this.config.hideLegalMoves !== config.hideLegalMoves;
+        const highlightChanged = this.config.highlightFound !== config.highlightFound;
+        this.config = { ...this.config, ...config };
+        // Apply board changes immediately
+        if (showDestsChanged) {
+            this.board.undoVisual(this.game.fen(), {
+                showDests: !this.config.hideLegalMoves,
+                movableColor: this._getMovableColor()
+            });
+        }
+        // Toggle found move arrows
+        if (highlightChanged) {
+            this.board.clearPersistentShapes();
+            if (this.config.highlightFound) {
+                // Redraw arrows for all found moves
+                for (const key of this.foundMoves) {
+                    const [orig, dest] = key.split('-');
+                    this.board.addPersistentShape({ brush: BRUSHES.FOUND_MOVE, orig, dest });
+                }
+            }
+        }
+    }
+    /**
      * Cleanup - clears all timers
      */
     destroy() {
@@ -175,6 +201,16 @@ export class GameSession {
      */
     _getCurrentBadMoves() {
         return this.puzzles[this.currentPuzzleIndex]?.bad_moves || [];
+    }
+    /**
+     * Gets movable color for current state (sequential mode restricts to stage color)
+     * @private
+     */
+    _getMovableColor() {
+        if (this.config.sequentialMode && this.currentStageIndex < STAGES.length) {
+            return STAGES[this.currentStageIndex].color === 'w' ? 'white' : 'black';
+        }
+        return 'both';
     }
     /**
      * Counts valid moves (excluding bad moves in goodMovesOnly mode)
@@ -226,14 +262,14 @@ export class GameSession {
         this.stats.bChecks.total += bChecksCount;
         this.stats.bCaptures.total += bCapturesCount;
         this.stats.totalMovesAvailable += wChecksCount + wCapturesCount + bChecksCount + bCapturesCount;
-        // Set board orientation
-        const orientation = this.config.autoFlip
-            ? (this.game.turn() === 'w' ? 'white' : 'black')
-            : 'white';
+        // Set board orientation and movable color
+        const movableColor = this._getMovableColor();
+        const orientation = movableColor !== 'both' ? movableColor : 'white';
         this.board.setPosition(this.game.fen(), {
             orientation,
             coordinates: this.config.showCoordinates,
             movable: {
+                color: movableColor,
                 showDests: !this.config.hideLegalMoves
             }
         });
@@ -253,17 +289,17 @@ export class GameSession {
     _handleMove(orig, dest) {
         // Check if time expired
         if (this.config.timeLimit > 0 && Date.now() > this.status.limitEndTimeValue) {
-            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
+            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
             return;
         }
         // Prevent moves during delay (bad move refutation)
         if (this.isDelayActive) {
-            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
+            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
             return;
         }
         const piece = this.game.get(orig);
         if (!piece) {
-            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
+            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
             return;
         }
         const pieceColor = piece.color;
@@ -286,7 +322,7 @@ export class GameSession {
                 san = realMove.san;
         }
         if (!san) {
-            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
+            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
             return;
         }
         this.stats.totalClicks++;
@@ -306,7 +342,7 @@ export class GameSession {
                 return;
             }
             if (!targetMove) {
-                this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
+                this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
                 this.status.setStatus(this.langData.status_wrong || 'Мимо!', 'orange');
                 return;
             }
@@ -314,7 +350,7 @@ export class GameSession {
         else {
             // Normal mode - only target moves count
             if (!targetMove) {
-                this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
+                this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
                 this.status.setStatus(this.langData.status_wrong || 'Мимо!', 'orange');
                 return;
             }
@@ -324,7 +360,7 @@ export class GameSession {
             this.stats.totalClicks--; // Don't count repeated moves
             soundManager.playAlready();
             this.status.setStatus(this.langData.status_already || 'Было!', 'blue');
-            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
+            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
             return;
         }
         // Play sound for found move (check has priority)
@@ -373,7 +409,7 @@ export class GameSession {
         }
         this._updateGameUI();
         this._setTimeout(() => {
-            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
+            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
         }, DELAYS.MOVE_HIGHLIGHT);
         // Check completion
         if (this.config.sequentialMode) {
@@ -466,7 +502,7 @@ export class GameSession {
             if (moveSuccessful) {
                 this.game.undo();
             }
-            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves });
+            this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
             this.status.setStatus(this.langData.status_try_another || 'Ищи ещё', '#333');
             this.isDelayActive = false;
             const isCountdown = this.config.timeLimit > 0;
@@ -481,7 +517,9 @@ export class GameSession {
         this.ui.updateProgress(this.currentPuzzleIndex + 1, this.puzzles.length);
         // Task indicator (sequential mode)
         if (this.config.sequentialMode && this.currentStageIndex < STAGES.length) {
-            this.ui.updateTaskIndicator(true, STAGES[this.currentStageIndex].name);
+            const stage = STAGES[this.currentStageIndex];
+            const stageName = this.langData[stage.langKey] || stage.fallback;
+            this.ui.updateTaskIndicator(true, stageName);
         }
         else {
             this.ui.updateTaskIndicator(false);
@@ -542,6 +580,7 @@ export class GameSession {
      */
     _checkStageCompletion() {
         const badMovesList = this._getCurrentBadMoves();
+        const prevColor = this.currentStageIndex < STAGES.length ? STAGES[this.currentStageIndex].color : null;
         while (this.currentStageIndex < STAGES.length) {
             const stage = STAGES[this.currentStageIndex];
             const rawList = (stage.type === 'checks')
@@ -564,6 +603,19 @@ export class GameSession {
             }
         }
         this._updateGameUI();
+        // Flip board when stage color changes (sequential mode auto-flip)
+        if (this.currentStageIndex < STAGES.length) {
+            const newColor = STAGES[this.currentStageIndex].color;
+            if (newColor !== prevColor) {
+                const movableColor = this._getMovableColor();
+                const orientation = movableColor !== 'both' ? movableColor : 'white';
+                this.board.setOrientation(orientation);
+                this.board.undoVisual(this.game.fen(), {
+                    showDests: !this.config.hideLegalMoves,
+                    movableColor
+                });
+            }
+        }
         if (this.currentStageIndex >= STAGES.length) {
             this.status.setStatus(this.langData.status_solved || 'Решено!', 'green');
             this.stats.solvedCount++;

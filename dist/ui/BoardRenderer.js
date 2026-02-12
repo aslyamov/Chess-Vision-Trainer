@@ -68,9 +68,10 @@ export class BoardRenderer {
         };
         // Add movable dests if not provided
         if (!config.movable?.dests) {
+            const movableColor = config.movable?.color || 'both';
             config.movable = {
                 ...config.movable,
-                color: 'both',
+                color: movableColor,
                 free: false,
                 dests: getAllDests(fen)
             };
@@ -151,7 +152,7 @@ export class BoardRenderer {
                 autoShapes: this.persistentShapes // Keep system shapes
             },
             movable: {
-                color: 'both',
+                color: options.movableColor || 'both',
                 dests: getAllDests(fen),
                 showDests: options.showDests !== false
             }

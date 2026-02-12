@@ -103,9 +103,10 @@ export class BoardRenderer {
 
         // Add movable dests if not provided
         if (!config.movable?.dests) {
+            const movableColor = config.movable?.color || 'both';
             config.movable = {
                 ...config.movable,
-                color: 'both',
+                color: movableColor,
                 free: false,
                 dests: getAllDests(fen)
             };
@@ -181,7 +182,7 @@ export class BoardRenderer {
      * @param fen - Current position FEN
      * @param options - Additional options
      */
-    undoVisual(fen: string, options: { showDests?: boolean } = {}): void {
+    undoVisual(fen: string, options: { showDests?: boolean; movableColor?: 'white' | 'black' | 'both' } = {}): void {
         if (!this.ground) return;
 
         this.ground.set({
@@ -191,7 +192,7 @@ export class BoardRenderer {
                 autoShapes: this.persistentShapes  // Keep system shapes
             },
             movable: {
-                color: 'both',
+                color: options.movableColor || 'both',
                 dests: getAllDests(fen),
                 showDests: options.showDests !== false
             }

@@ -47,6 +47,7 @@ interface IBoardRenderer {
         onMove: (orig: string, dest: string) => void;
     }): void;
     setPosition(fen: string, options: any): void;
+    setOrientation(orientation: 'white' | 'black'): void;
     clearPersistentShapes(): void;
     clearUserShapes(): void;
     addPersistentShape(shape: {
@@ -61,6 +62,7 @@ interface IBoardRenderer {
     }>): void;
     undoVisual(fen: string, options: {
         showDests?: boolean;
+        movableColor?: 'white' | 'black' | 'both';
     }): void;
     destroy(): void;
 }
@@ -114,6 +116,10 @@ export declare class GameSession {
      */
     finish(): void;
     /**
+     * Updates config for live settings changes during game
+     */
+    updateLiveConfig(config: SessionConfig): void;
+    /**
      * Cleanup - clears all timers
      */
     destroy(): void;
@@ -132,6 +138,11 @@ export declare class GameSession {
      * @private
      */
     private _getCurrentBadMoves;
+    /**
+     * Gets movable color for current state (sequential mode restricts to stage color)
+     * @private
+     */
+    private _getMovableColor;
     /**
      * Counts valid moves (excluding bad moves in goodMovesOnly mode)
      * @private

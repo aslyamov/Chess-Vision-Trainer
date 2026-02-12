@@ -56,6 +56,14 @@ export declare class ChessVisionTrainer {
      */
     cancelReset(): void;
     /**
+     * Открыть модал настроек
+     */
+    openSettings(): void;
+    /**
+     * Закрыть модал настроек
+     */
+    closeSettings(): void;
+    /**
      * Cleanup - уничтожает все ресурсы
      */
     destroy(): void;
@@ -71,6 +79,10 @@ export declare class ChessVisionTrainer {
      * Настраивает автосохранение
      */
     private _setupAutoSave;
+    /**
+     * Применяет настройки в реальном времени (во время игры)
+     */
+    private _applyLiveSettings;
     /**
      * Сохранение настроек (immediate)
      */

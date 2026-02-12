@@ -34,7 +34,7 @@
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/assets/chessground.cburnett.css">
     <!-- Custom Styles (Overrides) -->
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
 
     <!-- Tailwind Config -->
     <script src="tailwind-config.js"></script>
@@ -109,11 +109,11 @@
                         </div>
                     </div>
 
-                    <!-- Settings Toggles (Centered) -->
+                    <!-- Game Modes (Centered) -->
                     <div class="bg-base-200/50 rounded-box p-6 border border-base-content/5 w-full">
                         <label class="label font-bold text-sm uppercase text-base-content/70 justify-center mb-3"
-                            data-lang="settings_title">⚙️ Настройки</label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-left max-w-md mx-auto">
+                            data-lang="modes_title">🎮 Режимы</label>
+                        <div class="grid grid-cols-2 gap-x-8 gap-y-3 text-left max-w-sm mx-auto">
                             <label class="cursor-pointer flex items-center gap-3">
                                 <input type="checkbox" id="setGoodMoves" class="toggle toggle-sm toggle-secondary" />
                                 <span class="label-text whitespace-nowrap" data-lang="set_good">🚫 Без зевков</span>
@@ -121,41 +121,6 @@
                             <label class="cursor-pointer flex items-center gap-3">
                                 <input type="checkbox" id="setSequential" class="toggle toggle-sm toggle-secondary" />
                                 <span class="label-text whitespace-nowrap" data-lang="set_seq">🔄 Поочередно</span>
-                            </label>
-                            <label class="cursor-pointer flex items-center gap-3">
-                                <input type="checkbox" id="setAutoFlip" checked
-                                    class="toggle toggle-sm toggle-secondary" />
-                                <span class="label-text whitespace-nowrap" data-lang="set_flip">🔁 Авто-поворот</span>
-                            </label>
-                            <label class="cursor-pointer flex items-center gap-3">
-                                <input type="checkbox" id="setHighlights" checked
-                                    class="toggle toggle-sm toggle-secondary" />
-                                <span class="label-text whitespace-nowrap" data-lang="set_high">➡️ Стрелки</span>
-                            </label>
-                            <label class="cursor-pointer flex items-center gap-3">
-                                <input type="checkbox" id="setShowDests" checked
-                                    class="toggle toggle-sm toggle-secondary" />
-                                <span class="label-text whitespace-nowrap" data-lang="set_dests">👁 Подсказки</span>
-                            </label>
-                            <label class="cursor-pointer flex items-center gap-3">
-                                <input type="checkbox" id="setHints" checked
-                                    class="toggle toggle-sm toggle-secondary" />
-                                <span class="label-text whitespace-nowrap" data-lang="set_hints">🔢 Счетчики</span>
-                            </label>
-                            <label class="cursor-pointer flex items-center gap-3">
-                                <input type="checkbox" id="setStatusText" checked
-                                    class="toggle toggle-sm toggle-secondary" />
-                                <span class="label-text whitespace-nowrap" data-lang="set_status">💬 Статусы</span>
-                            </label>
-                            <label class="cursor-pointer flex items-center gap-3">
-                                <input type="checkbox" id="setShowLog" checked
-                                    class="toggle toggle-sm toggle-secondary" />
-                                <span class="label-text whitespace-nowrap" data-lang="set_log">📜 Лог ходов</span>
-                            </label>
-                            <label class="cursor-pointer flex items-center gap-3">
-                                <input type="checkbox" id="setSound" checked
-                                    class="toggle toggle-sm toggle-secondary" />
-                                <span class="label-text whitespace-nowrap" data-lang="set_sound">🔊 Звуки</span>
                             </label>
                         </div>
 
@@ -225,41 +190,30 @@
                                 и взятия</span>
                         </h2>
 
-                        <!-- Status & Progress -->
-                        <div class="grid grid-cols-2 gap-3 mt-2">
-                            <!-- Timer -->
-                            <div
-                                class="bg-neutral text-neutral-content rounded-xl flex items-center justify-center p-3 font-mono text-2xl font-bold border border-base-content/10 h-14">
+                        <!-- Dashboard: 3 columns × 2 rows (single grid for perfect alignment) -->
+                        <div class="grid grid-cols-[1fr_auto_auto] gap-2 mt-2">
+                            <!-- Row 1: Timer + Progress + Settings -->
+                            <div class="bg-neutral text-neutral-content rounded-xl flex items-center justify-center p-3 font-mono text-2xl font-bold border border-base-content/10 h-14">
                                 <i class="fa-regular fa-clock mr-2 text-sm opacity-70"></i>
                                 <span id="gameTimer">00:00</span>
                             </div>
-                            <!-- Progress -->
-                            <div
-                                class="bg-base-200 text-base-content rounded-xl flex items-center justify-center p-3 font-mono text-xl font-bold border border-base-content/10 h-14">
+                            <div class="bg-base-200 text-base-content rounded-xl flex items-center justify-center px-3 min-w-14 font-mono text-base font-bold border border-base-content/10 h-14">
                                 <span id="progressDisplay">0 / 0</span>
                             </div>
-                        </div>
-
-                        <!-- Status + Actions Row (aligned with timer/progress above) -->
-                        <div class="grid grid-cols-2 gap-3 mt-3">
-                            <!-- Status Message (same width as timer) -->
+                            <button id="settingsBtn" class="btn btn-ghost rounded-xl border border-base-content/10 h-14 w-14 p-0" title="Настройки">
+                                <i class="fa-solid fa-gear text-lg"></i>
+                            </button>
+                            <!-- Row 2: Status + Flip + Skip -->
                             <div class="bg-success/10 text-success rounded-xl p-3 text-center font-bold border border-base-content/10 flex items-center justify-center h-14"
                                 id="statusMessage">
                                 Удачи!
                             </div>
-                            <!-- Buttons (same width as progress) -->
-                            <div class="flex gap-2 h-14">
-                                <button id="flipBoardBtn"
-                                    class="btn btn-ghost rounded-xl flex-1 border border-base-content/10 h-full"
-                                    title="Перевернуть">
-                                    <i class="fa-solid fa-rotate"></i>
-                                </button>
-                                <button id="giveUpBtn"
-                                    class="btn btn-ghost rounded-xl flex-1 border border-error/30 text-error h-full"
-                                    title="Пропустить">
-                                    <i class="fa-solid fa-forward-step"></i>
-                                </button>
-                            </div>
+                            <button id="flipBoardBtn" class="btn btn-ghost rounded-xl border border-base-content/10 h-14 min-w-14 p-0" title="Перевернуть">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                            <button id="giveUpBtn" class="btn btn-ghost rounded-xl border border-error/30 text-error h-14 min-w-14 p-0" title="Пропустить">
+                                <i class="fa-solid fa-forward-step"></i>
+                            </button>
                         </div>
 
                         <!-- Task Indicator (Sequential Mode) -->
@@ -528,6 +482,50 @@
                     <i class="fa-solid fa-trash-can mr-1"></i> <span data-lang="reset_yes">Сбросить</span>
                 </button>
                 <button id="cancelResetBtn" class="btn btn-ghost" data-lang="reset_no">Отмена</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <!-- ==========================================
+         SETTINGS MODAL (in-game)
+         ========================================== -->
+    <dialog id="settingsModal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box relative">
+            <!-- Close X button -->
+            <button id="closeSettingsBtn" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="font-bold text-lg text-center mb-4">
+                <span data-lang="settings_title">⚙️ Настройки</span>
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 max-w-md mx-auto">
+                <label class="cursor-pointer flex items-center gap-3">
+                    <input type="checkbox" id="setHighlights" checked class="toggle toggle-sm toggle-secondary" />
+                    <span class="label-text whitespace-nowrap" data-lang="set_high">➡️ Стрелки</span>
+                </label>
+                <label class="cursor-pointer flex items-center gap-3">
+                    <input type="checkbox" id="setShowDests" checked class="toggle toggle-sm toggle-secondary" />
+                    <span class="label-text whitespace-nowrap" data-lang="set_dests">👁 Подсказки</span>
+                </label>
+                <label class="cursor-pointer flex items-center gap-3">
+                    <input type="checkbox" id="setHints" checked class="toggle toggle-sm toggle-secondary" />
+                    <span class="label-text whitespace-nowrap" data-lang="set_hints">🔢 Счетчики</span>
+                </label>
+                <label class="cursor-pointer flex items-center gap-3">
+                    <input type="checkbox" id="setStatusText" checked class="toggle toggle-sm toggle-secondary" />
+                    <span class="label-text whitespace-nowrap" data-lang="set_status">💬 Статусы</span>
+                </label>
+                <label class="cursor-pointer flex items-center gap-3">
+                    <input type="checkbox" id="setShowLog" checked class="toggle toggle-sm toggle-secondary" />
+                    <span class="label-text whitespace-nowrap" data-lang="set_log">📜 Лог ходов</span>
+                </label>
+                <label class="cursor-pointer flex items-center gap-3">
+                    <input type="checkbox" id="setSound" checked class="toggle toggle-sm toggle-secondary" />
+                    <span class="label-text whitespace-nowrap" data-lang="set_sound">🔊 Звуки</span>
+                </label>
             </div>
         </div>
         <form method="dialog" class="modal-backdrop">

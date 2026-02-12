@@ -38,7 +38,6 @@ export interface SessionConfig {
     timeLimit: number;
     timeMode?: 'total' | 'per_puzzle';
     sequentialMode: boolean;
-    autoFlip: boolean;
     highlightFound: boolean;
     showLog: boolean;
     showHints: boolean;

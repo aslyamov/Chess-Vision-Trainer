@@ -172,6 +172,22 @@ export class ChessVisionTrainer {
         }
     }
     /**
+     * Открыть модал настроек
+     */
+    openSettings() {
+        const modal = document.getElementById('settingsModal');
+        if (modal?.showModal)
+            modal.showModal();
+    }
+    /**
+     * Закрыть модал настроек
+     */
+    closeSettings() {
+        const modal = document.getElementById('settingsModal');
+        if (modal?.close)
+            modal.close();
+    }
+    /**
      * Cleanup - уничтожает все ресурсы
      */
     destroy() {
@@ -229,6 +245,8 @@ export class ChessVisionTrainer {
         document.getElementById('resetProgressBtn')?.addEventListener('click', () => this.resetProgress());
         document.getElementById('confirmResetBtn')?.addEventListener('click', () => this.confirmReset());
         document.getElementById('cancelResetBtn')?.addEventListener('click', () => this.cancelReset());
+        document.getElementById('settingsBtn')?.addEventListener('click', () => this.openSettings());
+        document.getElementById('closeSettingsBtn')?.addEventListener('click', () => this.closeSettings());
         // Auto-save
         this._setupAutoSave();
     }
@@ -244,12 +262,27 @@ export class ChessVisionTrainer {
         document.getElementById('taskCountInput')?.addEventListener('change', () => this._saveSettings());
         document.getElementById('timeLimitInput')?.addEventListener('change', () => this._saveSettings());
         // Checkboxes
-        const checkboxIds = ['setSequential', 'setAutoFlip', 'setHighlights', 'setShowDests',
+        const checkboxIds = ['setSequential', 'setHighlights', 'setShowDests',
             'setHints', 'setStatusText', 'setShowLog', 'setGoodMoves', 'setSound'];
         checkboxIds.forEach(id => {
-            document.getElementById(id)?.addEventListener('change', () => this._saveSettingsDebounced());
+            document.getElementById(id)?.addEventListener('change', () => {
+                this._saveSettingsDebounced();
+                this._applyLiveSettings();
+            });
         });
         console.log('✅ Автосохранение настроено');
+    }
+    /**
+     * Применяет настройки в реальном времени (во время игры)
+     */
+    _applyLiveSettings() {
+        if (!this.gameSession)
+            return;
+        const config = this.uiManager.getSessionConfig();
+        this.uiManager.applySettings(config);
+        this.gameSession.updateLiveConfig(config);
+        const soundEnabled = document.getElementById('setSound')?.checked ?? true;
+        soundManager.setEnabled(soundEnabled);
     }
     /**
      * Сохранение настроек (immediate)
@@ -268,7 +301,6 @@ export class ChessVisionTrainer {
                 taskCount: document.getElementById('taskCountInput')?.value || '10',
                 timeLimit: document.getElementById('timeLimitInput')?.value || '0',
                 sequential: document.getElementById('setSequential')?.checked ?? false,
-                autoFlip: document.getElementById('setAutoFlip')?.checked ?? true,
                 highlights: document.getElementById('setHighlights')?.checked ?? true,
                 hints: document.getElementById('setHints')?.checked ?? true,
                 statusText: document.getElementById('setStatusText')?.checked ?? true,
@@ -319,8 +351,6 @@ export class ChessVisionTrainer {
             };
             if (settings.sequential !== undefined)
                 setCheckbox('setSequential', settings.sequential);
-            if (settings.autoFlip !== undefined)
-                setCheckbox('setAutoFlip', settings.autoFlip);
             if (settings.highlights !== undefined)
                 setCheckbox('setHighlights', settings.highlights);
             if (settings.hints !== undefined)
