@@ -98,8 +98,13 @@ export class StatusManager {
      * Clears move logs
      */
     clearLogs(): void {
-        if (this.dom.logWhite) this.dom.logWhite.innerHTML = '';
-        if (this.dom.logBlack) this.dom.logBlack.innerHTML = '';
+        // Remove only .log-item children, preserving sticky headers
+        if (this.dom.logWhite) {
+            this.dom.logWhite.querySelectorAll('.log-item').forEach(el => el.remove());
+        }
+        if (this.dom.logBlack) {
+            this.dom.logBlack.querySelectorAll('.log-item').forEach(el => el.remove());
+        }
     }
 
     /**

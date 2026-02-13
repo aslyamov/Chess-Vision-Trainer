@@ -129,7 +129,6 @@ export interface CachedDOM {
     resTotalTime: HTMLElement | null;
     resAccuracy: HTMLElement | null;
     resAvgTime: HTMLElement | null;
-    resNewPuzzles: HTMLElement | null;
     startGameBtn: HTMLButtonElement | null;
     restartBtn: HTMLButtonElement | null;
     flipBoardBtn: HTMLButtonElement | null;

@@ -141,6 +141,11 @@ export declare class GameSession {
      */
     private _countValidMoves;
     /**
+     * Marks current puzzle as solved and updates stats
+     * @private
+     */
+    private _markPuzzleSolved;
+    /**
      * Loads puzzle by index
      * @private
      */

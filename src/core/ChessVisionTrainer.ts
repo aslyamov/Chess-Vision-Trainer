@@ -46,7 +46,7 @@ export class ChessVisionTrainer {
 
         // ОПТИМИЗАЦИЯ: Debounce для сохранения настроек
         // Откладывает сохранение до паузы в изменениях (300мс)
-        this._saveSettingsDebounced = debounce(this._saveSettingsImmediate.bind(this), 300);
+        this._saveSettingsDebounced = debounce(this._saveSettings.bind(this), 300);
 
         this._initializeEventListeners();
     }
@@ -351,16 +351,9 @@ export class ChessVisionTrainer {
     }
 
     /**
-     * Сохранение настроек (immediate)
-     */
-    private _saveSettings(): void {
-        this._saveSettingsImmediate();
-    }
-
-    /**
      * Сохраняет настройки в localStorage
      */
-    private _saveSettingsImmediate(): void {
+    private _saveSettings(): void {
         try {
             const settings = {
                 language: this.currentLang,

@@ -84,13 +84,9 @@ export declare class ChessVisionTrainer {
      */
     private _applyLiveSettings;
     /**
-     * Сохранение настроек (immediate)
-     */
-    private _saveSettings;
-    /**
      * Сохраняет настройки в localStorage
      */
-    private _saveSettingsImmediate;
+    private _saveSettings;
     /**
      * Загружает настройки из localStorage
      */

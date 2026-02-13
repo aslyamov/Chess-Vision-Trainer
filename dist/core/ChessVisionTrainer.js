@@ -28,7 +28,7 @@ export class ChessVisionTrainer {
         this.uiManager = new UIManager();
         // ОПТИМИЗАЦИЯ: Debounce для сохранения настроек
         // Откладывает сохранение до паузы в изменениях (300мс)
-        this._saveSettingsDebounced = debounce(this._saveSettingsImmediate.bind(this), 300);
+        this._saveSettingsDebounced = debounce(this._saveSettings.bind(this), 300);
         this._initializeEventListeners();
     }
     /**
@@ -282,15 +282,9 @@ export class ChessVisionTrainer {
         soundManager.setEnabled(soundEnabled);
     }
     /**
-     * Сохранение настроек (immediate)
-     */
-    _saveSettings() {
-        this._saveSettingsImmediate();
-    }
-    /**
      * Сохраняет настройки в localStorage
      */
-    _saveSettingsImmediate() {
+    _saveSettings() {
         try {
             const settings = {
                 language: this.currentLang,

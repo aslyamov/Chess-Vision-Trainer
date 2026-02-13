@@ -8,14 +8,15 @@ html, body {
     -webkit-overflow-scrolling: touch;
 }
 
+/* Game screen: prevent double-tap zoom on iOS */
+#gameScreen {
+    touch-action: manipulation;
+}
+
 /* Scrollable containers should handle their own touch */
 #resultScreen {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-}
-
-/* Result screen scroll fix */
-#resultScreen {
     touch-action: pan-y;
 }
 

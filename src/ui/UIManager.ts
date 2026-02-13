@@ -43,9 +43,8 @@ export class UIManager {
             resTotalTime: document.getElementById('resTotalTime'),
             resAccuracy: document.getElementById('resAccuracy'),
             resAvgTime: document.getElementById('resAvgTime'),
-            resNewPuzzles: document.getElementById('resNewPuzzles'),
-            
-            // Buttons map for easier access if needed
+
+            // Buttons
             startGameBtn: document.getElementById('startGameBtn') as HTMLButtonElement,
             restartBtn: document.getElementById('restartBtn') as HTMLButtonElement,
             flipBoardBtn: document.getElementById('flipBoardBtn') as HTMLButtonElement,

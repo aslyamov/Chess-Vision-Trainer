@@ -225,6 +225,20 @@ export class GameSession {
         });
         return unique.size;
     }
+    /**
+     * Marks current puzzle as solved and updates stats
+     * @private
+     */
+    _markPuzzleSolved() {
+        this.stats.solvedCount++;
+        const puzzle = this.puzzles[this.currentPuzzleIndex];
+        if (puzzle?.id) {
+            if (!this.previouslySolvedIds.has(puzzle.id)) {
+                this.stats.newPuzzlesSolved++;
+            }
+            puzzleProgress.markSolved(puzzle.id);
+        }
+    }
     // ==========================================
     // PRIVATE METHODS
     // ==========================================
@@ -270,13 +284,7 @@ export class GameSession {
             }
             // All stages empty — auto-complete puzzle
             if (this.currentStageIndex >= STAGES.length) {
-                this.stats.solvedCount++;
-                const p = this.puzzles[this.currentPuzzleIndex];
-                if (p?.id) {
-                    if (!this.previouslySolvedIds.has(p.id))
-                        this.stats.newPuzzlesSolved++;
-                    puzzleProgress.markSolved(p.id);
-                }
+                this._markPuzzleSolved();
                 this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
                 return;
             }
@@ -449,16 +457,7 @@ export class GameSession {
         }
         else if (this._checkIfAllFound()) {
             this.status.setStatus(this.langData.status_done || 'Всё!', 'green');
-            this.stats.solvedCount++;
-            // Отмечаем задачу как решённую
-            const puzzle = this.puzzles[this.currentPuzzleIndex];
-            if (puzzle?.id) {
-                // Проверяем, была ли задача НОВОЙ (не решённой до начала сессии)
-                if (!this.previouslySolvedIds.has(puzzle.id)) {
-                    this.stats.newPuzzlesSolved++;
-                }
-                puzzleProgress.markSolved(puzzle.id);
-            }
+            this._markPuzzleSolved();
             this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
         }
     }
@@ -651,16 +650,7 @@ export class GameSession {
         }
         if (this.currentStageIndex >= STAGES.length) {
             this.status.setStatus(this.langData.status_solved || 'Решено!', 'green');
-            this.stats.solvedCount++;
-            // Отмечаем задачу как решённую
-            const puzzle = this.puzzles[this.currentPuzzleIndex];
-            if (puzzle?.id) {
-                // Проверяем, была ли задача НОВОЙ (не решённой до начала сессии)
-                if (!this.previouslySolvedIds.has(puzzle.id)) {
-                    this.stats.newPuzzlesSolved++;
-                }
-                puzzleProgress.markSolved(puzzle.id);
-            }
+            this._markPuzzleSolved();
             this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
         }
     }

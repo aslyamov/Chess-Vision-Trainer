@@ -82,12 +82,13 @@ window.addEventListener('beforeunload', () => {
 });
 
 /**
- * Handle window resize
+ * Handle window resize — redraw board only.
+ * Do NOT scrollTo(0,0) here: on iOS Safari the address bar
+ * collapse/expand fires resize, which would yank the page to top.
  */
 window.addEventListener('resize', () => {
     if (window.chessApp) {
         (window.chessApp as any).boardRenderer?.ground?.redrawAll();
-        window.scrollTo(0, 0);
     }
 });
 

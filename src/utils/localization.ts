@@ -45,6 +45,14 @@ export function applyTranslations(langData: LocaleData): void {
             }
         }
     });
+
+    // Handle data-lang-aria (aria-label translations for non-text elements)
+    document.querySelectorAll('[data-lang-aria]').forEach(el => {
+        const key = el.getAttribute('data-lang-aria');
+        if (key && langData[key]) {
+            el.setAttribute('aria-label', langData[key]);
+        }
+    });
 }
 
 /**
