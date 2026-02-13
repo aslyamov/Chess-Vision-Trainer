@@ -45,18 +45,6 @@ export interface SessionRecord {
     mode: 'normal' | 'sequential' | 'goodMoves';
 }
 /**
- * Статистика за день
- */
-export interface DailyStats {
-    date: string;
-    sessions: number;
-    puzzlesSolved: number;
-    totalTime: number;
-    avgAccuracy: number;
-    bestAccuracy: number;
-    moveStats: MoveStatsRecord;
-}
-/**
  * Общая статистика за всё время
  */
 export interface AllTimeStats {

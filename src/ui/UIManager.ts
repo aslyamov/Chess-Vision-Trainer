@@ -50,7 +50,6 @@ export class UIManager {
             restartBtn: document.getElementById('restartBtn') as HTMLButtonElement,
             flipBoardBtn: document.getElementById('flipBoardBtn') as HTMLButtonElement,
             giveUpBtn: document.getElementById('giveUpBtn') as HTMLButtonElement,
-            backToMenuBtn: document.getElementById('backToMenuBtn') as HTMLButtonElement,
 
             // Timeout modal
             timeoutModal: document.getElementById('timeoutModal'),
@@ -59,10 +58,7 @@ export class UIManager {
             wChecks: document.getElementById('w-checks'),
             wCaptures: document.getElementById('w-captures'),
             bChecks: document.getElementById('b-checks'),
-            bCaptures: document.getElementById('b-captures'),
-            
-            // Legacy wrapper for counter access by ID
-            moveLog: document.getElementById('moveLog') // Optional
+            bCaptures: document.getElementById('b-captures')
         };
     }
 

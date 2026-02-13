@@ -10,8 +10,6 @@ export const DELAYS = {
     BAD_MOVE_REFUTATION: 2000,
     /** Pause before loading next puzzle */
     PUZZLE_TRANSITION: 800,
-    /** Delay for board redraw after initialization */
-    BOARD_REDRAW: 50,
     /** Time to show timeout before next puzzle (per_puzzle mode) */
     TIMEOUT_DISPLAY: 1000,
     /** Delay for shape update (workaround) */
@@ -19,17 +17,16 @@ export const DELAYS = {
 };
 /** Time conversion constants */
 export const TIME = {
-    MS_PER_SECOND: 1000,
-    SECONDS_PER_MINUTE: 60,
-    MINUTES_PER_HOUR: 60
+    MS_PER_SECOND: 1000
 };
 /** Arrow brush colors for Chessground */
 export const BRUSHES = {
     /** Found moves (system arrows) */
     FOUND_MOVE: 'blue',
     /** Bad move refutation */
-    REFUTATION: 'red',
-    /** User-drawn arrows (default in Chessground) */
-    USER_DEFAULT: 'green'
+    REFUTATION: 'red'
 };
+/** localStorage keys */
+export const SETTINGS_KEY = 'chess_vision_settings';
+export const THEME_KEY = 'chess_theme';
 //# sourceMappingURL=constants.js.map

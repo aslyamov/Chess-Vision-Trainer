@@ -8,7 +8,6 @@ export class StatusManager {
         this.timerInterval = null;
         this.sessionStartTime = 0;
         this.limitEndTime = 0;
-        this.limitEndTimePublic = 0; // Public getter/access workaround
         this.settings = {};
         this.isPaused = false;
         this.pauseStartTime = 0;

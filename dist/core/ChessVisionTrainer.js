@@ -14,9 +14,7 @@ import { loadLanguageData, applyTranslations, saveLanguagePreference, loadLangua
 import { statsManager } from './StatsManager.js';
 import { logError } from '../utils/error-handler.js';
 import { debounce } from '../utils/performance-utils.js';
-// Ключи для localStorage
-const SETTINGS_KEY = 'chess_vision_settings';
-const THEME_KEY = 'chess_theme';
+import { SETTINGS_KEY, THEME_KEY } from '../constants.js';
 export class ChessVisionTrainer {
     constructor(ChessgroundLib) {
         this.boardRenderer = null;
@@ -236,8 +234,7 @@ export class ChessVisionTrainer {
             radio.addEventListener('change', () => this._updateAvailableCount());
         });
         // Buttons
-        const startBtn = document.getElementById('startGameBtn') || document.getElementById('startSessionBtn');
-        startBtn?.addEventListener('click', () => this.startSession());
+        document.getElementById('startGameBtn')?.addEventListener('click', () => this.startSession());
         document.getElementById('giveUpBtn')?.addEventListener('click', () => this.giveUp());
         document.getElementById('flipBoardBtn')?.addEventListener('click', () => this.flipBoard());
         document.getElementById('closeModalBtn')?.addEventListener('click', () => this.closeTimeoutModal());

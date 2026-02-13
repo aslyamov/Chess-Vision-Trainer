@@ -9,7 +9,6 @@ export declare class StatusManager {
     private timerInterval;
     private sessionStartTime;
     private limitEndTime;
-    limitEndTimePublic: number;
     private settings;
     private isPaused;
     private pauseStartTime;

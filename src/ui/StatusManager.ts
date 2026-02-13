@@ -12,7 +12,6 @@ export class StatusManager {
     private timerInterval: ReturnType<typeof setInterval> | null = null;
     private sessionStartTime: number = 0;
     private limitEndTime: number = 0;
-    public limitEndTimePublic: number = 0; // Public getter/access workaround
     private settings: Partial<SessionConfig> = {};
     private isPaused: boolean = false;
     private pauseStartTime: number = 0;

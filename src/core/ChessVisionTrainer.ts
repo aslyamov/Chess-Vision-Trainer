@@ -21,11 +21,8 @@ import {
 import { statsManager } from './StatsManager.js';
 import { logError } from '../utils/error-handler.js';
 import { debounce } from '../utils/performance-utils.js';
+import { SETTINGS_KEY, THEME_KEY } from '../constants.js';
 import type { LocaleData, SupportedLocale } from '../types/index.js';
-
-// Ключи для localStorage
-const SETTINGS_KEY = 'chess_vision_settings';
-const THEME_KEY = 'chess_theme';
 
 type Theme = 'light' | 'dark';
 
@@ -85,7 +82,7 @@ export class ChessVisionTrainer {
             console.log('✅ Chess Vision Trainer initialized');
             console.log('💡 Доступ через window.chessApp');
         } catch (error) {
-            logError('INITIALIZATION' as any, 'Ошибка инициализации', error as Error);
+            logError('INITIALIZATION', 'Ошибка инициализации', error as Error);
             alert('Не удалось запустить приложение. Смотрите консоль для деталей.');
             throw error;
         }
@@ -298,8 +295,7 @@ export class ChessVisionTrainer {
         });
 
         // Buttons
-        const startBtn = document.getElementById('startGameBtn') || document.getElementById('startSessionBtn');
-        startBtn?.addEventListener('click', () => this.startSession());
+        document.getElementById('startGameBtn')?.addEventListener('click', () => this.startSession());
 
         document.getElementById('giveUpBtn')?.addEventListener('click', () => this.giveUp());
         document.getElementById('flipBoardBtn')?.addEventListener('click', () => this.flipBoard());

@@ -36,17 +36,6 @@ export interface SessionConfig {
     hideLegalMoves: boolean;
 }
 /**
- * Статистика игровой сессии
- */
-export interface GameStats {
-    solvedCount: number;
-    totalTasks: number;
-    totalTime: number;
-    checksFound: number;
-    capturesFound: number;
-    badMovesMade: number;
-}
-/**
  * Данные о ходе
  */
 export interface MoveData {
@@ -145,18 +134,16 @@ export interface CachedDOM {
     restartBtn: HTMLButtonElement | null;
     flipBoardBtn: HTMLButtonElement | null;
     giveUpBtn: HTMLButtonElement | null;
-    backToMenuBtn: HTMLButtonElement | null;
     timeoutModal: HTMLElement | null;
     wChecks: HTMLElement | null;
     wCaptures: HTMLElement | null;
     bChecks: HTMLElement | null;
     bCaptures: HTMLElement | null;
-    moveLog: HTMLElement | null;
 }
 /**
  * Категории ошибок
  */
-export type ErrorCategory = 'INITIALIZATION' | 'PUZZLE_LOAD' | 'GAME_LOGIC' | 'UI_UPDATE' | 'UNKNOWN';
+export type ErrorCategory = 'INITIALIZATION' | 'LIBRARY_LOAD' | 'DATA_LOAD' | 'VALIDATION' | 'GAME_LOGIC' | 'UI_RENDER';
 /**
  * Лог ошибки
  */

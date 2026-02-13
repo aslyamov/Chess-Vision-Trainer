@@ -37,7 +37,7 @@ export class PuzzleManager {
             console.log(`[Puzzles] Загружено ${this.puzzles.length} задач`);
         } catch (error) {
             logError(
-                'DATA_LOAD' as any,
+                'DATA_LOAD',
                 'Ошибка загрузки puzzles.json',
                 error as Error,
                 {

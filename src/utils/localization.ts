@@ -4,6 +4,7 @@
  */
 
 import { logError } from './error-handler.js';
+import { SETTINGS_KEY } from '../constants.js';
 import type { LocaleData, SupportedLocale } from '../types/index.js';
 
 /**
@@ -20,7 +21,7 @@ export async function loadLanguageData(lang: SupportedLocale): Promise<LocaleDat
         return await response.json();
     } catch (error) {
         logError(
-            'DATA_LOAD' as any, // Временно используем as any
+            'DATA_LOAD',
             `Ошибка загрузки языка: ${lang}`,
             error as Error,
             { file: `locales/${lang}.json` }
@@ -46,8 +47,6 @@ export function applyTranslations(langData: LocaleData): void {
     });
 }
 
-const SETTINGS_KEY = 'chess_vision_settings';
-
 /**
  * Сохраняет текущий язык в localStorage (внутри chess_vision_settings)
  * @param lang - Код языка
@@ -70,15 +69,12 @@ export function saveLanguagePreference(lang: SupportedLocale): void {
  */
 export function loadLanguagePreference(defaultLang: SupportedLocale = 'ru'): SupportedLocale {
     try {
-        // Read from chess_vision_settings
         const raw = localStorage.getItem(SETTINGS_KEY);
         if (raw) {
             const settings = JSON.parse(raw);
             if (settings.language === 'ru' || settings.language === 'en') return settings.language;
         }
-        // Fallback: legacy key
-        const legacy = localStorage.getItem('chess_lang');
-        return (legacy === 'ru' || legacy === 'en') ? legacy : defaultLang;
+        return defaultLang;
     } catch (e) {
         return defaultLang;
     }

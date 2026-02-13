@@ -40,16 +40,13 @@ export class UIManager {
             restartBtn: document.getElementById('restartBtn'),
             flipBoardBtn: document.getElementById('flipBoardBtn'),
             giveUpBtn: document.getElementById('giveUpBtn'),
-            backToMenuBtn: document.getElementById('backToMenuBtn'),
             // Timeout modal
             timeoutModal: document.getElementById('timeoutModal'),
             // Counters
             wChecks: document.getElementById('w-checks'),
             wCaptures: document.getElementById('w-captures'),
             bChecks: document.getElementById('b-checks'),
-            bCaptures: document.getElementById('b-captures'),
-            // Legacy wrapper for counter access by ID
-            moveLog: document.getElementById('moveLog') // Optional
+            bCaptures: document.getElementById('b-captures')
         };
     }
     /**

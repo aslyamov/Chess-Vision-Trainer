@@ -37,19 +37,6 @@ export interface SessionRecord {
 }
 
 /**
- * Статистика за день
- */
-export interface DailyStats {
-    date: string;              // "2026-01-27"
-    sessions: number;
-    puzzlesSolved: number;
-    totalTime: number;
-    avgAccuracy: number;
-    bestAccuracy: number;
-    moveStats: MoveStatsRecord;
-}
-
-/**
  * Общая статистика за всё время
  */
 export interface AllTimeStats {

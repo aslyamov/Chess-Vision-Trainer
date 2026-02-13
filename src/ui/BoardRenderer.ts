@@ -42,7 +42,7 @@ export class BoardRenderer {
 
         if (!this.Chessground) {
             logError(
-                'LIBRARY_LOAD' as any,
+                'LIBRARY_LOAD',
                 'Chessground not loaded',
                 new Error('Chessground is undefined')
             );
@@ -79,7 +79,7 @@ export class BoardRenderer {
             return this.ground!;
         } catch (error) {
             logError(
-                'UI_RENDER' as any,
+                'UI_RENDER',
                 'Failed to initialize board',
                 error as Error,
                 { boardElement: !!this.boardElement, ChessgroundAvailable: !!this.Chessground }
