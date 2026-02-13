@@ -50,9 +50,6 @@ export class UIManager {
             flipBoardBtn: document.getElementById('flipBoardBtn') as HTMLButtonElement,
             giveUpBtn: document.getElementById('giveUpBtn') as HTMLButtonElement,
 
-            // Timeout modal
-            timeoutModal: document.getElementById('timeoutModal'),
-
             // Counters
             wChecks: document.getElementById('w-checks'),
             wCaptures: document.getElementById('w-captures'),
@@ -376,26 +373,6 @@ export class UIManager {
         updateBar('easyProgressBar', 'easyCount', 'easyTotal', stats.easy.solved, stats.easy.total);
         updateBar('mediumProgressBar', 'mediumCount', 'mediumTotal', stats.medium.solved, stats.medium.total);
         updateBar('hardProgressBar', 'hardCount', 'hardTotal', stats.hard.solved, stats.hard.total);
-    }
-
-    /**
-     * Shows timeout modal
-     */
-    showTimeoutModal(): void {
-        const modal = this.dom.timeoutModal as HTMLDialogElement;
-        if (modal && modal.showModal) {
-            modal.showModal();
-        }
-    }
-
-    /**
-     * Closes timeout modal
-     */
-    closeTimeoutModal(): void {
-        const modal = this.dom.timeoutModal as HTMLDialogElement;
-        if (modal && modal.close) {
-            modal.close();
-        }
     }
 
     /**

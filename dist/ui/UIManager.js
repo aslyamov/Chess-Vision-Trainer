@@ -39,8 +39,6 @@ export class UIManager {
             restartBtn: document.getElementById('restartBtn'),
             flipBoardBtn: document.getElementById('flipBoardBtn'),
             giveUpBtn: document.getElementById('giveUpBtn'),
-            // Timeout modal
-            timeoutModal: document.getElementById('timeoutModal'),
             // Counters
             wChecks: document.getElementById('w-checks'),
             wCaptures: document.getElementById('w-captures'),
@@ -311,24 +309,6 @@ export class UIManager {
         updateBar('easyProgressBar', 'easyCount', 'easyTotal', stats.easy.solved, stats.easy.total);
         updateBar('mediumProgressBar', 'mediumCount', 'mediumTotal', stats.medium.solved, stats.medium.total);
         updateBar('hardProgressBar', 'hardCount', 'hardTotal', stats.hard.solved, stats.hard.total);
-    }
-    /**
-     * Shows timeout modal
-     */
-    showTimeoutModal() {
-        const modal = this.dom.timeoutModal;
-        if (modal && modal.showModal) {
-            modal.showModal();
-        }
-    }
-    /**
-     * Closes timeout modal
-     */
-    closeTimeoutModal() {
-        const modal = this.dom.timeoutModal;
-        if (modal && modal.close) {
-            modal.close();
-        }
     }
     /**
      * Gets DOM element cache

@@ -116,14 +116,6 @@ export declare class UIManager {
      */
     private _updateOverallProgress;
     /**
-     * Shows timeout modal
-     */
-    showTimeoutModal(): void;
-    /**
-     * Closes timeout modal
-     */
-    closeTimeoutModal(): void;
-    /**
      * Gets DOM element cache
      * @returns Cached DOM elements
      */

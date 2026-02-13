@@ -168,9 +168,6 @@ export interface CachedDOM {
     flipBoardBtn: HTMLButtonElement | null;
     giveUpBtn: HTMLButtonElement | null;
 
-    // Timeout modal
-    timeoutModal: HTMLElement | null;
-
     // Counters
     wChecks: HTMLElement | null;
     wCaptures: HTMLElement | null;

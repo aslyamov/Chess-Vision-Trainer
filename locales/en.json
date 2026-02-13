@@ -61,8 +61,5 @@
     "reset_title": "Reset Progress",
     "reset_confirm": "Reset all progress? This action cannot be undone!",
     "reset_yes": "Reset",
-    "reset_no": "Cancel",
-    "modal_title": "Time's Up!",
-    "modal_desc": "Session time limit reached.",
-    "modal_btn": "View Results"
+    "reset_no": "Cancel"
 }
