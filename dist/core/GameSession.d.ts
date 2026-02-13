@@ -40,7 +40,6 @@ interface IUIManager {
     updateProgress(current: number, total: number): void;
     updateTaskIndicator(visible: boolean, name?: string): void;
     updateCounter(id: string, found: number, total: number): void;
-    showTimeoutModal(): void;
 }
 interface IBoardRenderer {
     initialize(config: {

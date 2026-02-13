@@ -36,7 +36,6 @@ export interface SessionConfig {
     difficulty: string;
     taskCount: number;
     timeLimit: number;
-    timeMode?: 'total' | 'per_puzzle';
     sequentialMode: boolean;
     highlightFound: boolean;
     showLog: boolean;

@@ -58,7 +58,6 @@
     "all_time_stats": "All-Time Stats",
     "total_solved": "Total Solved:",
     "btn_restart": "Restart",
-    "btn_reset_progress": "Reset Progress",
     "reset_title": "Reset Progress",
     "reset_confirm": "Reset all progress? This action cannot be undone!",
     "reset_yes": "Reset",

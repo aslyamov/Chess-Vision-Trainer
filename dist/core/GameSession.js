@@ -63,14 +63,8 @@ export class GameSession {
         this.board.initialize({
             onMove: this._handleMove.bind(this)
         });
-        // Start timer
-        if (this.config.timeLimit > 0 && this.config.timeMode === 'total') {
-            this.status.setLimitEndTime(Date.now() + (this.config.timeLimit * TIME.MS_PER_SECOND));
-            this.status.startTimer(true, () => this._handleTimeout());
-        }
-        else {
-            this.status.startTimer(false);
-        }
+        // Start stopwatch (per-puzzle countdown is set in _loadPuzzle)
+        this.status.startTimer(false);
         // Load first puzzle
         this._loadPuzzle(0);
     }
@@ -303,8 +297,8 @@ export class GameSession {
         // Update UI
         this._updateGameUI();
         this.status.setStatus(this.langData.status_luck || 'Удачи!', '#0050b3');
-        // Per-puzzle timer
-        if (this.config.timeLimit > 0 && this.config.timeMode === 'per_puzzle') {
+        // Per-puzzle countdown timer
+        if (this.config.timeLimit > 0) {
             this.status.setLimitEndTime(Date.now() + (this.config.timeLimit * TIME.MS_PER_SECOND));
             this.status.startTimer(true, () => this._handleTimeout());
         }
@@ -659,14 +653,9 @@ export class GameSession {
      * @private
      */
     _handleTimeout() {
-        this.status.pauseTimer(); // Stop counting time immediately
-        if (this.config.timeMode === 'total') {
-            this.ui.showTimeoutModal();
-        }
-        else {
-            this.status.setStatus(this.langData.status_timeout || 'Время!', 'red');
-            this._setTimeout(() => this.nextPuzzle(), DELAYS.TIMEOUT_DISPLAY);
-        }
+        this.status.pauseTimer();
+        this.status.setStatus(this.langData.status_timeout || 'Время!', 'red');
+        this._setTimeout(() => this.nextPuzzle(), DELAYS.TIMEOUT_DISPLAY);
     }
     // ==========================================
     // TIMER MANAGEMENT (with automatic cleanup)

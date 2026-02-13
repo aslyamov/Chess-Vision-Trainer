@@ -75,9 +75,8 @@ export class ChessVisionTrainer {
             // Restore settings
             this._loadSettings();
 
-            // Update puzzle count and progress
+            // Update puzzle count
             this._updateAvailableCount();
-            this._updateProgress();
 
             console.log('✅ Chess Vision Trainer initialized');
             console.log('💡 Доступ через window.chessApp');
@@ -181,16 +180,6 @@ export class ChessVisionTrainer {
     }
 
     /**
-     * Закрыть модальное окно таймаута
-     */
-    closeTimeoutModal(): void {
-        this.uiManager.closeTimeoutModal();
-        if (this.gameSession) {
-            this.gameSession.finish();
-        }
-    }
-
-    /**
      * Показать модал подтверждения сброса прогресса
      */
     resetProgress(): void {
@@ -210,7 +199,6 @@ export class ChessVisionTrainer {
         }
         puzzleProgress.reset();
         statsManager.clearAllStats();
-        this._updateProgress();
         this.restart();
     }
 
@@ -289,17 +277,11 @@ export class ChessVisionTrainer {
             radio.addEventListener('change', (e) => this._setTheme((e.target as HTMLInputElement).value as Theme));
         });
 
-        // Difficulty change
-        document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
-            radio.addEventListener('change', () => this._updateAvailableCount());
-        });
-
         // Buttons
         document.getElementById('startGameBtn')?.addEventListener('click', () => this.startSession());
 
         document.getElementById('giveUpBtn')?.addEventListener('click', () => this.giveUp());
         document.getElementById('flipBoardBtn')?.addEventListener('click', () => this.flipBoard());
-        document.getElementById('closeModalBtn')?.addEventListener('click', () => this.closeTimeoutModal());
         document.getElementById('restartBtn')?.addEventListener('click', () => this.restart());
         document.getElementById('resetProgressBtn')?.addEventListener('click', () => this.resetProgress());
         document.getElementById('confirmResetBtn')?.addEventListener('click', () => this.confirmReset());
@@ -315,9 +297,12 @@ export class ChessVisionTrainer {
      * Настраивает автосохранение
      */
     private _setupAutoSave(): void {
-        // Difficulty
+        // Difficulty (also updates available count)
         document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
-            radio.addEventListener('change', () => this._saveSettings());
+            radio.addEventListener('change', () => {
+                this._updateAvailableCount();
+                this._saveSettings();
+            });
         });
 
         // Inputs
@@ -436,17 +421,6 @@ export class ChessVisionTrainer {
         const count = this.puzzleManager.getCount(difficulty);
 
         this.uiManager.updateAvailableCount(count);
-    }
-
-    /**
-     * Обновляет индикатор прогресса (решённые задачи)
-     */
-    private _updateProgress(): void {
-        const total = this.puzzleManager.getTotalCount();
-        const stats = puzzleProgress.getStats(total);
-
-        const progressBar = document.getElementById('progressBar') as HTMLProgressElement;
-        if (progressBar) progressBar.value = stats.percentage;
     }
 
     // ====================
