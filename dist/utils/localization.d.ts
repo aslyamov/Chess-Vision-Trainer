@@ -15,7 +15,7 @@ export declare function loadLanguageData(lang: SupportedLocale): Promise<LocaleD
  */
 export declare function applyTranslations(langData: LocaleData): void;
 /**
- * Сохраняет текущий язык в localStorage
+ * Сохраняет текущий язык в localStorage (внутри chess_vision_settings)
  * @param lang - Код языка
  */
 export declare function saveLanguagePreference(lang: SupportedLocale): void;

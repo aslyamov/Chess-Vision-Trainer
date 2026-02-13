@@ -66,30 +66,26 @@ export class StatusManager {
     logMove(san: string, isCheck: boolean, isCapture: boolean, color: 'w' | 'b', currentLang: string = 'en'): void {
         if (!this.settings.showLog) return;
 
-        // Create elements safely
         const logItem = document.createElement('div');
         logItem.className = 'log-item';
-        logItem.style.display = 'flex';
-        logItem.style.justifyContent = 'space-between';
 
-        const localizedSan = localizeSAN(san, currentLang);
         const sanSpan = document.createElement('span');
-        sanSpan.textContent = localizedSan;
+        sanSpan.textContent = localizeSAN(san, currentLang);
 
         const badgesSpan = document.createElement('span');
 
         if (isCapture) {
-            const captureBadge = document.createElement('span');
-            captureBadge.textContent = this.langData.log_capture || 'ВЗЯТИЕ';
-            captureBadge.style.cssText = 'background:#007bff; color:white; padding:2px 4px; border-radius:3px; font-size:0.7em; margin-left:5px;';
-            badgesSpan.appendChild(captureBadge);
+            const badge = document.createElement('span');
+            badge.className = 'log-badge log-badge-capture';
+            badge.textContent = this.langData.log_capture || 'ВЗЯТИЕ';
+            badgesSpan.appendChild(badge);
         }
 
         if (isCheck) {
-            const checkBadge = document.createElement('span');
-            checkBadge.textContent = this.langData.log_check || 'ШАХ';
-            checkBadge.style.cssText = 'background:#dc3545; color:white; padding:2px 4px; border-radius:3px; font-size:0.7em; margin-left:5px;';
-            badgesSpan.appendChild(checkBadge);
+            const badge = document.createElement('span');
+            badge.className = 'log-badge log-badge-check';
+            badge.textContent = this.langData.log_check || 'ШАХ';
+            badgesSpan.appendChild(badge);
         }
 
         logItem.appendChild(sanSpan);

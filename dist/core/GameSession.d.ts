@@ -2,7 +2,7 @@
  * Manages a single game session - puzzle iteration, move validation, statistics
  * TypeScript версия
  */
-import type { Puzzle, SessionConfig, LocaleData } from '../types/index.js';
+import type { Puzzle, SessionConfig, LocaleData, ChessgroundConfig, DrawShape } from '../types/index.js';
 interface OverallStats {
     totalSolved: number;
     totalPuzzles: number;
@@ -46,20 +46,12 @@ interface IBoardRenderer {
     initialize(config: {
         onMove: (orig: string, dest: string) => void;
     }): void;
-    setPosition(fen: string, options: any): void;
+    setPosition(fen: string, options: Partial<ChessgroundConfig>): void;
     setOrientation(orientation: 'white' | 'black'): void;
     clearPersistentShapes(): void;
     clearUserShapes(): void;
-    addPersistentShape(shape: {
-        brush: string;
-        orig: string;
-        dest: string;
-    }): void;
-    updateShapes(shapes: Array<{
-        orig: string;
-        dest: string;
-        brush: string;
-    }>): void;
+    addPersistentShape(shape: DrawShape): void;
+    updateShapes(shapes: DrawShape[]): void;
     undoVisual(fen: string, options: {
         showDests?: boolean;
         movableColor?: 'white' | 'black' | 'both';

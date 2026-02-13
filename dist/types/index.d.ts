@@ -79,10 +79,13 @@ export interface TargetColors {
 export interface ChessgroundConfig {
     fen?: string;
     orientation?: 'white' | 'black';
+    turnColor?: 'white' | 'black';
     coordinates?: boolean;
     movable?: {
         free?: boolean;
         color?: 'white' | 'black' | 'both';
+        showDests?: boolean;
+        dests?: Map<string, string[]>;
         events?: {
             after?: (orig: string, dest: string) => void;
         };
@@ -90,11 +93,21 @@ export interface ChessgroundConfig {
     drawable?: {
         enabled?: boolean;
         visible?: boolean;
+        shapes?: DrawShape[];
+        autoShapes?: DrawShape[];
     };
     highlight?: {
         lastMove?: boolean;
         check?: boolean;
     };
+}
+/**
+ * Фигура для рисования на доске (стрелка/подсветка)
+ */
+export interface DrawShape {
+    orig: string;
+    dest: string;
+    brush: string;
 }
 /**
  * API Chessground доски
@@ -163,12 +176,4 @@ export interface LocaleData {
  * Поддерживаемые языки
  */
 export type SupportedLocale = 'ru' | 'en';
-/**
- * Nullable тип
- */
-export type Nullable<T> = T | null;
-/**
- * Optional тип
- */
-export type Optional<T> = T | undefined;
 //# sourceMappingURL=index.d.ts.map

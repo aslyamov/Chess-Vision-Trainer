@@ -39,13 +39,17 @@ export function applyTranslations(langData) {
         }
     });
 }
+const SETTINGS_KEY = 'chess_vision_settings';
 /**
- * Сохраняет текущий язык в localStorage
+ * Сохраняет текущий язык в localStorage (внутри chess_vision_settings)
  * @param lang - Код языка
  */
 export function saveLanguagePreference(lang) {
     try {
-        localStorage.setItem('chess_lang', lang);
+        const raw = localStorage.getItem(SETTINGS_KEY);
+        const settings = raw ? JSON.parse(raw) : {};
+        settings.language = lang;
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     }
     catch (e) {
         console.warn('localStorage недоступен:', e);
@@ -58,8 +62,16 @@ export function saveLanguagePreference(lang) {
  */
 export function loadLanguagePreference(defaultLang = 'ru') {
     try {
-        const saved = localStorage.getItem('chess_lang');
-        return (saved === 'ru' || saved === 'en') ? saved : defaultLang;
+        // Read from chess_vision_settings
+        const raw = localStorage.getItem(SETTINGS_KEY);
+        if (raw) {
+            const settings = JSON.parse(raw);
+            if (settings.language === 'ru' || settings.language === 'en')
+                return settings.language;
+        }
+        // Fallback: legacy key
+        const legacy = localStorage.getItem('chess_lang');
+        return (legacy === 'ru' || legacy === 'en') ? legacy : defaultLang;
     }
     catch (e) {
         return defaultLang;

@@ -22,7 +22,9 @@ import type {
     MoveData,
     TargetColors,
     LocaleData,
-    BadMove
+    BadMove,
+    ChessgroundConfig,
+    DrawShape
 } from '../types/index.js';
 
 // ==========================================
@@ -59,12 +61,12 @@ interface IUIManager {
 
 interface IBoardRenderer {
     initialize(config: { onMove: (orig: string, dest: string) => void }): void;
-    setPosition(fen: string, options: any): void;
+    setPosition(fen: string, options: Partial<ChessgroundConfig>): void;
     setOrientation(orientation: 'white' | 'black'): void;
     clearPersistentShapes(): void;
     clearUserShapes(): void;
-    addPersistentShape(shape: { brush: string; orig: string; dest: string }): void;
-    updateShapes(shapes: Array<{ orig: string; dest: string; brush: string }>): void;
+    addPersistentShape(shape: DrawShape): void;
+    updateShapes(shapes: DrawShape[]): void;
     undoVisual(fen: string, options: { showDests?: boolean; movableColor?: 'white' | 'black' | 'both' }): void;
     destroy(): void;
 }
@@ -534,7 +536,7 @@ export class GameSession {
             san = targetMove.san;
         } else {
             const moves = this.game.moves({ verbose: true });
-            const realMove = moves.find((m: any) => m.from === orig && m.to === dest);
+            const realMove = moves.find((m: MoveData) => m.from === orig && m.to === dest);
             if (realMove) san = realMove.san;
         }
 
@@ -673,7 +675,7 @@ export class GameSession {
         soundManager.playError();
         this.status.setStatus(this.langData.status_error || 'Зевок!', 'red');
 
-        const shapes: any[] = [];
+        const shapes: DrawShape[] = [];
 
         if (refutationSan) {
             // Simulate position after bad move
@@ -705,7 +707,7 @@ export class GameSession {
                 if (!move) {
                     const moves = refutationGame.moves({ verbose: true });
                     const cleanRef = refutationSan.replace(/[+#x]/g, '');
-                    move = moves.find((m: any) => m.san.replace(/[+#x]/g, '') === cleanRef);
+                    move = moves.find((m: MoveData) => m.san.replace(/[+#x]/g, '') === cleanRef);
 
                     // Fallback: match by destination
                     if (!move) {
@@ -718,7 +720,7 @@ export class GameSession {
                             };
                             const targetPiece = pieceTypeMap[pieceChar] || 'p';
 
-                            const candidates = moves.filter((m: any) => 
+                            const candidates = moves.filter((m: MoveData) =>
                                 m.to === targetSq && m.piece === targetPiece
                             );
                             if (candidates.length > 0) {
