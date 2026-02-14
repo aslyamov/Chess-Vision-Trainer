@@ -1,0 +1,274 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================
+   Global Styles
+   ========================================== */
+
+/* Prevent iOS bounce/overscroll on body */
+html, body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Game screen: prevent double-tap zoom on iOS */
+#gameScreen {
+    touch-action: manipulation;
+}
+
+/* Scrollable containers should handle their own touch */
+#resultScreen {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+}
+
+/* Hide spinner for number inputs */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* ==========================================
+   CSS Classes for JS-driven styles
+   ========================================== */
+
+/* Counter completed state */
+.counter-completed {
+    color: #fff !important;
+    background-color: #28a745 !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+}
+
+/* Log item badges */
+.log-badge {
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.7em;
+    margin-left: 5px;
+    color: white;
+}
+
+.log-badge-capture {
+    background: #007bff;
+}
+
+.log-badge-check {
+    background: #dc3545;
+}
+
+/* Log item layout */
+.log-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Status message transitions */
+#statusMessage {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* ==========================================
+   Chessground Customization (Dark Theme)
+   ========================================== */
+cg-board {
+    background-image: url('maple.jpg');
+    background-size: cover;
+    border-radius: 0.5rem;
+}
+
+/* Remove ring/border from board container */
+#board {
+    box-shadow: none !important;
+}
+
+/* CRITICAL: Board wrapper must be square for Chessground */
+.board-wrapper {
+    aspect-ratio: 1 / 1 !important;
+}
+
+/* CSS variable for synchronized sizing */
+:root {
+    --board-size: min(80vh, 800px);
+}
+
+/* --- Coordinates (Lichess Style - Inside Squares) --- */
+.cg-wrap coords {
+    font-weight: bold;
+    font-family: "Noto Sans", "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 12px !important;
+    pointer-events: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    text-shadow: none !important;
+}
+
+/* Ranks (numbers 1-8) - positioned at TOP-LEFT of each square */
+.cg-wrap coords.ranks {
+    position: absolute !important;
+    left: 0 !important;
+    right: auto !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 12px !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.cg-wrap coords.ranks coord {
+    flex: 0 0 12.5% !important;
+    height: 12.5% !important;
+    display: block !important;
+    text-align: left !important;
+    padding-left: 3px !important;
+    padding-top: 2px !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+}
+
+/* Files (letters a-h) - positioned at BOTTOM-RIGHT of each square */
+.cg-wrap coords.files {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    height: 12px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: flex-end !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.cg-wrap coords.files coord {
+    flex: 0 0 12.5% !important;
+    width: 12.5% !important;
+    display: block !important;
+    text-align: right !important;
+    padding-right: 3px !important;
+    padding-bottom: 1px !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+}
+
+/* ===== COLOR RULES ===== */
+/* Lichess board: a1 is DARK, h1 is LIGHT, a8 is LIGHT, h8 is DARK */
+
+/* RANKS - Numbers on LEFT side (a-file squares) */
+/* White orientation: a1(dark), a2(light), a3(dark), a4(light)... = odd=dark, even=light */
+/* Rank 1 is first child (column-reverse), Rank 2 is second, etc. */
+
+/* WHITE ORIENTATION - Ranks */
+/* 1st child = rank 1 (a1 = DARK square) -> LIGHT text */
+/* 2nd child = rank 2 (a2 = LIGHT square) -> DARK text */
+.orientation-white .ranks coord:nth-child(odd) {
+    color: #f0d9b5 !important;
+    /* Светлый текст на темном поле */
+}
+
+.orientation-white .ranks coord:nth-child(even) {
+    color: #946f51 !important;
+    /* Темный текст на светлом поле */
+}
+
+/* BLACK ORIENTATION - Ranks (board flipped, so a8 is at bottom-left) */
+/* 1st child = rank 8 (a8 = LIGHT square) -> DARK text */
+/* 2nd child = rank 7 (a7 = DARK square) -> LIGHT text */
+.orientation-black .ranks coord:nth-child(odd) {
+    color: #946f51 !important;
+    /* Темный текст на светлом поле */
+}
+
+.orientation-black .ranks coord:nth-child(even) {
+    color: #f0d9b5 !important;
+    /* Светлый текст на темном поле */
+}
+
+/* FILES - Letters on BOTTOM row (rank 1 for white, rank 8 for black) */
+/* WHITE ORIENTATION - Files on rank 1 */
+/* a1=dark, b1=light, c1=dark, d1=light... = odd=dark, even=light */
+.orientation-white .files coord:nth-child(odd) {
+    color: #f0d9b5 !important;
+    /* Светлый текст на темном поле (a1, c1, e1, g1) */
+}
+
+.orientation-white .files coord:nth-child(even) {
+    color: #946f51 !important;
+    /* Темный текст на светлом поле (b1, d1, f1, h1) */
+}
+
+/* BLACK ORIENTATION - Files on rank 8 */
+/* a8=light, b8=dark, c8=light, d8=dark... = odd=light, even=dark */
+.orientation-black .files coord:nth-child(odd) {
+    color: #946f51 !important;
+    /* Темный текст на светлом поле (a8, c8, e8, g8) */
+}
+
+.orientation-black .files coord:nth-child(even) {
+    color: #f0d9b5 !important;
+    /* Светлый текст на темном поле (b8, d8, f8, h8) */
+}
+
+/* Orientation Logic for Coordinates Position */
+.orientation-black coords.ranks,
+.cg-wrap.orientation-black coords.ranks {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.orientation-black coords.files,
+.cg-wrap.orientation-black coords.files {
+    display: flex !important;
+    flex-direction: row-reverse !important;
+}
+
+/* Highlight move override */
+.cg-wrap square.last-move {
+    background-color: rgba(155, 199, 0, 0.41) !important;
+}
+
+.cg-wrap square.selected {
+    background-color: rgba(20, 85, 30, 0.5) !important;
+}
+
+/* ==========================================
+   JS Compatibility Classes
+   ========================================== */
+.view {
+    display: none;
+    width: 100%;
+}
+
+.view.active {
+    display: flex;
+}
+
+/* Inline SVG icon sizing */
+.icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+    fill: currentColor;
+}

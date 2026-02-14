@@ -14,13 +14,6 @@
     <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/icon-192.png">
 
-    <!-- Tailwind CSS & DaisyUI -->
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
     <!-- Google Fonts: Noto Sans (for Lichess-like look) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,14 +26,32 @@
         href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/assets/chessground.brown.css">
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/assets/chessground.cburnett.css">
-    <!-- Custom Styles (Overrides) -->
-    <link rel="stylesheet" href="style.css?v=6">
 
-    <!-- Tailwind Config -->
-    <script src="tailwind-config.js"></script>
+    <!-- Built Tailwind + DaisyUI + Custom Styles -->
+    <link rel="stylesheet" href="style.css?v=7">
 </head>
 
 <body class="bg-base-300 min-h-[100svh] font-sans text-base-content relative">
+
+    <!-- SVG Icon Sprite (FontAwesome Free 6.5.1, CC BY 4.0) -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+        <symbol id="i-chess-knight" viewBox="0 0 448 512"><path d="M96 48L82.7 61.3C70.7 73.3 64 89.5 64 106.5V238.9c0 10.7 5.3 20.7 14.2 26.6l10.6 7c14.3 9.6 32.7 10.7 48.1 3l3.2-1.6c2.6-1.3 5-2.8 7.3-4.5l49.4-37c6.6-5 15.7-5 22.3 0c10.2 7.7 9.9 23.1-.7 30.3L90.4 350C73.9 361.3 64 380 64 400H384l28.9-159c2.1-11.3 3.1-22.8 3.1-34.3V192C416 86 330 0 224 0H83.8C72.9 0 64 8.9 64 19.8c0 7.5 4.2 14.3 10.9 17.7L96 48zm24 68a20 20 0 1 1 40 0 20 20 0 1 1 -40 0zM22.6 473.4c-4.2 4.2-6.6 10-6.6 16C16 501.9 26.1 512 38.6 512H409.4c12.5 0 22.6-10.1 22.6-22.6c0-6-2.4-11.8-6.6-16L384 432H64L22.6 473.4z"/></symbol>
+        <symbol id="i-play" viewBox="0 0 384 512"><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></symbol>
+        <symbol id="i-bullseye" viewBox="0 0 512 512"><path d="M448 256A192 192 0 1 0 64 256a192 192 0 1 0 384 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256 80a80 80 0 1 0 0-160 80 80 0 1 0 0 160zm0-224a144 144 0 1 1 0 288 144 144 0 1 1 0-288zM224 256a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></symbol>
+        <symbol id="i-clock" viewBox="0 0 512 512"><path d="M464 256A208 208 0 1 1 48 256a208 208 0 1 1 416 0zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></symbol>
+        <symbol id="i-gear" viewBox="0 0 512 512"><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></symbol>
+        <symbol id="i-rotate" viewBox="0 0 512 512"><path d="M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z"/></symbol>
+        <symbol id="i-forward-step" viewBox="0 0 320 512"><path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96C0 83.6 7.2 72.3 18.4 67s24.5-3.6 34.1 4.4l192 160L256 241V96c0-17.7 14.3-32 32-32s32 14.3 32 32V416c0 17.7-14.3 32-32 32s-32-14.3-32-32V271l-11.5 9.6-192 160z"/></symbol>
+        <symbol id="i-crosshairs" viewBox="0 0 512 512"><path d="M256 0c17.7 0 32 14.3 32 32V42.4c93.7 13.9 167.7 88 181.6 181.6H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H469.6c-13.9 93.7-88 167.7-181.6 181.6V480c0 17.7-14.3 32-32 32s-32-14.3-32-32V469.6C130.3 455.7 56.3 381.7 42.4 288H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H42.4C56.3 130.3 130.3 56.3 224 42.4V32c0-17.7 14.3-32 32-32zM107.4 288c12.5 58.3 58.4 104.1 116.6 116.6V384c0-17.7 14.3-32 32-32s32 14.3 32 32v20.6c58.3-12.5 104.1-58.4 116.6-116.6H384c-17.7 0-32-14.3-32-32s14.3-32 32-32h20.6C392.1 165.7 346.3 119.9 288 107.4V128c0 17.7-14.3 32-32 32s-32-14.3-32-32V107.4C165.7 119.9 119.9 165.7 107.4 224H128c17.7 0 32 14.3 32 32s-14.3 32-32 32H107.4zM256 224a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></symbol>
+        <symbol id="i-chart-simple" viewBox="0 0 448 512"><path d="M160 80c0-26.5 21.5-48 48-48h32c26.5 0 48 21.5 48 48V432c0 26.5-21.5 48-48 48H208c-26.5 0-48-21.5-48-48V80zM0 272c0-26.5 21.5-48 48-48H80c26.5 0 48 21.5 48 48V432c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V272zM368 96h32c26.5 0 48 21.5 48 48V432c0 26.5-21.5 48-48 48H368c-26.5 0-48-21.5-48-48V144c0-26.5 21.5-48 48-48z"/></symbol>
+        <symbol id="i-xmark" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></symbol>
+        <symbol id="i-list-check" viewBox="0 0 512 512"><path d="M152.1 38.2c9.9 8.9 10.7 24 1.8 33.9l-72 80c-4.4 4.9-10.6 7.8-17.2 7.9s-12.9-2.4-17.6-7L7 113C-2.3 103.6-2.3 88.4 7 79s24.6-9.4 33.9 0l22.1 22.1 55.1-61.2c8.9-9.9 24-10.7 33.9-1.8zm0 160c9.9 8.9 10.7 24 1.8 33.9l-72 80c-4.4 4.9-10.6 7.8-17.2 7.9s-12.9-2.4-17.6-7L7 273c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l22.1 22.1 55.1-61.2c8.9-9.9 24-10.7 33.9-1.8zM224 96c0-17.7 14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H256c-17.7 0-32-14.3-32-32zm0 160c0-17.7 14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H256c-17.7 0-32-14.3-32-32zM160 416c0-17.7 14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H192c-17.7 0-32-14.3-32-32zM48 368a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"/></symbol>
+        <symbol id="i-trophy" viewBox="0 0 576 512"><path d="M400 0H176c-26.5 0-48.1 21.8-47.1 48.2c.2 5.3 .4 10.6 .7 15.8H24C10.7 64 0 74.7 0 88c0 92.6 33.5 157 78.5 200.7c44.3 43.1 98.3 64.8 138.1 75.8c23.4 6.5 39.4 26 39.4 45.6c0 20.9-17 37.9-37.9 37.9H192c-17.7 0-32 14.3-32 32s14.3 32 32 32H384c17.7 0 32-14.3 32-32s-14.3-32-32-32H357.9C337 448 320 431 320 410.1c0-19.6 15.9-39.2 39.4-45.6c39.9-11 93.9-32.7 138.2-75.8C542.5 245 576 180.6 576 88c0-13.3-10.7-24-24-24H446.4c.3-5.2 .5-10.4 .7-15.8C448.1 21.8 426.5 0 400 0zM48.9 112h84.4c9.1 90.1 29.2 150.3 51.9 190.6c-24.9-11-50.8-26.5-73.2-48.3c-32-31.1-58-76-63-142.3zM464.1 254.3c-22.4 21.8-48.3 37.3-73.2 48.3c22.7-40.3 42.8-100.5 51.9-190.6h84.4c-5.1 66.3-31.1 111.2-63 142.3z"/></symbol>
+        <symbol id="i-rotate-left" viewBox="0 0 512 512"><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></symbol>
+        <symbol id="i-trash-can" viewBox="0 0 448 512"><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></symbol>
+        <symbol id="i-triangle-exclamation" viewBox="0 0 512 512"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></symbol>
+        <symbol id="i-flag" viewBox="0 0 448 512"><path d="M48 24C48 10.7 37.3 0 24 0S0 10.7 0 24V64 350.5 400v88c0 13.3 10.7 24 24 24s24-10.7 24-24V388l80.3-20.1c41.1-10.3 84.6-5.5 122.5 13.4c44.2 22.1 95.5 24.8 141.7 7.4l34.7-13c12.5-4.7 20.8-16.6 20.8-30V66.1c0-23-24.2-38-44.8-27.7l-9.6 4.8c-46.3 23.2-100.8 23.2-147.1 0c-35.1-17.6-75.4-22-113.5-12.5L48 52V24zm0 77.5l96.6-24.2c27-6.7 55.5-3.6 80.4 8.8c54.9 27.4 118.7 29.7 175 6.8V334.7l-24.4 9.1c-33.7 12.6-71.2 10.7-103.4-5.4c-48.2-24.1-103.3-30.1-155.6-17.1L48 338.5v-237z"/></symbol>
+    </svg>
 
     <!-- BACKGROUND GRADIENT -->
     <div class="absolute inset-0 bg-gradient-to-br from-base-300 to-base-100 -z-10"></div>
@@ -55,7 +66,7 @@
                 <div class="pb-2 border-b border-base-content/10">
                     <h1
                         class="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent inline-flex items-center justify-center">
-                        <i class="fa-solid fa-chess-knight mr-2 text-primary"></i>Chess Vision
+                        <svg class="icon mr-2 text-primary" aria-hidden="true"><use href="#i-chess-knight"/></svg>Chess Vision
                     </h1>
                     <p class="text-base-content/60 mt-1">Тренировка тактического зрения</p>
                 </div>
@@ -155,7 +166,7 @@
                 <div class="card-actions mt-4 justify-center">
                     <button id="startGameBtn"
                         class="btn btn-primary btn-lg w-full max-w-sm shadow-lg hover:scale-[1.01] transition-transform text-lg">
-                        <i class="fa-solid fa-play mr-2"></i> <span data-lang="btn_start">Начать тренировку</span>
+                        <svg class="icon mr-2" aria-hidden="true"><use href="#i-play"/></svg> <span data-lang="btn_start">Начать тренировку</span>
                     </button>
                 </div>
             </div>
@@ -186,7 +197,7 @@
                     <div class="card-body p-4">
                         <h2
                             class="card-title text-sm uppercase text-base-content/50 border-b border-base-content/10 pb-2 justify-center">
-                            <i class="fa-solid fa-bullseye text-secondary"></i> <span data-lang="game_title">Найди шахи
+                            <svg class="icon text-secondary" aria-hidden="true"><use href="#i-bullseye"/></svg> <span data-lang="game_title">Найди шахи
                                 и взятия</span>
                         </h2>
 
@@ -194,14 +205,14 @@
                         <div class="grid grid-cols-[1fr_auto_auto] gap-2 mt-2">
                             <!-- Row 1: Timer + Progress + Settings -->
                             <div class="bg-neutral text-neutral-content rounded-xl flex items-center justify-center p-3 font-mono text-2xl font-bold border border-base-content/10 h-14">
-                                <i class="fa-regular fa-clock mr-2 text-sm opacity-70"></i>
+                                <svg class="icon mr-2 text-sm opacity-70" aria-hidden="true"><use href="#i-clock"/></svg>
                                 <span id="gameTimer">00:00</span>
                             </div>
                             <div class="bg-base-200 text-base-content rounded-xl flex items-center justify-center px-3 min-w-14 font-mono text-base font-bold border border-base-content/10 h-14">
                                 <span id="progressDisplay">0 / 0</span>
                             </div>
                             <button id="settingsBtn" class="btn btn-ghost rounded-xl border border-base-content/10 h-14 w-14 p-0" title="Настройки">
-                                <i class="fa-solid fa-gear text-lg"></i>
+                                <svg class="icon text-lg" aria-hidden="true"><use href="#i-gear"/></svg>
                             </button>
                             <!-- Row 2: Status + Flip + Skip -->
                             <div class="bg-success/10 text-success rounded-xl p-3 text-center font-bold border border-base-content/10 flex items-center justify-center h-14"
@@ -209,16 +220,16 @@
                                 Удачи!
                             </div>
                             <button id="flipBoardBtn" class="btn btn-ghost rounded-xl border border-base-content/10 h-14 min-w-14 p-0" title="Перевернуть">
-                                <i class="fa-solid fa-rotate"></i>
+                                <svg class="icon" aria-hidden="true"><use href="#i-rotate"/></svg>
                             </button>
                             <button id="giveUpBtn" class="btn btn-ghost rounded-xl border border-error/30 text-error h-14 min-w-14 p-0" title="Пропустить">
-                                <i class="fa-solid fa-forward-step"></i>
+                                <svg class="icon" aria-hidden="true"><use href="#i-forward-step"/></svg>
                             </button>
                         </div>
 
                         <!-- Task Indicator (Sequential Mode) -->
                         <div id="taskIndicator" class="alert alert-warning mt-4 py-2 hidden justify-center">
-                            <i class="fa-solid fa-crosshairs"></i>
+                            <svg class="icon" aria-hidden="true"><use href="#i-crosshairs"/></svg>
                             <span class="font-bold" id="currentTaskName"></span>
                         </div>
                     </div>
@@ -230,7 +241,7 @@
                     <div class="card-body p-4">
                         <h3
                             class="card-title text-sm uppercase text-base-content/50 border-b border-base-content/10 pb-2 mb-3 justify-center">
-                            <i class="fa-solid fa-chart-simple text-primary"></i> <span data-lang="stats_title">Статистика</span>
+                            <svg class="icon text-primary" aria-hidden="true"><use href="#i-chart-simple"/></svg> <span data-lang="stats_title">Статистика</span>
                         </h3>
                         <!-- Compact table layout -->
                         <div class="grid grid-cols-3 gap-2 text-center">
@@ -240,7 +251,7 @@
                             <div class="text-xs font-bold text-base-content/50 uppercase" data-lang="col_black">🏴 Чёрные</div>
                             <!-- Checks row -->
                             <div class="text-sm text-left flex items-center">
-                                <i class="fa-regular fa-flag text-base-content/60 mr-2"></i>
+                                <svg class="icon text-base-content/60 mr-2" aria-hidden="true"><use href="#i-flag"/></svg>
                                 <span data-lang="row_checks">Шахи</span>
                             </div>
                             <div class="bg-base-200 rounded-lg p-2">
@@ -251,7 +262,7 @@
                             </div>
                             <!-- Captures row -->
                             <div class="text-sm text-left flex items-center">
-                                <i class="fa-solid fa-xmark text-base-content/60 mr-2"></i>
+                                <svg class="icon text-base-content/60 mr-2" aria-hidden="true"><use href="#i-xmark"/></svg>
                                 <span data-lang="row_captures">Взятия</span>
                             </div>
                             <div class="bg-base-200 rounded-lg p-2">
@@ -270,7 +281,7 @@
                     <div class="card-body p-0 flex flex-col h-full">
                         <h3
                             class="card-title text-sm uppercase text-base-content/50 border-b border-base-content/10 p-3 pb-2 justify-center">
-                            <i class="fa-solid fa-list-check text-accent"></i> Найденные ходы
+                            <svg class="icon text-accent" aria-hidden="true"><use href="#i-list-check"/></svg> Найденные ходы
                         </h3>
                         <div class="flex flex-row flex-1 overflow-hidden">
                             <!-- White Log -->
@@ -302,7 +313,7 @@
             <div class="card-body items-center p-4">
                 <div
                     class="w-20 h-20 rounded-full bg-success/20 flex items-center justify-center mb-4 text-success text-4xl">
-                    <i class="fa-solid fa-trophy"></i>
+                    <svg class="icon" aria-hidden="true"><use href="#i-trophy"/></svg>
                 </div>
                 <h2 class="card-title text-2xl mb-2" data-lang="res_title">🎉 Сессия завершена!</h2>
 
@@ -435,10 +446,10 @@
 
                 <div class="card-actions w-full mt-4">
                     <button id="restartBtn" class="btn btn-primary flex-1">
-                        <i class="fa-solid fa-rotate-left mr-1"></i> <span data-lang="btn_restart">Заново</span>
+                        <svg class="icon mr-1" aria-hidden="true"><use href="#i-rotate-left"/></svg> <span data-lang="btn_restart">Заново</span>
                     </button>
                     <button id="resetProgressBtn" class="btn btn-outline btn-error flex-none w-12">
-                        <i class="fa-solid fa-trash-can"></i>
+                        <svg class="icon" aria-hidden="true"><use href="#i-trash-can"/></svg>
                     </button>
                 </div>
             </div>
@@ -451,12 +462,12 @@
     <dialog id="confirmResetModal" class="modal modal-bottom sm:modal-middle">
         <div class="modal-box text-center">
             <h3 class="font-bold text-lg text-warning">
-                <i class="fa-solid fa-triangle-exclamation mr-2"></i> <span data-lang="reset_title">Сброс прогресса</span>
+                <svg class="icon mr-2" aria-hidden="true"><use href="#i-triangle-exclamation"/></svg> <span data-lang="reset_title">Сброс прогресса</span>
             </h3>
             <p class="py-4" data-lang="reset_confirm">Сбросить весь прогресс? Это действие необратимо!</p>
             <div class="modal-action justify-center gap-3">
                 <button id="confirmResetBtn" class="btn btn-error">
-                    <i class="fa-solid fa-trash-can mr-1"></i> <span data-lang="reset_yes">Сбросить</span>
+                    <svg class="icon mr-1" aria-hidden="true"><use href="#i-trash-can"/></svg> <span data-lang="reset_yes">Сбросить</span>
                 </button>
                 <button id="cancelResetBtn" class="btn btn-ghost" data-lang="reset_no">Отмена</button>
             </div>
@@ -473,7 +484,7 @@
         <div class="modal-box relative">
             <!-- Close X button -->
             <button id="closeSettingsBtn" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-                <i class="fa-solid fa-xmark"></i>
+                <svg class="icon" aria-hidden="true"><use href="#i-xmark"/></svg>
             </button>
             <h3 class="font-bold text-lg text-center mb-4">
                 <span data-lang="settings_title">⚙️ Настройки</span>
@@ -511,7 +522,7 @@
     </dialog>
 
     <!-- SCRIPTS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script type="module" src="dist/main.js"></script>
 
 </body>
