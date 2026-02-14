@@ -54,4 +54,3 @@ export interface AllTimeStats {
     lastPlayedDate: string;    // ISO date
     firstPlayedDate: string;   // ISO date
 }
-

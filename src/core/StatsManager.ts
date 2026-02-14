@@ -198,7 +198,8 @@ class StatsManager {
         const stats = this.allTimeStats;
 
         if (stats.lastPlayedDate === todayDate) {
-            // Уже играли сегодня
+            // Уже играли сегодня — сохраняем обновлённую статистику
+            this.saveAllTimeStats();
             return;
         }
 
