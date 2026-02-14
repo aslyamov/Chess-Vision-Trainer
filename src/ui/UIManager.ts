@@ -82,20 +82,9 @@ export class UIManager {
     }
 
     /**
-     * Shows start screen
-     */
-    showStartScreen(): void {
-        this.switchView('startScreen');
-    }
-
-    /**
      * Shows game screen
      */
     showGameScreen(): void {
-        // Close any open dialogs
-        const dialog = document.querySelector('#startScreen dialog') as HTMLDialogElement;
-        if (dialog && dialog.close) dialog.close();
-
         this.switchView('gameScreen');
     }
 
@@ -163,7 +152,6 @@ export class UIManager {
             });
 
             gameScreen.classList.remove('hidden');
-            gameScreen.classList.remove('active');
 
             resultScreen.classList.remove('hidden');
             resultScreen.classList.add('active');

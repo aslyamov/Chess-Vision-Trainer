@@ -166,13 +166,6 @@ export class BoardRenderer {
         });
     }
     /**
-     * Gets current board orientation
-     * @returns Current orientation
-     */
-    getOrientation() {
-        return this.ground?.state.orientation || 'white';
-    }
-    /**
      * Destroys board instance
      */
     destroy() {

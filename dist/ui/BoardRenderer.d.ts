@@ -66,11 +66,6 @@ export declare class BoardRenderer {
         movableColor?: 'white' | 'black' | 'both';
     }): void;
     /**
-     * Gets current board orientation
-     * @returns Current orientation
-     */
-    getOrientation(): 'white' | 'black';
-    /**
      * Destroys board instance
      */
     destroy(): void;

@@ -10,12 +10,6 @@ export interface SolvedPuzzleData {
 export interface SolvedPuzzles {
     [puzzleId: number]: SolvedPuzzleData;
 }
-export interface ProgressStats {
-    totalPuzzles: number;
-    solvedCount: number;
-    unseenCount: number;
-    percentage: number;
-}
 declare class PuzzleProgressManager {
     private solved;
     constructor();
@@ -33,16 +27,6 @@ declare class PuzzleProgressManager {
      */
     markSolved(puzzleId: number): void;
     /**
-     * Проверяет, решена ли задача
-     * @param puzzleId - ID задачи
-     */
-    isSolved(puzzleId: number): boolean;
-    /**
-     * Возвращает данные о решении задачи
-     * @param puzzleId - ID задачи
-     */
-    getSolvedData(puzzleId: number): SolvedPuzzleData | null;
-    /**
      * Возвращает все решённые задачи
      */
     getAllSolved(): SolvedPuzzles;
@@ -54,11 +38,6 @@ declare class PuzzleProgressManager {
      * Возвращает Set с ID решённых задач (для быстрой проверки)
      */
     getSolvedIds(): Set<number>;
-    /**
-     * Возвращает статистику прогресса
-     * @param totalPuzzles - Общее количество задач
-     */
-    getStats(totalPuzzles: number): ProgressStats;
     /**
      * Очищает весь прогресс (сброс)
      */

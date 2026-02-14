@@ -16,10 +16,6 @@ export declare class UIManager {
      */
     switchView(viewId: string): void;
     /**
-     * Shows start screen
-     */
-    showStartScreen(): void;
-    /**
      * Shows game screen
      */
     showGameScreen(): void;

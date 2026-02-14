@@ -125,21 +125,6 @@ export class PuzzleManager {
     }
 
     /**
-     * Возвращает общее количество задач
-     */
-    getTotalCount(): number {
-        return this.puzzles.length;
-    }
-
-    /**
-     * Проверяет, загружены ли пазлы
-     * @returns true если пазлы загружены
-     */
-    isLoaded(): boolean {
-        return this.loaded;
-    }
-
-    /**
      * Возвращает статистику по сложности на основе решённых задач
      * @param solvedIds - Set с ID решённых задач
      */

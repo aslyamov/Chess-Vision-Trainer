@@ -19,10 +19,6 @@ export class StatusManager {
     constructor(dom: CachedDOM, langData: LocaleData) {
         this.dom = dom;
         this.langData = langData;
-        this.timerInterval = null;
-        this.sessionStartTime = 0;
-        this.limitEndTime = 0;
-        this.settings = {};
     }
 
     /**
@@ -91,7 +87,15 @@ export class StatusManager {
         logItem.appendChild(badgesSpan);
 
         const logEl = color === 'w' ? this.dom.logWhite : this.dom.logBlack;
-        if (logEl) logEl.prepend(logItem);
+        if (logEl) {
+            // Insert after sticky header so it stays pinned at top
+            const header = logEl.firstElementChild;
+            if (header) {
+                header.insertAdjacentElement('afterend', logItem);
+            } else {
+                logEl.appendChild(logItem);
+            }
+        }
     }
 
     /**

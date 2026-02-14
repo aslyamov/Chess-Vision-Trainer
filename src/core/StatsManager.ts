@@ -6,8 +6,7 @@
 import type {
     SessionRecord,
     AllTimeStats,
-    MoveStatsRecord,
-    StatsExportData
+    MoveStatsRecord
 } from '../types/stats.js';
 
 const SESSIONS_KEY = 'chess_sessions';
@@ -190,8 +189,6 @@ class StatsManager {
         ms.bChecks.total += sms.bChecks.total;
         ms.bCaptures.found += sms.bCaptures.found;
         ms.bCaptures.total += sms.bCaptures.total;
-
-        this.saveAllTimeStats();
     }
 
     /**
@@ -236,69 +233,6 @@ class StatsManager {
     }
 
     /**
-     * Возвращает историю сессий
-     */
-    getSessionHistory(limit?: number): SessionRecord[] {
-        const sessions = [...this.sessions].reverse(); // Новые сначала
-        return limit ? sessions.slice(0, limit) : sessions;
-    }
-
-    /**
-     * Возвращает последнюю сессию
-     */
-    getLastSession(): SessionRecord | null {
-        return this.sessions.length > 0
-            ? this.sessions[this.sessions.length - 1]
-            : null;
-    }
-
-    /**
-     * Возвращает лучшую сессию по точности
-     */
-    getBestSession(): SessionRecord | null {
-        if (this.sessions.length === 0) return null;
-        return this.sessions.reduce((best, session) =>
-            session.accuracy > best.accuracy ? session : best
-        );
-    }
-
-    /**
-     * Экспорт всех данных
-     */
-    exportData(): StatsExportData {
-        return {
-            version: 1,
-            exportDate: new Date().toISOString(),
-            sessions: this.sessions,
-            allTimeStats: this.allTimeStats
-        };
-    }
-
-    /**
-     * Импорт данных
-     */
-    importData(data: StatsExportData): boolean {
-        try {
-            if (data.version !== 1) {
-                console.error('[Stats] Неподдерживаемая версия:', data.version);
-                return false;
-            }
-
-            this.sessions = data.sessions || [];
-            this.allTimeStats = data.allTimeStats || createEmptyAllTimeStats();
-
-            this.saveSessions();
-            this.saveAllTimeStats();
-
-            console.log('[Stats] Данные импортированы');
-            return true;
-        } catch (e) {
-            console.error('[Stats] Ошибка импорта:', e);
-            return false;
-        }
-    }
-
-    /**
      * Очищает всю статистику
      */
     clearAllStats(): void {
@@ -309,15 +243,6 @@ class StatsManager {
         console.log('[Stats] Статистика очищена');
     }
 
-    /**
-     * Вычисляет точность по ходам (общую)
-     */
-    getOverallAccuracy(): number {
-        const ms = this.allTimeStats.moveStats;
-        const total = ms.totalChecks + ms.totalCaptures;
-        const found = ms.checksFound + ms.capturesFound;
-        return total > 0 ? Math.round((found / total) * 100) : 0;
-    }
 }
 
 // Singleton

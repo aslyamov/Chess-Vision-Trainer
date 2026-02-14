@@ -15,13 +15,6 @@ export interface SolvedPuzzles {
     [puzzleId: number]: SolvedPuzzleData;
 }
 
-export interface ProgressStats {
-    totalPuzzles: number;
-    solvedCount: number;
-    unseenCount: number;
-    percentage: number;
-}
-
 class PuzzleProgressManager {
     private solved: SolvedPuzzles = {};
 
@@ -80,22 +73,6 @@ class PuzzleProgressManager {
     }
 
     /**
-     * Проверяет, решена ли задача
-     * @param puzzleId - ID задачи
-     */
-    isSolved(puzzleId: number): boolean {
-        return puzzleId in this.solved;
-    }
-
-    /**
-     * Возвращает данные о решении задачи
-     * @param puzzleId - ID задачи
-     */
-    getSolvedData(puzzleId: number): SolvedPuzzleData | null {
-        return this.solved[puzzleId] || null;
-    }
-
-    /**
      * Возвращает все решённые задачи
      */
     getAllSolved(): SolvedPuzzles {
@@ -114,20 +91,6 @@ class PuzzleProgressManager {
      */
     getSolvedIds(): Set<number> {
         return new Set(Object.keys(this.solved).map(Number));
-    }
-
-    /**
-     * Возвращает статистику прогресса
-     * @param totalPuzzles - Общее количество задач
-     */
-    getStats(totalPuzzles: number): ProgressStats {
-        const solvedCount = this.getSolvedCount();
-        return {
-            totalPuzzles,
-            solvedCount,
-            unseenCount: totalPuzzles - solvedCount,
-            percentage: totalPuzzles > 0 ? Math.round((solvedCount / totalPuzzles) * 100) : 0
-        };
     }
 
     /**

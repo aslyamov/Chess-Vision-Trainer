@@ -99,19 +99,6 @@ export class PuzzleManager {
         return this.puzzles.filter(p => (p.difficulty || 'medium') === difficulty).length;
     }
     /**
-     * Возвращает общее количество задач
-     */
-    getTotalCount() {
-        return this.puzzles.length;
-    }
-    /**
-     * Проверяет, загружены ли пазлы
-     * @returns true если пазлы загружены
-     */
-    isLoaded() {
-        return this.loaded;
-    }
-    /**
      * Возвращает статистику по сложности на основе решённых задач
      * @param solvedIds - Set с ID решённых задач
      */

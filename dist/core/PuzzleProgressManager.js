@@ -57,20 +57,6 @@ class PuzzleProgressManager {
         this.save();
     }
     /**
-     * Проверяет, решена ли задача
-     * @param puzzleId - ID задачи
-     */
-    isSolved(puzzleId) {
-        return puzzleId in this.solved;
-    }
-    /**
-     * Возвращает данные о решении задачи
-     * @param puzzleId - ID задачи
-     */
-    getSolvedData(puzzleId) {
-        return this.solved[puzzleId] || null;
-    }
-    /**
      * Возвращает все решённые задачи
      */
     getAllSolved() {
@@ -87,19 +73,6 @@ class PuzzleProgressManager {
      */
     getSolvedIds() {
         return new Set(Object.keys(this.solved).map(Number));
-    }
-    /**
-     * Возвращает статистику прогресса
-     * @param totalPuzzles - Общее количество задач
-     */
-    getStats(totalPuzzles) {
-        const solvedCount = this.getSolvedCount();
-        return {
-            totalPuzzles,
-            solvedCount,
-            unseenCount: totalPuzzles - solvedCount,
-            percentage: totalPuzzles > 0 ? Math.round((solvedCount / totalPuzzles) * 100) : 0
-        };
     }
     /**
      * Очищает весь прогресс (сброс)

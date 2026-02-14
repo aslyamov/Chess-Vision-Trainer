@@ -68,19 +68,9 @@ export class UIManager {
         }
     }
     /**
-     * Shows start screen
-     */
-    showStartScreen() {
-        this.switchView('startScreen');
-    }
-    /**
      * Shows game screen
      */
     showGameScreen() {
-        // Close any open dialogs
-        const dialog = document.querySelector('#startScreen dialog');
-        if (dialog && dialog.close)
-            dialog.close();
         this.switchView('gameScreen');
     }
     /**
@@ -119,7 +109,6 @@ export class UIManager {
                 el.classList.add('hidden');
             });
             gameScreen.classList.remove('hidden');
-            gameScreen.classList.remove('active');
             resultScreen.classList.remove('hidden');
             resultScreen.classList.add('active');
         }

@@ -209,14 +209,6 @@ export class BoardRenderer {
     }
 
     /**
-     * Gets current board orientation
-     * @returns Current orientation
-     */
-    getOrientation(): 'white' | 'black' {
-        return (this.ground as any)?.state.orientation || 'white';
-    }
-
-    /**
      * Destroys board instance
      */
     destroy(): void {

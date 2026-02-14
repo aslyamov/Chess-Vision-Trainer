@@ -60,13 +60,4 @@ export interface AllTimeStats {
     lastPlayedDate: string;
     firstPlayedDate: string;
 }
-/**
- * Данные для экспорта/импорта
- */
-export interface StatsExportData {
-    version: number;
-    exportDate: string;
-    sessions: SessionRecord[];
-    allTimeStats: AllTimeStats;
-}
 //# sourceMappingURL=stats.d.ts.map

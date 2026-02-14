@@ -43,10 +43,6 @@ export declare class SoundManager {
      */
     setEnabled(enabled: boolean): void;
     /**
-     * Возвращает статус звуков
-     */
-    isEnabled(): boolean;
-    /**
      * Предзагружает все звуки
      * Вызвать после пользовательского взаимодействия для избежания блокировки
      */

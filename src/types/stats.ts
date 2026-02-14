@@ -55,12 +55,3 @@ export interface AllTimeStats {
     firstPlayedDate: string;   // ISO date
 }
 
-/**
- * Данные для экспорта/импорта
- */
-export interface StatsExportData {
-    version: number;
-    exportDate: string;
-    sessions: SessionRecord[];
-    allTimeStats: AllTimeStats;
-}

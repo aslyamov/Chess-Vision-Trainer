@@ -2,7 +2,7 @@
  * StatsManager - управление статистикой сессий
  * Сохраняет историю сессий, общую статистику, streaks
  */
-import type { SessionRecord, AllTimeStats, StatsExportData } from '../types/stats.js';
+import type { SessionRecord, AllTimeStats } from '../types/stats.js';
 declare class StatsManager {
     private sessions;
     private allTimeStats;
@@ -40,33 +40,9 @@ declare class StatsManager {
      */
     getAllTimeStats(): AllTimeStats;
     /**
-     * Возвращает историю сессий
-     */
-    getSessionHistory(limit?: number): SessionRecord[];
-    /**
-     * Возвращает последнюю сессию
-     */
-    getLastSession(): SessionRecord | null;
-    /**
-     * Возвращает лучшую сессию по точности
-     */
-    getBestSession(): SessionRecord | null;
-    /**
-     * Экспорт всех данных
-     */
-    exportData(): StatsExportData;
-    /**
-     * Импорт данных
-     */
-    importData(data: StatsExportData): boolean;
-    /**
      * Очищает всю статистику
      */
     clearAllStats(): void;
-    /**
-     * Вычисляет точность по ходам (общую)
-     */
-    getOverallAccuracy(): number;
 }
 export declare const statsManager: StatsManager;
 export {};

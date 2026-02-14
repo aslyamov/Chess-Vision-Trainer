@@ -25,15 +25,6 @@ export declare class PuzzleManager {
      */
     getCount(difficulty?: string): number;
     /**
-     * Возвращает общее количество задач
-     */
-    getTotalCount(): number;
-    /**
-     * Проверяет, загружены ли пазлы
-     * @returns true если пазлы загружены
-     */
-    isLoaded(): boolean;
-    /**
      * Возвращает статистику по сложности на основе решённых задач
      * @param solvedIds - Set с ID решённых задач
      */
