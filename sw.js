@@ -6,7 +6,7 @@ const ASSETS_TO_CACHE = [
   './manifest.json',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
-  './maple.jpg',
+  './brown.png',
   './dist/main.js',
   './dist/core/ChessVisionTrainer.js',
   './dist/core/GameSession.js',

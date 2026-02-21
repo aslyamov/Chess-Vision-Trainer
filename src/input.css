@@ -82,7 +82,7 @@ input[type=number] {
    Chessground Customization (Dark Theme)
    ========================================== */
 cg-board {
-    background-image: url('maple.jpg');
+    background-image: url('brown.png');
     background-size: cover;
     border-radius: 0.5rem;
 }
