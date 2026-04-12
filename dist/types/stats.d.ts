@@ -55,9 +55,6 @@ export interface AllTimeStats {
     bestAccuracy: number;
     avgAccuracy: number;
     moveStats: MoveStatsRecord;
-    currentStreak: number;
-    longestStreak: number;
-    lastPlayedDate: string;
     firstPlayedDate: string;
 }
 //# sourceMappingURL=stats.d.ts.map

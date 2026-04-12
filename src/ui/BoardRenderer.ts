@@ -209,6 +209,13 @@ export class BoardRenderer {
     }
 
     /**
+     * Forces a redraw (e.g. after window resize)
+     */
+    redraw(): void {
+        (this.ground as any)?.redrawAll?.();
+    }
+
+    /**
      * Destroys board instance
      */
     destroy(): void {

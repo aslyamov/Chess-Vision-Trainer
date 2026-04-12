@@ -1,107 +1,43 @@
 /**
- * Главный класс приложения Chess Vision Trainer
- * Оркестрирует все подсистемы и управляет жизненным циклом
- * TypeScript версия
+ * Главный оркестратор Chess Vision Trainer.
+ * Отвечает за: инициализацию, язык, тему, навигацию и регистрацию игровых модулей.
+ * Вся игровая логика делегирована модулям (IGameModule) через GameRegistry.
  */
-import type { SupportedLocale } from '../types/index.js';
-export declare class ChessVisionTrainer {
-    private Chessground;
+import { PuzzleManager } from './PuzzleManager.js';
+import { UIManager } from '../ui/UIManager.js';
+import { StatusManager } from '../ui/StatusManager.js';
+import type { LocaleData, SupportedLocale } from '../types/index.js';
+import type { AppContext } from './IGame.js';
+export declare class ChessVisionTrainer implements AppContext {
+    readonly Chessground: any;
+    readonly uiManager: UIManager;
     private puzzleManager;
-    private uiManager;
-    private boardRenderer;
     private statusManager;
-    private gameSession;
-    private currentLang;
     private langData;
-    private _saveSettingsDebounced;
+    private currentLang;
     constructor(ChessgroundLib: any);
-    /**
-     * Инициализирует приложение
-     */
+    getStatusManager(): StatusManager;
+    getPuzzleManager(): PuzzleManager;
+    getLangData(): LocaleData;
+    getCurrentLang(): SupportedLocale;
     init(): Promise<void>;
-    /**
-     * Загружает язык и применяет переводы
-     */
     loadLanguage(lang: SupportedLocale): Promise<void>;
-    /**
-     * Начинает новую игровую сессию
-     */
-    startSession(): void;
-    /**
-     * Сдаться - перейти к следующему пазлу
-     */
-    giveUp(): void;
-    /**
-     * Перевернуть доску
-     */
-    flipBoard(): void;
-    /**
-     * Перезапустить приложение
-     */
-    restart(): void;
-    /**
-     * Показать модал подтверждения сброса прогресса
-     */
-    resetProgress(): void;
-    /**
-     * Подтверждение сброса прогресса
-     */
-    confirmReset(): void;
-    /**
-     * Отмена сброса прогресса
-     */
-    cancelReset(): void;
-    /**
-     * Открыть модал настроек
-     */
+    goHome(): void;
     openSettings(): void;
-    /**
-     * Закрыть модал настроек
-     */
     closeSettings(): void;
-    /**
-     * Cleanup - уничтожает все ресурсы
-     */
+    private _openStats;
+    /** Перерисовать активную доску — вызывается при resize окна */
+    redrawBoard(): void;
     destroy(): void;
     /**
-     * Инициализирует event listeners
+     * Регистрирует все игровые модули.
+     * Добавить новую игру = создать IGameModule + добавить строчку здесь.
      */
+    private _registerModules;
     private _initializeEventListeners;
-    /**
-     * Привязывает event listeners к DOM
-     */
     private _attachEventListeners;
-    /**
-     * Настраивает автосохранение
-     */
-    private _setupAutoSave;
-    /**
-     * Применяет настройки в реальном времени (во время игры)
-     */
-    private _applyLiveSettings;
-    /**
-     * Сохраняет настройки в localStorage
-     */
-    private _saveSettings;
-    /**
-     * Загружает настройки из localStorage
-     */
-    private _loadSettings;
-    /**
-     * Обновляет количество доступных пазлов
-     */
-    private _updateAvailableCount;
-    /**
-     * Загружает и применяет сохранённую тему
-     */
     private _loadTheme;
-    /**
-     * Устанавливает тему и сохраняет в localStorage
-     */
     private _setTheme;
-    /**
-     * Применяет тему к документу
-     */
     private _applyTheme;
 }
 //# sourceMappingURL=ChessVisionTrainer.d.ts.map

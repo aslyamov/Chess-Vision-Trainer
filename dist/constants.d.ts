@@ -29,4 +29,11 @@ export declare const BRUSHES: {
 /** localStorage keys */
 export declare const SETTINGS_KEY = "chess_vision_settings";
 export declare const THEME_KEY = "chess_theme";
+export declare const PUZZLE_PROGRESS_KEY = "chess_solved_puzzles";
+export declare const SESSIONS_KEY = "chess_sessions";
+export declare const ALL_TIME_STATS_KEY = "chess_all_time_stats";
+export declare const ERROR_LOG_KEY = "chess_error_log";
+export declare const FIELD_COLOR_SETTINGS_KEY = "chess_field_color_settings";
+export declare const FIELD_COLOR_STATS_KEY = "chess_field_color_stats";
+export declare const COMMON_STATS_KEY = "chess_common_stats";
 //# sourceMappingURL=constants.d.ts.map

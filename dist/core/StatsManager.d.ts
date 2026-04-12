@@ -32,10 +32,6 @@ declare class StatsManager {
      */
     private updateAllTimeStats;
     /**
-     * Обновляет streak
-     */
-    private updateStreak;
-    /**
      * Возвращает общую статистику
      */
     getAllTimeStats(): AllTimeStats;

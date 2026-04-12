@@ -57,18 +57,188 @@
     <div class="absolute inset-0 bg-gradient-to-br from-base-300 to-base-100 -z-10"></div>
 
     <!-- ==========================================
-         MENU SCREEN
+         HOME SCREEN — выбор игры
          ========================================== -->
-    <main id="startScreen" class="view active w-full min-h-[100svh] flex flex-col items-center py-8 px-4">
+    <main id="homeScreen" class="view active w-full min-h-[100svh] flex flex-col items-center py-8 px-4">
         <div class="card w-full max-w-2xl bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md my-auto">
             <div class="card-body gap-6 text-center">
                 <!-- Header -->
                 <div class="pb-2 border-b border-base-content/10">
-                    <h1
-                        class="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent inline-flex items-center justify-center">
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent inline-flex items-center justify-center">
                         <svg class="icon mr-2 text-primary" aria-hidden="true"><use href="#i-chess-knight"/></svg>Chess Vision
                     </h1>
-                    <p class="text-base-content/60 mt-1">Тренировка тактического зрения</p>
+                    <p class="text-base-content/60 mt-1">Выбери тренажёр</p>
+                </div>
+
+                <!-- Game Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+
+                    <!-- Card 1: Шахи и взятия -->
+                    <button id="selectChecksGame"
+                        class="card bg-base-200 border-2 border-primary/40 hover:border-primary hover:bg-primary/10 transition-all cursor-pointer text-left p-5 rounded-2xl group">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-primary/20 rounded-xl p-3 group-hover:bg-primary/30 transition-colors">
+                                <svg class="icon text-2xl text-primary" aria-hidden="true"><use href="#i-crosshairs"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-base text-base-content">Шахи и взятия</div>
+                                <div class="text-sm text-base-content/60 mt-1 leading-snug">Найди все шахи и взятия на позиции</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="badge badge-primary badge-outline text-xs">Доступно</span>
+                            <svg class="icon text-primary opacity-60 group-hover:opacity-100 transition-opacity" aria-hidden="true"><use href="#i-play"/></svg>
+                        </div>
+                    </button>
+
+                    <!-- Card 2: Цвет поля -->
+                    <button id="selectFieldColorGame"
+                        class="card bg-base-200 border-2 border-secondary/40 hover:border-secondary hover:bg-secondary/10 transition-all cursor-pointer text-left p-5 rounded-2xl group">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-secondary/20 rounded-xl p-3 group-hover:bg-secondary/30 transition-colors">
+                                <svg class="icon text-2xl text-secondary" aria-hidden="true"><use href="#i-bullseye"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-base text-base-content">Цвет поля</div>
+                                <div class="text-sm text-base-content/60 mt-1 leading-snug">Определи цвет случайного поля на доске</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="badge badge-secondary badge-outline text-xs">Доступно</span>
+                            <svg class="icon text-secondary opacity-60 group-hover:opacity-100 transition-opacity" aria-hidden="true"><use href="#i-play"/></svg>
+                        </div>
+                    </button>
+
+                </div>
+
+                <!-- Stats Button -->
+                <button id="openStatsBtn" class="btn btn-outline btn-sm gap-2 w-full">
+                    <svg class="icon" aria-hidden="true"><use href="#i-chart-simple"/></svg>
+                    Статистика
+                </button>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- ==========================================
+         STATS SCREEN
+         ========================================== -->
+    <main id="statsScreen" class="view hidden w-full min-h-[100svh] flex flex-col items-center py-8 px-4">
+        <div class="card w-full max-w-2xl bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md my-auto">
+            <div class="card-body gap-5">
+
+                <!-- Header -->
+                <div class="flex items-center gap-3 pb-2 border-b border-base-content/10">
+                    <button id="statsBackBtn" class="btn btn-ghost btn-sm gap-1">
+                        <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg> Игры
+                    </button>
+                    <h2 class="text-xl font-bold flex items-center gap-2 flex-1 justify-center">
+                        <svg class="icon text-primary" aria-hidden="true"><use href="#i-chart-simple"/></svg>
+                        Статистика
+                    </h2>
+                    <div class="w-16"></div>
+                </div>
+
+                <!-- Common streak -->
+                <div class="bg-base-200/60 rounded-2xl p-4 flex items-center justify-around gap-4">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-warning flex items-center gap-1 justify-center">
+                            <span id="commonStreakCurrent">0</span> 🔥
+                        </div>
+                        <div class="text-xs text-base-content/50 mt-1">Серия дней</div>
+                    </div>
+                    <div class="divider divider-horizontal"></div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold" id="commonStreakLongest">0</div>
+                        <div class="text-xs text-base-content/50 mt-1">Лучшая серия</div>
+                    </div>
+                    <div class="divider divider-horizontal"></div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold" id="commonDaysTotal">0</div>
+                        <div class="text-xs text-base-content/50 mt-1">Дней всего</div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div role="tablist" class="tabs tabs-boxed bg-base-200/60">
+                    <input type="radio" name="statsTabs" role="tab" class="tab"
+                           aria-label="Шахи и взятия" id="tabCC" checked />
+                    <input type="radio" name="statsTabs" role="tab" class="tab"
+                           aria-label="Цвет поля" id="tabFC" />
+                </div>
+
+                <!-- Tab: Шахи и взятия -->
+                <div id="statsTabCC" class="space-y-4">
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-base-200/60 rounded-xl p-3 text-center">
+                            <div class="text-2xl font-bold text-primary" id="ccStatsSessions">0</div>
+                            <div class="text-xs text-base-content/50 mt-1">Сессий</div>
+                        </div>
+                        <div class="bg-base-200/60 rounded-xl p-3 text-center">
+                            <div class="text-2xl font-bold text-success" id="ccStatsAccuracy">—</div>
+                            <div class="text-xs text-base-content/50 mt-1">Точность</div>
+                        </div>
+                        <div class="bg-base-200/60 rounded-xl p-3 text-center">
+                            <div class="text-2xl font-bold" id="ccStatsPuzzles">0</div>
+                            <div class="text-xs text-base-content/50 mt-1">Задач решено</div>
+                        </div>
+                    </div>
+                    <div class="bg-base-200/40 rounded-xl p-4">
+                        <div class="text-xs font-bold uppercase text-base-content/50 mb-3 text-center">Найдено ходов (за всё время)</div>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div class="flex justify-between px-2"><span class="text-base-content/60">♔ Шахи</span><span class="font-mono font-bold" id="ccStatsWChecks">0/0</span></div>
+                            <div class="flex justify-between px-2"><span class="text-base-content/60">♔ Взятия</span><span class="font-mono font-bold" id="ccStatsWCaptures">0/0</span></div>
+                            <div class="flex justify-between px-2"><span class="text-base-content/60">♚ Шахи</span><span class="font-mono font-bold" id="ccStatsBChecks">0/0</span></div>
+                            <div class="flex justify-between px-2"><span class="text-base-content/60">♚ Взятия</span><span class="font-mono font-bold" id="ccStatsBCaptures">0/0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Цвет поля -->
+                <div id="statsTabFC" class="hidden space-y-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div class="bg-base-200/60 rounded-xl p-3 text-center">
+                            <div class="text-2xl font-bold text-secondary" id="fcStatsSessions">0</div>
+                            <div class="text-xs text-base-content/50 mt-1">Сессий</div>
+                        </div>
+                        <div class="bg-base-200/60 rounded-xl p-3 text-center">
+                            <div class="text-2xl font-bold text-success" id="fcStatsAccuracy">—</div>
+                            <div class="text-xs text-base-content/50 mt-1">Точность</div>
+                        </div>
+                        <div class="bg-base-200/60 rounded-xl p-3 text-center">
+                            <div class="text-2xl font-bold text-warning" id="fcStatsBestStreak">0</div>
+                            <div class="text-xs text-base-content/50 mt-1">Лучш. серия</div>
+                        </div>
+                    </div>
+                    <div class="bg-base-200/40 rounded-xl p-4">
+                        <div class="text-xs font-bold uppercase text-base-content/50 mb-3 text-center">Ответы за всё время</div>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div class="flex justify-between px-2"><span class="text-base-content/60">Верных</span><span class="font-mono font-bold text-success" id="fcStatsCorrect">0</span></div>
+                            <div class="flex justify-between px-2"><span class="text-base-content/60">Ошибок</span><span class="font-mono font-bold text-error" id="fcStatsIncorrect">0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- ==========================================
+         MENU SCREEN
+         ========================================== -->
+    <main id="startScreen" class="view hidden w-full min-h-[100svh] flex flex-col items-center py-8 px-4">
+        <div class="card w-full max-w-2xl bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md my-auto">
+            <div class="card-body gap-6 text-center">
+                <!-- Header -->
+                <div class="pb-2 border-b border-base-content/10 relative">
+                    <button id="backToHomeBtn" class="btn btn-ghost btn-sm absolute left-0 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content">
+                        <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg> Игры
+                    </button>
+                    <h1 class="text-2xl font-bold text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent inline-flex items-center justify-center gap-2">
+                        <svg class="icon text-primary" aria-hidden="true"><use href="#i-crosshairs"/></svg>Шахи и взятия
+                    </h1>
+                    <p class="text-base-content/60 text-sm mt-1">Тренировка тактического зрения</p>
                 </div>
 
                 <h2 id="lobby-setup-modal-title" class="sr-only">Параметры</h2>
@@ -172,6 +342,207 @@
             </div>
         </div>
     </main>
+
+    <!-- ==========================================
+         FIELD COLOR — Экран настроек / старта
+         ========================================== -->
+    <main id="fieldColorStartScreen" class="view hidden w-full min-h-[100svh] flex flex-col items-center py-8 px-4">
+        <div class="card w-full max-w-lg bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md my-auto">
+            <div class="card-body gap-6 text-center">
+
+                <!-- Header -->
+                <div class="pb-2 border-b border-base-content/10 relative">
+                    <button id="fcBackFromStartBtn"
+                        class="btn btn-ghost btn-sm absolute left-0 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content">
+                        <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg> Игры
+                    </button>
+                    <h1 class="text-2xl font-bold text-center bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent inline-flex items-center justify-center gap-2">
+                        <svg class="icon text-secondary" aria-hidden="true"><use href="#i-bullseye"/></svg>Цвет поля
+                    </h1>
+                    <p class="text-base-content/60 text-sm mt-1">Определи цвет случайного поля</p>
+                </div>
+
+                <div class="flex flex-col items-center gap-6 w-full max-w-sm mx-auto">
+
+                    <!-- Вид доски -->
+                    <div class="form-control w-full">
+                        <label class="label font-bold text-sm uppercase text-base-content/70 justify-center pb-2">
+                            🎨 Вид доски
+                        </label>
+                        <div class="join w-full grid grid-cols-3">
+                            <input class="join-item btn btn-sm btn-outline" type="radio"
+                                   name="fcBoardStyle" value="colored" aria-label="Цветная" checked />
+                            <input class="join-item btn btn-sm btn-outline" type="radio"
+                                   name="fcBoardStyle" value="monochrome" aria-label="Нейтральная" />
+                            <input class="join-item btn btn-sm btn-outline" type="radio"
+                                   name="fcBoardStyle" value="none" aria-label="Без доски" />
+                        </div>
+                        <label class="label justify-center pt-1 pb-0">
+                            <span class="text-xs text-base-content/40">Нейтральная — все клетки одного цвета</span>
+                        </label>
+                    </div>
+
+                    <!-- Ориентация -->
+                    <div class="form-control w-full">
+                        <label class="label font-bold text-sm uppercase text-base-content/70 justify-center pb-2">
+                            🔄 Ориентация
+                        </label>
+                        <div class="join w-full grid grid-cols-3">
+                            <input class="join-item btn btn-sm btn-outline" type="radio"
+                                   name="fcOrientation" value="white" aria-label="Белые снизу" checked />
+                            <input class="join-item btn btn-sm btn-outline" type="radio"
+                                   name="fcOrientation" value="black" aria-label="Чёрные снизу" />
+                            <input class="join-item btn btn-sm btn-outline" type="radio"
+                                   name="fcOrientation" value="random" aria-label="Случайная" />
+                        </div>
+                    </div>
+
+                    <!-- Время -->
+                    <div class="form-control w-full">
+                        <label class="label font-bold text-sm uppercase text-base-content/70 justify-center">
+                            ⏱ Время (сек)
+                        </label>
+                        <input id="fcTimeModeInput" type="number" min="0" max="600"
+                               value="0" class="input input-bordered input-secondary w-full text-center font-mono text-lg" />
+                        <label class="label text-xs text-base-content/50 justify-center pt-1">0 — бесконечно</label>
+                    </div>
+
+                    <!-- Настройки -->
+                    <div class="bg-base-200/50 rounded-box p-5 border border-base-content/5 w-full">
+                        <label class="label font-bold text-sm uppercase text-base-content/70 justify-center mb-3">
+                            ⚙️ Настройки
+                        </label>
+                        <div class="flex justify-center">
+                            <label class="cursor-pointer flex items-center gap-3">
+                                <input type="checkbox" id="fcShowCoords" class="toggle toggle-sm toggle-secondary" checked />
+                                <span class="label-text">📍 Координаты на доске</span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Кнопка старт -->
+                <div class="card-actions mt-2 justify-center">
+                    <button id="fcStartGameBtn"
+                        class="btn btn-secondary btn-lg w-full max-w-sm shadow-lg hover:scale-[1.01] transition-transform text-lg">
+                        <svg class="icon mr-2" aria-hidden="true"><use href="#i-play"/></svg> Начать игру
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- ==========================================
+         FIELD COLOR — Игровой экран
+         ========================================== -->
+    <div id="fieldColorScreen" class="view hidden w-full min-h-[100svh] flex flex-col items-center p-4 pb-20 pt-4 md:pt-8 lg:justify-center">
+        <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full max-w-[1400px] mx-auto items-center justify-center">
+
+            <!-- Доска -->
+            <div class="relative w-[min(90vw,500px)] lg:w-[var(--board-size)] mx-auto lg:mx-0 shadow-2xl rounded-lg board-wrapper" id="fcBoardWrapper">
+                <div id="fcBoard" class="w-full h-full block"></div>
+                <div id="fcCoordText"
+                    class="absolute inset-0 hidden items-center justify-center
+                           text-8xl font-bold text-base-content select-none fc-coord-text
+                           bg-base-200 rounded-lg"></div>
+            </div>
+
+            <!-- Сайдбар -->
+            <div class="flex flex-col gap-4 w-full lg:w-[400px] lg:h-[var(--board-size)]">
+
+                <!-- Dashboard Card -->
+                <div class="card bg-base-100 shadow-xl border border-base-content/10">
+                    <div class="card-body p-4">
+                        <h2 class="card-title text-sm uppercase text-base-content/50 border-b border-base-content/10 pb-2 justify-center">
+                            <svg class="icon text-secondary" aria-hidden="true"><use href="#i-bullseye"/></svg> Цвет поля
+                        </h2>
+                        <div class="grid grid-cols-[1fr_auto_auto] gap-2 mt-2">
+                            <!-- Row 1: Timer + Correct + Back -->
+                            <div class="bg-neutral text-neutral-content rounded-xl flex items-center justify-center p-3 font-mono text-2xl font-bold border border-base-content/10 h-14">
+                                <svg class="icon mr-2 text-sm opacity-70" aria-hidden="true"><use href="#i-clock"/></svg>
+                                <span id="fcTimer">∞</span>
+                            </div>
+                            <div class="bg-success/10 text-success rounded-xl flex items-center justify-center px-3 min-w-14 font-mono text-xl font-bold border border-base-content/10 h-14" title="Верно">
+                                <span id="fcCorrect">0</span>
+                            </div>
+                            <button id="fcBackBtn" class="btn btn-ghost rounded-xl border border-base-content/10 h-14 w-14 p-0" title="Настройки">
+                                <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+                            </button>
+                            <!-- Row 2: Feedback + Incorrect + Streak -->
+                            <div id="fcFeedback"
+                                class="bg-base-200 text-base-content/50 rounded-xl p-3 text-center font-bold border border-base-content/10 flex items-center justify-center h-14 transition-colors duration-150">
+                                —
+                            </div>
+                            <div class="bg-error/10 text-error rounded-xl flex items-center justify-center px-3 min-w-14 font-mono text-xl font-bold border border-base-content/10 h-14" title="Ошибок">
+                                <span id="fcIncorrect">0</span>
+                            </div>
+                            <div class="bg-primary/10 text-primary rounded-xl flex items-center justify-center px-3 min-w-14 font-mono text-xl font-bold border border-base-content/10 h-14" title="Серия">
+                                <span id="fcStreak">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Answer Card -->
+                <div class="card bg-base-100 shadow-xl border border-base-content/10 flex-1">
+                    <div class="card-body p-4 flex flex-col justify-center gap-3 h-full">
+                        <button id="fcWhiteBtn"
+                            class="btn flex-1 text-xl font-bold
+                                   bg-base-100 border-2 border-base-content/20 text-base-content
+                                   hover:bg-white hover:text-black hover:border-white/50 active:scale-95 transition-all">
+                            Белое
+                        </button>
+                        <button id="fcBlackBtn"
+                            class="btn flex-1 text-xl font-bold
+                                   bg-base-300 border-2 border-base-content/20 text-base-content
+                                   hover:bg-black hover:text-white hover:border-black/50 active:scale-95 transition-all">
+                            Чёрное
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         FIELD COLOR — Результаты (модал)
+         ========================================== -->
+    <dialog id="fcResultModal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box text-center">
+            <h3 class="font-bold text-2xl mb-5">
+                <svg class="icon mr-2 text-secondary inline-block" aria-hidden="true"><use href="#i-trophy"/></svg>Результат
+            </h3>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-success/10 rounded-xl p-4">
+                    <div class="text-3xl font-bold text-success font-mono" id="fcResCorrect">0</div>
+                    <div class="text-xs text-base-content/50 mt-1">Верно</div>
+                </div>
+                <div class="bg-error/10 rounded-xl p-4">
+                    <div class="text-3xl font-bold text-error font-mono" id="fcResIncorrect">0</div>
+                    <div class="text-xs text-base-content/50 mt-1">Ошибок</div>
+                </div>
+                <div class="bg-base-200 rounded-xl p-4">
+                    <div class="text-3xl font-bold font-mono" id="fcResAccuracy">0%</div>
+                    <div class="text-xs text-base-content/50 mt-1">Точность</div>
+                </div>
+                <div class="bg-secondary/10 rounded-xl p-4">
+                    <div class="text-3xl font-bold text-secondary font-mono" id="fcResBestStreak">0</div>
+                    <div class="text-xs text-base-content/50 mt-1">Лучшая серия</div>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button id="fcResPlayAgainBtn" class="btn btn-secondary flex-1">
+                    <svg class="icon mr-1" aria-hidden="true"><use href="#i-play"/></svg> Ещё раз
+                </button>
+                <button id="fcResGoHomeBtn" class="btn btn-ghost flex-1">
+                    <svg class="icon mr-1" aria-hidden="true"><use href="#i-gear"/></svg> Настройки
+                </button>
+            </div>
+        </div>
+    </dialog>
 
     <!-- ==========================================
          GAME SCREEN

@@ -2,7 +2,7 @@
  * PuzzleProgressManager - управление прогрессом решения задач
  * Хранит информацию о решённых задачах в localStorage
  */
-const STORAGE_KEY = 'chess_solved_puzzles';
+import { PUZZLE_PROGRESS_KEY as STORAGE_KEY } from '../constants.js';
 class PuzzleProgressManager {
     constructor() {
         this.solved = {};

@@ -7,6 +7,7 @@ import { DELAYS, TIME, BRUSHES } from '../constants.js';
 import { soundManager } from './SoundManager.js';
 import { puzzleProgress } from './PuzzleProgressManager.js';
 import { statsManager } from './StatsManager.js';
+import { commonStatsManager } from './CommonStatsManager.js';
 const STAGES = Object.freeze([
     { id: 'w-checks', color: 'w', type: 'checks', langKey: 'stage_w_checks', fallback: 'Белые: Шахи' },
     { id: 'w-captures', color: 'w', type: 'captures', langKey: 'stage_w_captures', fallback: 'Белые: Взятия' },
@@ -129,6 +130,7 @@ export class GameSession {
             },
             mode
         });
+        commonStatsManager.recordPlay();
         console.log('✅ Сессия завершена. Решено:', this.stats.solvedCount);
     }
     /**

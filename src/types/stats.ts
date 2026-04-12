@@ -48,9 +48,5 @@ export interface AllTimeStats {
     avgAccuracy: number;
     // Статистика по ходам
     moveStats: MoveStatsRecord;
-    // Streaks
-    currentStreak: number;     // Дней подряд
-    longestStreak: number;
-    lastPlayedDate: string;    // ISO date
     firstPlayedDate: string;   // ISO date
 }

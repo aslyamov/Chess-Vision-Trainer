@@ -66,6 +66,10 @@ export declare class BoardRenderer {
         movableColor?: 'white' | 'black' | 'both';
     }): void;
     /**
+     * Forces a redraw (e.g. after window resize)
+     */
+    redraw(): void;
+    /**
      * Destroys board instance
      */
     destroy(): void;

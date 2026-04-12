@@ -3,7 +3,7 @@
  * Хранит информацию о решённых задачах в localStorage
  */
 
-const STORAGE_KEY = 'chess_solved_puzzles';
+import { PUZZLE_PROGRESS_KEY as STORAGE_KEY } from '../constants.js';
 
 export interface SolvedPuzzleData {
     solvedAt: string;      // ISO timestamp первого решения

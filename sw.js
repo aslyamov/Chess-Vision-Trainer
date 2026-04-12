@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chess-vision-v10';
+const CACHE_NAME = 'chess-vision-v37';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -9,7 +9,14 @@ const ASSETS_TO_CACHE = [
   './brown.png',
   './dist/main.js',
   './dist/core/ChessVisionTrainer.js',
+  './dist/core/IGame.js',
+  './dist/core/GameRegistry.js',
+  './dist/core/CommonStatsManager.js',
+  './dist/core/StatsScreen.js',
   './dist/core/GameSession.js',
+  './dist/core/FieldColorGame.js',
+  './dist/core/games/FieldColorModule.js',
+  './dist/core/games/ChecksAndCapturesModule.js',
   './dist/core/PuzzleManager.js',
   './dist/core/PuzzleProgressManager.js',
   './dist/core/StatsManager.js',
@@ -26,12 +33,10 @@ const ASSETS_TO_CACHE = [
   './locales/en.json'
 ];
 
-// Принудительно активировать новый SW сразу
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(ASSETS_TO_CACHE))
-      .then(() => self.skipWaiting())
   );
 });
 
@@ -41,7 +46,8 @@ self.addEventListener('fetch', (event) => {
     fetch(event.request)
       .then((response) => {
         // Кэшируем свежий ответ
-        if (response.ok) {
+        // Skip caching partial responses (206) — not supported by Cache API
+        if (response.ok && response.status !== 206) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
@@ -68,6 +74,6 @@ self.addEventListener('activate', (event) => {
           })
         );
       })
-      .then(() => self.clients.claim()) // Захватить все вкладки сразу
+      .then(() => self.clients.claim())
   );
 });

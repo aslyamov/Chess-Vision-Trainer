@@ -67,7 +67,7 @@ window.addEventListener('beforeunload', () => {
  */
 window.addEventListener('resize', () => {
     if (window.chessApp) {
-        window.chessApp.boardRenderer?.ground?.redrawAll();
+        window.chessApp.redrawBoard();
     }
 });
 /**

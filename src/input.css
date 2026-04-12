@@ -264,6 +264,40 @@ cg-board {
     display: flex;
 }
 
+/* ==========================================
+   Field Color Game
+   ========================================== */
+
+/* Зелёный highlight для целевого поля (ярче стандартного lastMove) */
+#fcBoard .last-move {
+    background-color: rgba(100, 220, 50, 0.6) !important;
+}
+
+/* Монохромная доска — координаты единым тёмным цветом */
+#fcBoard coords coord {
+    color: #555555 !important;
+    text-shadow: none !important;
+}
+
+/* Монохромная доска — однородный нейтральный цвет с сеткой */
+.fc-board-mono cg-board {
+    background-color: #d0d0d0 !important;
+    background-image:
+        repeating-linear-gradient(to right,  rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 12.5%),
+        repeating-linear-gradient(to bottom, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 12.5%) !important;
+}
+
+/* Анимация координаты (режим «Без доски») */
+.fc-coord-text {
+    transition: opacity 0.18s ease;
+}
+
+/* Touch: предотвратить zoom на кнопках */
+#fieldColorScreen,
+#fieldColorStartScreen {
+    touch-action: manipulation;
+}
+
 /* Inline SVG icon sizing */
 .icon {
     display: inline-block;

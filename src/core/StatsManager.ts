@@ -9,8 +9,7 @@ import type {
     MoveStatsRecord
 } from '../types/stats.js';
 
-const SESSIONS_KEY = 'chess_sessions';
-const STATS_KEY = 'chess_all_time_stats';
+import { SESSIONS_KEY, ALL_TIME_STATS_KEY as STATS_KEY } from '../constants.js';
 const MAX_SESSIONS = 100; // Хранить последние 100 сессий
 
 /**
@@ -42,9 +41,6 @@ function createEmptyAllTimeStats(): AllTimeStats {
         bestAccuracy: 0,
         avgAccuracy: 0,
         moveStats: createEmptyMoveStats(),
-        currentStreak: 0,
-        longestStreak: 0,
-        lastPlayedDate: '',
         firstPlayedDate: today
     };
 }
@@ -143,9 +139,6 @@ class StatsManager {
         // Обновляем общую статистику
         this.updateAllTimeStats(session);
 
-        // Обновляем streak
-        this.updateStreak(session.date);
-
         console.log('[Stats] Сессия сохранена:', session.id);
         return session;
     }
@@ -189,41 +182,6 @@ class StatsManager {
         ms.bChecks.total += sms.bChecks.total;
         ms.bCaptures.found += sms.bCaptures.found;
         ms.bCaptures.total += sms.bCaptures.total;
-    }
-
-    /**
-     * Обновляет streak
-     */
-    private updateStreak(todayDate: string): void {
-        const stats = this.allTimeStats;
-
-        if (stats.lastPlayedDate === todayDate) {
-            // Уже играли сегодня — сохраняем обновлённую статистику
-            this.saveAllTimeStats();
-            return;
-        }
-
-        // Вычисляем вчерашнюю дату
-        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-
-        if (stats.lastPlayedDate === yesterday) {
-            // Продолжаем streak
-            stats.currentStreak++;
-        } else if (stats.lastPlayedDate === '') {
-            // Первая игра
-            stats.currentStreak = 1;
-        } else {
-            // Пропустили день - streak сбрасывается
-            stats.currentStreak = 1;
-        }
-
-        // Обновляем лучший streak
-        if (stats.currentStreak > stats.longestStreak) {
-            stats.longestStreak = stats.currentStreak;
-        }
-
-        stats.lastPlayedDate = todayDate;
-        this.saveAllTimeStats();
     }
 
     /**

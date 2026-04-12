@@ -4,6 +4,7 @@
  */
 import { formatTime } from '../utils/chess-utils.js';
 import { statsManager } from '../core/StatsManager.js';
+import { commonStatsManager } from '../core/CommonStatsManager.js';
 export class UIManager {
     constructor() {
         this.dom = this._cacheDOM();
@@ -14,6 +15,7 @@ export class UIManager {
     _cacheDOM() {
         return {
             // Screens
+            homeScreen: document.getElementById('homeScreen'),
             startScreen: document.getElementById('startScreen'),
             gameScreen: document.getElementById('gameScreen'),
             resultScreen: document.getElementById('resultScreen'),
@@ -66,6 +68,18 @@ export class UIManager {
             if (target.scrollTop)
                 target.scrollTop = 0;
         }
+    }
+    /**
+     * Shows home screen (game selection)
+     */
+    showHomeScreen() {
+        this.switchView('homeScreen');
+    }
+    /**
+     * Shows start screen (game config) for checks & captures
+     */
+    showStartScreen() {
+        this.switchView('startScreen');
     }
     /**
      * Shows game screen
@@ -260,7 +274,7 @@ export class UIManager {
         if (accuracyEl)
             accuracyEl.textContent = `${Math.round(stats.avgAccuracy)}%`;
         if (streakEl)
-            streakEl.textContent = stats.currentStreak.toString();
+            streakEl.textContent = commonStatsManager.getStats().currentStreak.toString();
         // Move stats
         const ms = stats.moveStats;
         const update = (foundId, totalId, found, total) => {

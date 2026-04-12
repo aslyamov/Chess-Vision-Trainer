@@ -38,3 +38,10 @@ export const BRUSHES = {
 /** localStorage keys */
 export const SETTINGS_KEY = 'chess_vision_settings';
 export const THEME_KEY = 'chess_theme';
+export const PUZZLE_PROGRESS_KEY = 'chess_solved_puzzles';
+export const SESSIONS_KEY = 'chess_sessions';
+export const ALL_TIME_STATS_KEY = 'chess_all_time_stats';
+export const ERROR_LOG_KEY = 'chess_error_log';
+export const FIELD_COLOR_SETTINGS_KEY = 'chess_field_color_settings';
+export const FIELD_COLOR_STATS_KEY = 'chess_field_color_stats';
+export const COMMON_STATS_KEY = 'chess_common_stats';

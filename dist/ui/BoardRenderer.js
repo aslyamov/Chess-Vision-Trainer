@@ -166,6 +166,12 @@ export class BoardRenderer {
         });
     }
     /**
+     * Forces a redraw (e.g. after window resize)
+     */
+    redraw() {
+        this.ground?.redrawAll?.();
+    }
+    /**
      * Destroys board instance
      */
     destroy() {

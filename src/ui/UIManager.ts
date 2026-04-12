@@ -5,6 +5,7 @@
 
 import { formatTime } from '../utils/chess-utils.js';
 import { statsManager } from '../core/StatsManager.js';
+import { commonStatsManager } from '../core/CommonStatsManager.js';
 import type { CachedDOM, SessionConfig } from '../types/index.js';
 
 export class UIManager {
@@ -20,6 +21,7 @@ export class UIManager {
     private _cacheDOM(): CachedDOM {
         return {
             // Screens
+            homeScreen: document.getElementById('homeScreen'),
             startScreen: document.getElementById('startScreen'),
             gameScreen: document.getElementById('gameScreen'),
             resultScreen: document.getElementById('resultScreen'),
@@ -79,6 +81,20 @@ export class UIManager {
             document.documentElement.scrollTop = 0;
             if (target.scrollTop) target.scrollTop = 0;
         }
+    }
+
+    /**
+     * Shows home screen (game selection)
+     */
+    showHomeScreen(): void {
+        this.switchView('homeScreen');
+    }
+
+    /**
+     * Shows start screen (game config) for checks & captures
+     */
+    showStartScreen(): void {
+        this.switchView('startScreen');
     }
 
     /**
@@ -316,7 +332,7 @@ export class UIManager {
 
         if (sessionsEl) sessionsEl.textContent = stats.totalSessions.toString();
         if (accuracyEl) accuracyEl.textContent = `${Math.round(stats.avgAccuracy)}%`;
-        if (streakEl) streakEl.textContent = stats.currentStreak.toString();
+        if (streakEl) streakEl.textContent = commonStatsManager.getStats().currentStreak.toString();
 
         // Move stats
         const ms = stats.moveStats;

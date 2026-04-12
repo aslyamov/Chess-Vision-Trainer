@@ -138,6 +138,7 @@ export interface ChessgroundAPI {
  */
 export interface CachedDOM {
     // Screens
+    homeScreen: HTMLElement | null;
     startScreen: HTMLElement | null;
     gameScreen: HTMLElement | null;
     resultScreen: HTMLElement | null;
@@ -173,6 +174,25 @@ export interface CachedDOM {
     wCaptures: HTMLElement | null;
     bChecks: HTMLElement | null;
     bCaptures: HTMLElement | null;
+}
+
+// ==========================================
+// Field Color Game Types
+// ==========================================
+
+export interface FieldColorConfig {
+    boardStyle: 'colored' | 'monochrome' | 'none';
+    showCoordinates: boolean;
+    orientation: 'white' | 'black' | 'random';
+    /** Seconds. 0 = infinite */
+    timeMode: number;
+}
+
+export interface FieldColorAllTimeStats {
+    totalSessions: number;
+    totalCorrect: number;
+    totalIncorrect: number;
+    allTimeBestStreak: number;
 }
 
 // ==========================================

@@ -4,6 +4,7 @@
  */
 
 import type { ErrorCategory, ErrorLog } from '../types/index.js';
+import { ERROR_LOG_KEY } from '../constants.js';
 
 /**
  * Логирует ошибку с контекстом и полезными подсказками
@@ -39,7 +40,7 @@ export function logError(
 
     // Сохраняем ошибки в localStorage
     try {
-        const log: ErrorLog[] = JSON.parse(localStorage.getItem('chess_error_log') || '[]');
+        const log: ErrorLog[] = JSON.parse(localStorage.getItem(ERROR_LOG_KEY) || '[]');
         log.push({
             category,
             message,
@@ -49,7 +50,7 @@ export function logError(
                 stack: error?.stack
             }
         });
-        localStorage.setItem('chess_error_log', JSON.stringify(log.slice(-10)));
+        localStorage.setItem(ERROR_LOG_KEY, JSON.stringify(log.slice(-10)));
     } catch (e) {
         // localStorage недоступен
     }

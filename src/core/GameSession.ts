@@ -15,6 +15,7 @@ import { DELAYS, TIME, BRUSHES } from '../constants.js';
 import { soundManager } from './SoundManager.js';
 import { puzzleProgress } from './PuzzleProgressManager.js';
 import { statsManager } from './StatsManager.js';
+import { commonStatsManager } from './CommonStatsManager.js';
 
 import type {
     Puzzle,
@@ -285,6 +286,7 @@ export class GameSession {
             mode
         });
 
+        commonStatsManager.recordPlay();
         console.log('✅ Сессия завершена. Решено:', this.stats.solvedCount);
     }
 
