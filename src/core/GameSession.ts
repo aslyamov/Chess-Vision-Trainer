@@ -11,12 +11,13 @@ import {
     clearDestsCache
 } from '../utils/chess-utils.js';
 
-import { DELAYS, TIME, BRUSHES } from '../constants.js';
+import { DELAYS, TIME, BRUSHES, STATUS_COLORS } from '../constants.js';
 import { soundManager } from './SoundManager.js';
 import { puzzleProgress } from './PuzzleProgressManager.js';
 import { statsManager } from './StatsManager.js';
 import { commonStatsManager } from './CommonStatsManager.js';
 
+import type { IGameUI } from '../ui/CCGameUI.js';
 import type {
     Puzzle,
     SessionConfig,
@@ -25,39 +26,16 @@ import type {
     LocaleData,
     BadMove,
     ChessgroundConfig,
-    DrawShape
+    DrawShape,
+    CCSessionStats,
+    CCOverallStats,
 } from '../types/index.js';
 
 // ==========================================
 // INTERFACES FOR DEPENDENCIES
 // ==========================================
-
-interface OverallStats {
-    totalSolved: number;
-    totalPuzzles: number;
-    easy: { solved: number; total: number };
-    medium: { solved: number; total: number };
-    hard: { solved: number; total: number };
-}
-
-interface MoveStatsResult {
-    wChecks: MoveStats;
-    wCaptures: MoveStats;
-    bChecks: MoveStats;
-    bCaptures: MoveStats;
-}
-
-interface IUIManager {
-    showGameScreen(): void;
-    showResults(
-        stats: { solved: number; total: number; time: number; accuracy: number; avgTime: number; newPuzzles: number; moveStats: MoveStatsResult },
-        overallStats?: OverallStats
-    ): void;
-    applySettings(config: SessionConfig): void;
-    updateProgress(current: number, total: number): void;
-    updateTaskIndicator(visible: boolean, name?: string): void;
-    updateCounter(id: string, found: number, total: number): void;
-}
+// IGameUI импортируется из CCGameUI.ts — там определён контракт между
+// GameSession и CC-специфичным UI-слоем.
 
 interface IBoardRenderer {
     initialize(config: { onMove: (orig: string, dest: string) => void }): void;
@@ -123,7 +101,7 @@ interface SessionStats {
 export class GameSession {
     private puzzles: Puzzle[];
     private config: SessionConfig;
-    private ui: IUIManager;
+    private ui: IGameUI;
     private board: IBoardRenderer;
     private status: IStatusManager;
     private langData: LocaleData;
@@ -147,17 +125,17 @@ export class GameSession {
     private previouslySolvedIds: Set<number>;
 
     // Callback to get overall stats
-    private getOverallStats?: () => OverallStats;
+    private getOverallStats?: () => CCOverallStats;
 
     constructor(
         puzzles: Puzzle[],
         config: SessionConfig,
-        uiManager: IUIManager,
+        uiManager: IGameUI,
         boardRenderer: IBoardRenderer,
         statusManager: IStatusManager,
         langData: LocaleData,
         currentLang: string,
-        getOverallStats?: () => OverallStats
+        getOverallStats?: () => CCOverallStats
     ) {
         this.puzzles = puzzles;
         this.config = config;
@@ -223,67 +201,53 @@ export class GameSession {
     }
 
     /**
-     * Finishes session and shows results
+     * Finishes session and shows results.
+     * ВАЖНО: totalTime читается до destroy() — после stopTimer() значение
+     * всё ещё корректно, но порядок явно фиксирует намерение.
      */
     finish(): void {
+        // Читаем время ПЕРЕД уничтожением, чтобы не зависеть от порядка destroy()
+        const totalTime = this.status.getElapsedTime();
         this.destroy();
 
-        const totalTime = this.status.getElapsedTime();
-
         const puzzlesCount = Math.max(1, this.currentPuzzleIndex);
-        
         const accuracy = this.stats.totalClicks > 0
             ? (this.stats.totalMovesFound / this.stats.totalClicks) * 100
             : 0;
-            
-        const avgTime = puzzlesCount > 0 
-            ? totalTime / puzzlesCount 
-            : 0;
+        const avgTime = totalTime / puzzlesCount;
 
-        const overallStats = this.getOverallStats ? this.getOverallStats() : undefined;
+        const overallStats = this.getOverallStats?.();
 
-        // Собираем статистику по ходам
-        const moveStats = {
-            wChecks: this.stats.wChecks,
+        const moveStats: CCSessionStats['moveStats'] = {
+            wChecks:   this.stats.wChecks,
             wCaptures: this.stats.wCaptures,
-            bChecks: this.stats.bChecks,
-            bCaptures: this.stats.bCaptures
+            bChecks:   this.stats.bChecks,
+            bCaptures: this.stats.bCaptures,
         };
 
-        // Показываем результаты
         this.ui.showResults({
-            solved: this.stats.solvedCount,
-            total: this.puzzles.length,
-            time: totalTime,
-            accuracy: accuracy,
-            avgTime: avgTime,
+            solved:     this.stats.solvedCount,
+            total:      this.puzzles.length,
+            time:       totalTime,
+            accuracy,
+            avgTime,
             newPuzzles: this.stats.newPuzzlesSolved,
-            moveStats
+            moveStats,
         }, overallStats);
 
-        // Сохраняем сессию в StatsManager
-        const mode = this.config.goodMovesOnly ? 'goodMoves' :
-                     this.config.sequentialMode ? 'sequential' : 'normal';
+        const mode = this.config.goodMovesOnly ? 'goodMoves'
+                   : this.config.sequentialMode ? 'sequential' : 'normal';
 
         statsManager.saveSession({
-            difficulty: this.config.difficulty || 'all',
-            puzzleCount: this.puzzles.length,
-            puzzlesSolved: this.stats.solvedCount,
+            difficulty:       this.config.difficulty || 'all',
+            puzzleCount:      this.puzzles.length,
+            puzzlesSolved:    this.stats.solvedCount,
             newPuzzlesSolved: this.stats.newPuzzlesSolved,
-            totalTime: totalTime,
-            avgTime: avgTime,
-            accuracy: accuracy,
-            moveStats: {
-                checksFound: moveStats.wChecks.found + moveStats.bChecks.found,
-                capturesFound: moveStats.wCaptures.found + moveStats.bCaptures.found,
-                totalChecks: moveStats.wChecks.total + moveStats.bChecks.total,
-                totalCaptures: moveStats.wCaptures.total + moveStats.bCaptures.total,
-                wChecks: moveStats.wChecks,
-                wCaptures: moveStats.wCaptures,
-                bChecks: moveStats.bChecks,
-                bCaptures: moveStats.bCaptures
-            },
-            mode
+            totalTime,
+            avgTime,
+            accuracy,
+            moveStats,
+            mode,
         });
 
         commonStatsManager.recordPlay();
@@ -482,7 +446,7 @@ export class GameSession {
 
         // Update UI
         this._updateGameUI();
-        this.status.setStatus(this.langData.status_luck || 'Удачи!', '#0050b3');
+        this.status.setStatus(this.langData.status_luck || 'Удачи!', STATUS_COLORS.INFO);
 
         // Per-puzzle countdown timer
         if (this.config.timeLimit > 0) {
@@ -573,14 +537,14 @@ export class GameSession {
 
             if (!targetMove) {
                 this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
-                this.status.setStatus(this.langData.status_wrong || 'Мимо!', 'orange');
+                this.status.setStatus(this.langData.status_wrong || 'Мимо!', STATUS_COLORS.WARNING);
                 return;
             }
         } else {
             // Normal mode - only target moves count
             if (!targetMove) {
                 this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
-                this.status.setStatus(this.langData.status_wrong || 'Мимо!', 'orange');
+                this.status.setStatus(this.langData.status_wrong || 'Мимо!', STATUS_COLORS.WARNING);
                 return;
             }
         }
@@ -589,7 +553,7 @@ export class GameSession {
         if (this.foundMoves.has(moveKey)) {
             this.stats.totalClicks--; // Don't count repeated moves
             soundManager.playAlready();
-            this.status.setStatus(this.langData.status_already || 'Было!', 'blue');
+            this.status.setStatus(this.langData.status_already || 'Было!', STATUS_COLORS.ALREADY);
             this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
             return;
         }
@@ -632,12 +596,12 @@ export class GameSession {
 
         // Status message
         if (this.config.goodMovesOnly) {
-            this.status.setStatus(this.langData.status_correct || 'Верно!', 'green');
+            this.status.setStatus(this.langData.status_correct || 'Верно!', STATUS_COLORS.SUCCESS);
         } else {
             const statusText = moveIsBad
                 ? (this.langData.status_dangerous || 'Опасно!')
                 : (this.langData.status_correct || 'Верно!');
-            const statusColor = moveIsBad ? '#d97706' : 'green';
+            const statusColor = moveIsBad ? STATUS_COLORS.DANGER : STATUS_COLORS.SUCCESS;
             this.status.setStatus(statusText, statusColor);
         }
 
@@ -651,7 +615,7 @@ export class GameSession {
         if (this.config.sequentialMode) {
             this._checkStageCompletion();
         } else if (this._checkIfAllFound()) {
-            this.status.setStatus(this.langData.status_done || 'Всё!', 'green');
+            this.status.setStatus(this.langData.status_done || 'Всё!', STATUS_COLORS.SUCCESS);
             this._markPuzzleSolved();
             this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
         }
@@ -670,7 +634,7 @@ export class GameSession {
         this.isDelayActive = true;
         this.status.pauseTimer();
         soundManager.playError();
-        this.status.setStatus(this.langData.status_error || 'Зевок!', 'red');
+        this.status.setStatus(this.langData.status_error || 'Зевок!', STATUS_COLORS.ERROR);
 
         const shapes: DrawShape[] = [];
 
@@ -732,7 +696,7 @@ export class GameSession {
                 } else {
                     this.status.setStatus(
                         (this.langData.status_refutation_error || 'Ошибка') + ' ' + refutationSan,
-                        'red'
+                        STATUS_COLORS.ERROR
                     );
                 }
             } catch (e) {
@@ -751,7 +715,7 @@ export class GameSession {
                 this.game.undo();
             }
             this.board.undoVisual(this.game.fen(), { showDests: !this.config.hideLegalMoves, movableColor: this._getMovableColor() });
-            this.status.setStatus(this.langData.status_try_another || 'Ищи ещё', '#333');
+            this.status.setStatus(this.langData.status_try_another || 'Ищи ещё', STATUS_COLORS.NEUTRAL);
             this.isDelayActive = false;
 
             const isCountdown = this.config.timeLimit > 0;
@@ -882,7 +846,7 @@ export class GameSession {
         }
 
         if (this.currentStageIndex >= STAGES.length) {
-            this.status.setStatus(this.langData.status_solved || 'Решено!', 'green');
+            this.status.setStatus(this.langData.status_solved || 'Решено!', STATUS_COLORS.SUCCESS);
             this._markPuzzleSolved();
             this._setTimeout(() => this.nextPuzzle(), DELAYS.PUZZLE_TRANSITION);
         }
@@ -894,7 +858,7 @@ export class GameSession {
      */
     private _handleTimeout(): void {
         this.status.pauseTimer();
-        this.status.setStatus(this.langData.status_timeout || 'Время!', 'red');
+        this.status.setStatus(this.langData.status_timeout || 'Время!', STATUS_COLORS.ERROR);
         this._setTimeout(() => this.nextPuzzle(), DELAYS.TIMEOUT_DISPLAY);
     }
 

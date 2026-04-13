@@ -541,85 +541,81 @@
     </div>
 
     <!-- ==========================================
-         FIELD COLOR — Результаты (модал)
+         FIELD COLOR — Результаты
          ========================================== -->
-    <main id="fcResultScreen" class="view hidden w-full min-h-[100svh] flex flex-col items-center py-8 px-4">
-        <div class="card w-full max-w-md bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md my-auto">
-        <div class="card-body">
-            <div class="flex flex-col items-center gap-1 mb-5">
-                <div class="bg-secondary/20 rounded-full p-4 mb-1">
-                    <svg class="icon text-secondary w-8 h-8" aria-hidden="true"><use href="#i-trophy"/></svg>
+    <main id="fcResultScreen" class="view hidden w-full min-h-[100svh] flex flex-col items-center py-6 px-4 fixed inset-0 bg-base-300 z-50 overflow-y-auto">
+        <div class="card w-full max-w-md bg-base-100 shadow-2xl text-center border border-base-content/10 my-auto">
+            <div class="card-body items-center p-4">
+                <div class="w-20 h-20 rounded-full bg-secondary/20 flex items-center justify-center mb-4 text-secondary text-4xl">
+                    <svg class="icon" aria-hidden="true"><use href="#i-trophy"/></svg>
                 </div>
-                <h3 class="font-bold text-2xl">Результат</h3>
-            </div>
+                <h2 class="card-title text-2xl mb-2">🎉 Сессия завершена!</h2>
 
-            <!-- Session stats 2x2 -->
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
-                    <div class="text-xs uppercase font-bold opacity-60 mb-1">Верно</div>
-                    <div class="text-3xl font-bold text-success font-mono" id="fcResCorrect">0</div>
+                <!-- Session stats 2x2 -->
+                <div class="grid grid-cols-2 gap-4 w-full my-4">
+                    <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                        <div class="text-xs uppercase font-bold opacity-60 mb-1">Верно</div>
+                        <div class="text-3xl font-bold text-success font-mono" id="fcResCorrect">0</div>
+                    </div>
+                    <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                        <div class="text-xs uppercase font-bold opacity-60 mb-1">Ошибок</div>
+                        <div class="text-3xl font-bold text-error font-mono" id="fcResIncorrect">0</div>
+                    </div>
+                    <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                        <div class="text-xs uppercase font-bold opacity-60 mb-1">Точность</div>
+                        <div class="text-3xl font-bold text-accent font-mono" id="fcResAccuracy">0%</div>
+                    </div>
+                    <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                        <div class="text-xs uppercase font-bold opacity-60 mb-1">Лучшая серия</div>
+                        <div class="text-3xl font-bold text-warning font-mono" id="fcResBestStreak">0</div>
+                    </div>
                 </div>
-                <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
-                    <div class="text-xs uppercase font-bold opacity-60 mb-1">Ошибок</div>
-                    <div class="text-3xl font-bold text-error font-mono" id="fcResIncorrect">0</div>
-                </div>
-                <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
-                    <div class="text-xs uppercase font-bold opacity-60 mb-1">Точность</div>
-                    <div class="text-3xl font-bold text-accent font-mono" id="fcResAccuracy">0%</div>
-                </div>
-                <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
-                    <div class="text-xs uppercase font-bold opacity-60 mb-1">Лучшая серия</div>
-                    <div class="text-3xl font-bold text-warning font-mono" id="fcResBestStreak">0</div>
-                </div>
-            </div>
 
-            <!-- All-time stats -->
-            <div class="w-full p-3 bg-base-200 rounded-box mb-4">
-                <div class="text-xs font-bold uppercase opacity-60 mb-2 text-center">Статистика за всё время</div>
-                <div class="grid grid-cols-3 gap-2 text-xs text-center mb-2">
-                    <div>
-                        <div class="opacity-60">Сессий</div>
-                        <div id="fcAllTimeSessions" class="font-bold text-lg">0</div>
+                <!-- All-time stats -->
+                <div class="w-full p-3 bg-base-200 rounded-box mb-4">
+                    <div class="text-sm font-bold uppercase opacity-70 mb-3 text-center">Статистика за всё время</div>
+                    <div class="grid grid-cols-3 gap-2 text-xs mb-3">
+                        <div class="text-center">
+                            <div class="opacity-60">Сессий</div>
+                            <div id="fcAllTimeSessions" class="font-bold text-lg">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="opacity-60">Точность</div>
+                            <div id="fcAllTimeAccuracy" class="font-bold text-lg text-accent">—</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="opacity-60">Streak</div>
+                            <div class="font-bold text-lg text-warning"><span id="fcAllTimeStreak">0</span> 🔥</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="opacity-60">Точность</div>
-                        <div id="fcAllTimeAccuracy" class="font-bold text-lg text-accent">—</div>
-                    </div>
-                    <div>
-                        <div class="opacity-60">Streak</div>
-                        <div class="font-bold text-lg text-warning"><span id="fcAllTimeStreak">0</span> 🔥</div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="flex justify-between px-1">
+                            <span class="opacity-60">Всего верно</span>
+                            <span class="font-mono font-bold text-success" id="fcAllTimeCorrect">0</span>
+                        </div>
+                        <div class="flex justify-between px-1">
+                            <span class="opacity-60">Всего ошибок</span>
+                            <span class="font-mono font-bold text-error" id="fcAllTimeIncorrect">0</span>
+                        </div>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div class="flex justify-between px-1">
-                        <span class="opacity-60">Всего верно</span>
-                        <span class="font-mono font-bold text-success" id="fcAllTimeCorrect">0</span>
-                    </div>
-                    <div class="flex justify-between px-1">
-                        <span class="opacity-60">Всего ошибок</span>
-                        <span class="font-mono font-bold text-error" id="fcAllTimeIncorrect">0</span>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Buttons -->
-            <div class="flex gap-2 mb-2">
-                <button id="fcResPlayAgainBtn" class="btn btn-secondary flex-1">
+                <!-- Buttons -->
+                <button id="fcResPlayAgainBtn" class="btn btn-secondary btn-lg w-full mb-2">
                     <svg class="icon mr-1" aria-hidden="true"><use href="#i-play"/></svg> Ещё раз
                 </button>
-                <button id="fcResGoHomeBtn" class="btn btn-ghost flex-1">
-                    <svg class="icon mr-1" aria-hidden="true"><use href="#i-gear"/></svg> Настройки
-                </button>
+                <div class="flex gap-2 w-full">
+                    <button id="fcResGoHomeBtn" class="btn btn-outline flex-1">
+                        <svg class="icon mr-1" aria-hidden="true"><use href="#i-gear"/></svg> Настройки
+                    </button>
+                    <button id="fcResGoGamesBtn" class="btn btn-outline flex-1">
+                        <svg class="icon mr-1" aria-hidden="true"><use href="#i-arrow-left"/></svg> Игры
+                    </button>
+                    <button id="fcResGoStatsBtn" class="btn btn-outline flex-1">
+                        <svg class="icon mr-1" aria-hidden="true"><use href="#i-chart-simple"/></svg> Статистика
+                    </button>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button id="fcResGoGamesBtn" class="btn btn-outline flex-1">
-                    <svg class="icon mr-1" aria-hidden="true"><use href="#i-arrow-left"/></svg> Игры
-                </button>
-                <button id="fcResGoStatsBtn" class="btn btn-outline flex-1">
-                    <svg class="icon mr-1" aria-hidden="true"><use href="#i-chart-simple"/></svg> Статистика
-                </button>
-            </div>
-        </div>
         </div>
     </main>
 

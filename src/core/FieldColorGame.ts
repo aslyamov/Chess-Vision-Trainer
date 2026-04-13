@@ -4,9 +4,9 @@
  * Целевое поле подсвечивается через lastMove.
  */
 
-import { FIELD_COLOR_SETTINGS_KEY, FIELD_COLOR_STATS_KEY } from '../constants.js';
-import { commonStatsManager } from './CommonStatsManager.js';
-import type { FieldColorConfig, FieldColorAllTimeStats } from '../types/index.js';
+import { FIELD_COLOR_SETTINGS_KEY } from '../constants.js';
+import { fcStatsManager } from './FieldColorStatsManager.js';
+import type { FieldColorConfig, FCResult } from '../types/index.js';
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const ALL_SQUARES: string[] = FILES.flatMap(f =>
@@ -31,12 +31,6 @@ interface FCDom {
     feedback: HTMLElement;
     whiteBtn: HTMLButtonElement;
     blackBtn: HTMLButtonElement;
-}
-
-export interface FCResult {
-    correct: number;
-    incorrect: number;
-    bestStreak: number;
 }
 
 export class FieldColorGame {
@@ -272,18 +266,7 @@ export class FieldColorGame {
     }
 
     private _saveStats(): void {
-        try {
-            const raw = localStorage.getItem(FIELD_COLOR_STATS_KEY);
-            const prev: FieldColorAllTimeStats = raw ? JSON.parse(raw)
-                : { totalSessions: 0, totalCorrect: 0, totalIncorrect: 0, allTimeBestStreak: 0 };
-            localStorage.setItem(FIELD_COLOR_STATS_KEY, JSON.stringify({
-                totalSessions:     prev.totalSessions + 1,
-                totalCorrect:      prev.totalCorrect + this.correct,
-                totalIncorrect:    prev.totalIncorrect + this.incorrect,
-                allTimeBestStreak: Math.max(prev.allTimeBestStreak, this.bestStreak),
-            }));
-        } catch (e) { console.warn('Could not save field color stats', e); }
-        commonStatsManager.recordPlay();
+        fcStatsManager.record({ correct: this.correct, incorrect: this.incorrect, bestStreak: this.bestStreak });
     }
 
     static loadConfig(): FieldColorConfig {

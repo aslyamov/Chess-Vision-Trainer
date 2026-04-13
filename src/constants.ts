@@ -35,6 +35,17 @@ export const BRUSHES = {
     REFUTATION: 'red'
 };
 
+/** Status message colors (used in GameSession.setStatus calls) */
+export const STATUS_COLORS = {
+    SUCCESS:  'green',    // Верно! Всё! Решено!
+    ERROR:    'red',      // Зевок! Время!
+    WARNING:  'orange',   // Мимо!
+    ALREADY:  'blue',     // Было!
+    INFO:     '#0050b3',  // Удачи! (старт задачи)
+    NEUTRAL:  '#555',     // Ищи ещё (после опровержения)
+    DANGER:   '#d97706',  // Опасно! (найден плохой ход)
+} as const;
+
 /** localStorage keys */
 export const SETTINGS_KEY = 'chess_vision_settings';
 export const THEME_KEY = 'chess_theme';

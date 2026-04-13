@@ -1,36 +1,42 @@
 /**
  * Модуль игры «Шахи и взятия».
- * Управляет GameSession, BoardRenderer и настройками игры.
+ * Управляет GameSession, BoardRenderer и CCGameUI.
  * ChessVisionTrainer делегирует всю CC-специфику этому модулю.
  */
 
-import { GameSession } from '../GameSession.js';
-import { BoardRenderer } from '../../ui/BoardRenderer.js';
-import { soundManager } from '../SoundManager.js';
+import { GameSession }    from '../GameSession.js';
+import { BoardRenderer }  from '../../ui/BoardRenderer.js';
+import { CCGameUI }       from '../../ui/CCGameUI.js';
+import { soundManager }   from '../SoundManager.js';
 import { puzzleProgress } from '../PuzzleProgressManager.js';
-import { statsManager } from '../StatsManager.js';
-import { debounce } from '../../utils/performance-utils.js';
-import { SETTINGS_KEY } from '../../constants.js';
+import { statsManager }   from '../StatsManager.js';
+import { debounce }       from '../../utils/performance-utils.js';
+import { SETTINGS_KEY }   from '../../constants.js';
 import type { IGameModule, GameDescriptor, AppContext } from '../IGame.js';
+import type { LocaleData } from '../../types/index.js';
 
 export class ChecksAndCapturesModule implements IGameModule {
     readonly descriptor: GameDescriptor = {
-        id:            'checks-and-captures',
-        name:          'Шахи и взятия',
-        selectBtnId:   'selectChecksGame',
-        startScreenId: 'startScreen',
-        gameScreenId:  'gameScreen',
+        id:              'checks-and-captures',
+        name:            'Шахи и взятия',
+        selectBtnId:     'selectChecksGame',
+        startScreenId:   'startScreen',
+        gameScreenId:    'gameScreen',
+        statsTabId:      'tabCC',
+        statsTabPanelId: 'statsTabCC',
     };
 
-    private session: GameSession | null = null;
+    private session:       GameSession   | null = null;
     private boardRenderer: BoardRenderer | null = null;
-    private ctx!: AppContext;
+    private ccUI:          CCGameUI      | null = null;
+    private ctx!:          AppContext;
     private _saveSettingsDebounced!: () => void;
 
-    // ─────────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
 
     init(ctx: AppContext): void {
-        this.ctx = ctx;
+        this.ctx  = ctx;
+        this.ccUI = new CCGameUI(ctx.uiManager, ctx.getLangData());
         this._saveSettingsDebounced = debounce(this._saveSettings.bind(this), 300);
         this._loadSettings();
         this._updateAvailableCount();
@@ -43,20 +49,26 @@ export class ChecksAndCapturesModule implements IGameModule {
     }
 
     destroy(): void {
-        if (this.session) {
-            this.session.destroy();
-            this.session = null;
-        }
-        if (this.boardRenderer) {
-            this.boardRenderer.destroy();
-            this.boardRenderer = null;
-        }
+        this.session?.destroy();
+        this.session = null;
+        this.boardRenderer?.destroy();
+        this.boardRenderer = null;
     }
 
-    // ─────────────────────────────────────────────────────────────────────
+    onLanguageChange(langData: LocaleData): void {
+        this.ccUI?.updateLanguage(langData);
+    }
+
+    renderStats(): void {
+        this.ccUI?.renderStatsTab();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     startSession(): void {
-        const config = this.ctx.uiManager.getSessionConfig();
+        if (!this.ccUI) return;
+
+        const config = this.ccUI.getSessionConfig();
 
         soundManager.preload();
         const soundEnabled = (document.getElementById('setSound') as HTMLInputElement)?.checked ?? true;
@@ -65,15 +77,14 @@ export class ChecksAndCapturesModule implements IGameModule {
         this.destroy();
 
         const puzzles = this.ctx.getPuzzleManager().getPuzzles(config);
-        const dom = this.ctx.uiManager.getDOM();
-        this.boardRenderer = new BoardRenderer(dom.board!, this.ctx.Chessground);
+        this.boardRenderer = new BoardRenderer(this.ccUI.getBoardElement(), this.ctx.Chessground);
 
         this.session = new GameSession(
             puzzles,
             config,
-            this.ctx.uiManager,
+            this.ccUI,
             this.boardRenderer,
-            this.ctx.getStatusManager(),
+            this.ccUI.getStatusManager(),
             this.ctx.getLangData(),
             this.ctx.getCurrentLang(),
             () => this.ctx.getPuzzleManager().getStatsByDifficulty(puzzleProgress.getSolvedIds())
@@ -83,17 +94,9 @@ export class ChecksAndCapturesModule implements IGameModule {
         this._saveSettings();
     }
 
-    giveUp(): void {
-        this.session?.nextPuzzle();
-    }
-
-    redrawBoard(): void {
-        this.boardRenderer?.redraw();
-    }
-
-    flipBoard(): void {
-        this.boardRenderer?.flipBoard();
-    }
+    giveUp():      void { this.session?.nextPuzzle(); }
+    redrawBoard(): void { this.boardRenderer?.redraw(); }
+    flipBoard():   void { this.boardRenderer?.flipBoard(); }
 
     restart(): void {
         this.destroy();
@@ -101,8 +104,7 @@ export class ChecksAndCapturesModule implements IGameModule {
     }
 
     resetProgress(): void {
-        const modal = document.getElementById('confirmResetModal') as HTMLDialogElement;
-        modal?.showModal?.();
+        (document.getElementById('confirmResetModal') as HTMLDialogElement)?.showModal?.();
     }
 
     confirmReset(): void {
@@ -116,71 +118,74 @@ export class ChecksAndCapturesModule implements IGameModule {
         (document.getElementById('confirmResetModal') as HTMLDialogElement)?.close?.();
     }
 
-    // ─────────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
 
     private _applyLiveSettings(): void {
-        if (!this.session) return;
-        const config = this.ctx.uiManager.getSessionConfig();
-        this.ctx.uiManager.applySettings(config);
+        if (!this.session || !this.ccUI) return;
+        const config = this.ccUI.getSessionConfig();
+        this.ccUI.applySettings(config);
         this.session.updateLiveConfig(config);
         const soundEnabled = (document.getElementById('setSound') as HTMLInputElement)?.checked ?? true;
         soundManager.setEnabled(soundEnabled);
     }
 
     private _updateAvailableCount(): void {
+        if (!this.ccUI) return;
         const diffEl = document.querySelector<HTMLInputElement>('input[name="difficulty"]:checked');
         if (!diffEl) return;
         const count = this.ctx.getPuzzleManager().getCount(diffEl.value);
-        this.ctx.uiManager.updateAvailableCount(count);
+        this.ccUI.updateAvailableCount(count);
     }
 
     private _setupEventListeners(): void {
         document.getElementById('startGameBtn')?.addEventListener('click', () => this.startSession());
-        document.getElementById('giveUpBtn')?.addEventListener('click', () => this.giveUp());
+        document.getElementById('giveUpBtn')?.addEventListener('click',   () => this.giveUp());
         document.getElementById('flipBoardBtn')?.addEventListener('click', () => this.flipBoard());
-        document.getElementById('restartBtn')?.addEventListener('click', () => this.restart());
+        document.getElementById('restartBtn')?.addEventListener('click',   () => this.restart());
         document.getElementById('resetProgressBtn')?.addEventListener('click', () => this.resetProgress());
-        document.getElementById('confirmResetBtn')?.addEventListener('click', () => this.confirmReset());
-        document.getElementById('cancelResetBtn')?.addEventListener('click', () => this.cancelReset());
-        document.getElementById('resGoHomeBtn')?.addEventListener('click', () => this.ctx.goHome());
-        document.getElementById('resGoStatsBtn')?.addEventListener('click', () => this.ctx.openStats());
+        document.getElementById('confirmResetBtn')?.addEventListener('click',  () => this.confirmReset());
+        document.getElementById('cancelResetBtn')?.addEventListener('click',   () => this.cancelReset());
+        document.getElementById('resGoHomeBtn')?.addEventListener('click',     () => this.ctx.goHome());
+        document.getElementById('resGoStatsBtn')?.addEventListener('click',    () => this.ctx.openStats());
     }
 
     private _setupAutoSave(): void {
-        document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
+        document.querySelectorAll('input[name="difficulty"]').forEach(radio =>
             radio.addEventListener('change', () => {
                 this._updateAvailableCount();
                 this._saveSettings();
-            });
-        });
+            })
+        );
 
         document.getElementById('taskCountInput')?.addEventListener('change', () => this._saveSettings());
         document.getElementById('timeLimitInput')?.addEventListener('change', () => this._saveSettings());
 
         const checkboxIds = ['setSequential', 'setHighlights', 'setShowDests',
             'setHints', 'setStatusText', 'setShowLog', 'setGoodMoves', 'setSound'];
-        checkboxIds.forEach(id => {
+        checkboxIds.forEach(id =>
             document.getElementById(id)?.addEventListener('change', () => {
                 this._saveSettingsDebounced();
                 this._applyLiveSettings();
-            });
-        });
+            })
+        );
     }
 
     private _saveSettings(): void {
+        if (!this.ccUI) return;
         try {
+            const cfg = this.ccUI.getSessionConfig();
             const settings = {
-                difficulty:  (document.querySelector('input[name="difficulty"]:checked') as HTMLInputElement)?.value || 'medium',
-                taskCount:   (document.getElementById('taskCountInput') as HTMLInputElement)?.value || '10',
-                timeLimit:   (document.getElementById('timeLimitInput') as HTMLInputElement)?.value || '0',
-                sequential:  (document.getElementById('setSequential') as HTMLInputElement)?.checked ?? false,
-                highlights:  (document.getElementById('setHighlights') as HTMLInputElement)?.checked ?? true,
-                hints:       (document.getElementById('setHints') as HTMLInputElement)?.checked ?? true,
-                statusText:  (document.getElementById('setStatusText') as HTMLInputElement)?.checked ?? true,
-                showLog:     (document.getElementById('setShowLog') as HTMLInputElement)?.checked ?? true,
-                goodMoves:   (document.getElementById('setGoodMoves') as HTMLInputElement)?.checked ?? false,
-                sound:       (document.getElementById('setSound') as HTMLInputElement)?.checked ?? true,
-                showDests:   (document.getElementById('setShowDests') as HTMLInputElement)?.checked ?? true,
+                difficulty:  cfg.difficulty,
+                taskCount:   String(cfg.taskCount),
+                timeLimit:   String(cfg.timeLimit),
+                sequential:  cfg.sequentialMode,
+                highlights:  cfg.highlightFound,
+                hints:       cfg.showHints,
+                statusText:  cfg.showText,
+                showLog:     cfg.showLog,
+                goodMoves:   cfg.goodMovesOnly,
+                showDests:   !cfg.hideLegalMoves,
+                sound: (document.getElementById('setSound') as HTMLInputElement)?.checked ?? true,
             };
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
         } catch (e) {
@@ -192,7 +197,6 @@ export class ChecksAndCapturesModule implements IGameModule {
         try {
             const saved = localStorage.getItem(SETTINGS_KEY);
             if (!saved) return;
-
             const s = JSON.parse(saved);
 
             if (s.difficulty) {
@@ -215,12 +219,12 @@ export class ChecksAndCapturesModule implements IGameModule {
             setInput('timeLimitInput', s.timeLimit);
             setCheckbox('setSequential', s.sequential);
             setCheckbox('setHighlights', s.highlights);
-            setCheckbox('setHints', s.hints);
+            setCheckbox('setHints',      s.hints);
             setCheckbox('setStatusText', s.statusText);
-            setCheckbox('setShowLog', s.showLog);
-            setCheckbox('setGoodMoves', s.goodMoves);
-            setCheckbox('setSound', s.sound);
-            setCheckbox('setShowDests', s.showDests);
+            setCheckbox('setShowLog',    s.showLog);
+            setCheckbox('setGoodMoves',  s.goodMoves);
+            setCheckbox('setSound',      s.sound);
+            setCheckbox('setShowDests',  s.showDests);
         } catch (e) {
             console.warn('Не удалось загрузить настройки:', e);
         }

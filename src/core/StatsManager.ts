@@ -1,6 +1,6 @@
 /**
- * StatsManager - управление статистикой сессий
- * Сохраняет историю сессий, общую статистику, streaks
+ * StatsManager — статистика игры «Шахи и взятия».
+ * Хранит историю сессий и агрегированные all-time данные в localStorage.
  */
 
 import type {
@@ -10,44 +10,31 @@ import type {
 } from '../types/stats.js';
 
 import { SESSIONS_KEY, ALL_TIME_STATS_KEY as STATS_KEY } from '../constants.js';
-const MAX_SESSIONS = 100; // Хранить последние 100 сессий
 
-/**
- * Создаёт пустую статистику ходов
- */
+const MAX_SESSIONS = 100;
+
 function createEmptyMoveStats(): MoveStatsRecord {
     return {
-        checksFound: 0,
-        capturesFound: 0,
-        totalChecks: 0,
-        totalCaptures: 0,
-        wChecks: { found: 0, total: 0 },
+        wChecks:   { found: 0, total: 0 },
         wCaptures: { found: 0, total: 0 },
-        bChecks: { found: 0, total: 0 },
-        bCaptures: { found: 0, total: 0 }
+        bChecks:   { found: 0, total: 0 },
+        bCaptures: { found: 0, total: 0 },
     };
 }
 
-/**
- * Создаёт пустую общую статистику
- */
 function createEmptyAllTimeStats(): AllTimeStats {
-    const today = new Date().toISOString().split('T')[0];
     return {
-        totalSessions: 0,
-        totalPuzzles: 0,
+        totalSessions:      0,
+        totalPuzzles:       0,
         totalPuzzlesSolved: 0,
-        totalTime: 0,
-        bestAccuracy: 0,
-        avgAccuracy: 0,
-        moveStats: createEmptyMoveStats(),
-        firstPlayedDate: today
+        totalTime:          0,
+        bestAccuracy:       0,
+        avgAccuracy:        0,
+        moveStats:          createEmptyMoveStats(),
+        firstPlayedDate:    new Date().toISOString().split('T')[0],
     };
 }
 
-/**
- * Генерирует UUID v4
- */
 function generateUUID(): string {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
         const r = Math.random() * 16 | 0;
@@ -61,47 +48,103 @@ class StatsManager {
     private allTimeStats: AllTimeStats;
 
     constructor() {
-        this.sessions = this.loadSessions();
-        this.allTimeStats = this.loadAllTimeStats();
+        this.sessions      = this._loadSessions();
+        this.allTimeStats  = this._loadAllTimeStats();
         console.log(`[Stats] Загружено ${this.sessions.length} сессий`);
     }
 
-    /**
-     * Загружает сессии из localStorage
-     */
-    private loadSessions(): SessionRecord[] {
-        try {
-            const data = localStorage.getItem(SESSIONS_KEY);
-            if (data) {
-                return JSON.parse(data);
-            }
-        } catch (e) {
-            console.warn('[Stats] Ошибка загрузки сессий:', e);
-        }
-        return [];
+    // ─── CRUD ────────────────────────────────────────────────────────────────
+
+    saveSession(sessionData: Omit<SessionRecord, 'id' | 'date' | 'timestamp'>): SessionRecord {
+        const now = new Date();
+        const session: SessionRecord = {
+            ...sessionData,
+            id:        generateUUID(),
+            date:      now.toISOString().split('T')[0],
+            timestamp: now.getTime(),
+        };
+
+        this.sessions.push(session);
+        this._saveSessions();
+
+        this._updateAllTimeStats(session);
+        this._saveAllTimeStats();
+
+        console.log('[Stats] Сессия сохранена:', session.id);
+        return session;
     }
 
-    /**
-     * Сохраняет сессии в localStorage
-     */
-    private saveSessions(): void {
+    getAllTimeStats(): AllTimeStats {
+        return { ...this.allTimeStats };
+    }
+
+    clearAllStats(): void {
+        this.sessions     = [];
+        this.allTimeStats = createEmptyAllTimeStats();
+        this._saveSessions();
+        this._saveAllTimeStats();
+        console.log('[Stats] Статистика очищена');
+    }
+
+    // ─── Private ─────────────────────────────────────────────────────────────
+
+    private _updateAllTimeStats(session: SessionRecord): void {
+        const s  = this.allTimeStats;
+        const ms = s.moveStats;
+        const sm = session.moveStats;
+
+        s.totalSessions++;
+        s.totalPuzzles       += session.puzzleCount;
+        s.totalPuzzlesSolved += session.puzzlesSolved;
+        s.totalTime          += session.totalTime;
+
+        if (session.accuracy > s.bestAccuracy) {
+            s.bestAccuracy = session.accuracy;
+        }
+
+        // avgAccuracy пересчитывается по всем сессиям точно
+        const totalAcc = this.sessions.reduce((sum, r) => sum + r.accuracy, 0);
+        s.avgAccuracy = this.sessions.length > 0
+            ? Math.round(totalAcc / this.sessions.length)
+            : 0;
+
+        // Move stats по цветам (без избыточных агрегатов)
+        ms.wChecks.found   += sm.wChecks.found;
+        ms.wChecks.total   += sm.wChecks.total;
+        ms.wCaptures.found += sm.wCaptures.found;
+        ms.wCaptures.total += sm.wCaptures.total;
+        ms.bChecks.found   += sm.bChecks.found;
+        ms.bChecks.total   += sm.bChecks.total;
+        ms.bCaptures.found += sm.bCaptures.found;
+        ms.bCaptures.total += sm.bCaptures.total;
+    }
+
+    private _loadSessions(): SessionRecord[] {
         try {
-            // Оставляем только последние MAX_SESSIONS
-            const toSave = this.sessions.slice(-MAX_SESSIONS);
-            localStorage.setItem(SESSIONS_KEY, JSON.stringify(toSave));
+            const data = localStorage.getItem(SESSIONS_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.warn('[Stats] Ошибка загрузки сессий:', e);
+            return [];
+        }
+    }
+
+    private _saveSessions(): void {
+        try {
+            localStorage.setItem(SESSIONS_KEY, JSON.stringify(this.sessions.slice(-MAX_SESSIONS)));
         } catch (e) {
             console.warn('[Stats] Ошибка сохранения сессий:', e);
         }
     }
 
-    /**
-     * Загружает общую статистику из localStorage
-     */
-    private loadAllTimeStats(): AllTimeStats {
+    private _loadAllTimeStats(): AllTimeStats {
         try {
             const data = localStorage.getItem(STATS_KEY);
             if (data) {
-                return JSON.parse(data);
+                const parsed = JSON.parse(data);
+                // Миграция: если в старых данных нет moveStats — подставить пустые
+                if (!parsed.moveStats) parsed.moveStats = createEmptyMoveStats();
+                return parsed;
             }
         } catch (e) {
             console.warn('[Stats] Ошибка загрузки статистики:', e);
@@ -109,100 +152,13 @@ class StatsManager {
         return createEmptyAllTimeStats();
     }
 
-    /**
-     * Сохраняет общую статистику в localStorage
-     */
-    private saveAllTimeStats(): void {
+    private _saveAllTimeStats(): void {
         try {
             localStorage.setItem(STATS_KEY, JSON.stringify(this.allTimeStats));
         } catch (e) {
             console.warn('[Stats] Ошибка сохранения статистики:', e);
         }
     }
-
-    /**
-     * Сохраняет результат сессии
-     */
-    saveSession(sessionData: Omit<SessionRecord, 'id' | 'date' | 'timestamp'>): SessionRecord {
-        const now = new Date();
-        const session: SessionRecord = {
-            ...sessionData,
-            id: generateUUID(),
-            date: now.toISOString().split('T')[0],
-            timestamp: now.getTime()
-        };
-
-        // Добавляем в историю
-        this.sessions.push(session);
-        this.saveSessions();
-
-        // Обновляем общую статистику
-        this.updateAllTimeStats(session);
-
-        console.log('[Stats] Сессия сохранена:', session.id);
-        return session;
-    }
-
-    /**
-     * Обновляет общую статистику на основе новой сессии
-     */
-    private updateAllTimeStats(session: SessionRecord): void {
-        const stats = this.allTimeStats;
-
-        stats.totalSessions++;
-        stats.totalPuzzles += session.puzzleCount;
-        stats.totalPuzzlesSolved += session.puzzlesSolved;
-        stats.totalTime += session.totalTime;
-
-        // Лучшая точность
-        if (session.accuracy > stats.bestAccuracy) {
-            stats.bestAccuracy = session.accuracy;
-        }
-
-        // Средняя точность (пересчитываем)
-        const totalAccuracy = this.sessions.reduce((sum, s) => sum + s.accuracy, 0);
-        stats.avgAccuracy = this.sessions.length > 0
-            ? Math.round(totalAccuracy / this.sessions.length)
-            : 0;
-
-        // Статистика по ходам
-        const ms = stats.moveStats;
-        const sms = session.moveStats;
-
-        ms.checksFound += sms.checksFound;
-        ms.capturesFound += sms.capturesFound;
-        ms.totalChecks += sms.totalChecks;
-        ms.totalCaptures += sms.totalCaptures;
-
-        ms.wChecks.found += sms.wChecks.found;
-        ms.wChecks.total += sms.wChecks.total;
-        ms.wCaptures.found += sms.wCaptures.found;
-        ms.wCaptures.total += sms.wCaptures.total;
-        ms.bChecks.found += sms.bChecks.found;
-        ms.bChecks.total += sms.bChecks.total;
-        ms.bCaptures.found += sms.bCaptures.found;
-        ms.bCaptures.total += sms.bCaptures.total;
-    }
-
-    /**
-     * Возвращает общую статистику
-     */
-    getAllTimeStats(): AllTimeStats {
-        return { ...this.allTimeStats };
-    }
-
-    /**
-     * Очищает всю статистику
-     */
-    clearAllStats(): void {
-        this.sessions = [];
-        this.allTimeStats = createEmptyAllTimeStats();
-        this.saveSessions();
-        this.saveAllTimeStats();
-        console.log('[Stats] Статистика очищена');
-    }
-
 }
 
-// Singleton
 export const statsManager = new StatsManager();

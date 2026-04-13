@@ -5,19 +5,20 @@
  */
 
 import { FieldColorGame } from '../FieldColorGame.js';
-import type { FCResult } from '../FieldColorGame.js';
-import { FIELD_COLOR_STATS_KEY } from '../../constants.js';
+import { fcStatsManager } from '../FieldColorStatsManager.js';
 import { commonStatsManager } from '../CommonStatsManager.js';
-import type { FieldColorConfig, FieldColorAllTimeStats } from '../../types/index.js';
+import type { FieldColorConfig, FCResult } from '../../types/index.js';
 import type { IGameModule, GameDescriptor, AppContext } from '../IGame.js';
 
 export class FieldColorModule implements IGameModule {
     readonly descriptor: GameDescriptor = {
-        id:            'field-color',
-        name:          'Цвет поля',
-        selectBtnId:   'selectFieldColorGame',
-        startScreenId: 'fieldColorStartScreen',
-        gameScreenId:  'fieldColorScreen',
+        id:              'field-color',
+        name:            'Цвет поля',
+        selectBtnId:     'selectFieldColorGame',
+        startScreenId:   'fieldColorStartScreen',
+        gameScreenId:    'fieldColorScreen',
+        statsTabId:      'tabFC',
+        statsTabPanelId: 'statsTabFC',
     };
 
     private game: FieldColorGame | null = null;
@@ -72,6 +73,10 @@ export class FieldColorModule implements IGameModule {
         this.game.start();
     }
 
+    renderStats(): void {
+        this._renderAllTimeStats();
+    }
+
     private _showResults(result: FCResult): void {
         const set = (id: string, v: string) => {
             const el = document.getElementById(id);
@@ -79,26 +84,27 @@ export class FieldColorModule implements IGameModule {
         };
         const total = result.correct + result.incorrect;
 
-        // Session stats
         set('fcResCorrect',    String(result.correct));
         set('fcResIncorrect',  String(result.incorrect));
         set('fcResAccuracy',   `${total > 0 ? Math.round(result.correct / total * 100) : 0}%`);
         set('fcResBestStreak', String(result.bestStreak));
 
-        // All-time stats
-        try {
-            const raw = localStorage.getItem(FIELD_COLOR_STATS_KEY);
-            const s: FieldColorAllTimeStats = raw ? JSON.parse(raw)
-                : { totalSessions: 0, totalCorrect: 0, totalIncorrect: 0, allTimeBestStreak: 0 };
-            const allTotal = s.totalCorrect + s.totalIncorrect;
-            set('fcAllTimeSessions',  String(s.totalSessions));
-            set('fcAllTimeAccuracy',  allTotal > 0 ? `${Math.round(s.totalCorrect / allTotal * 100)}%` : '—');
-            set('fcAllTimeCorrect',   String(s.totalCorrect));
-            set('fcAllTimeIncorrect', String(s.totalIncorrect));
-            set('fcAllTimeStreak',    String(commonStatsManager.getStats().currentStreak));
-        } catch { /* нули из HTML */ }
-
+        this._renderAllTimeStats();
         this.ctx.uiManager.switchView('fcResultScreen');
+    }
+
+    private _renderAllTimeStats(): void {
+        const set = (id: string, v: string) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = v;
+        };
+        const s = fcStatsManager.load();
+        const allTotal = s.totalCorrect + s.totalIncorrect;
+        set('fcAllTimeSessions',  String(s.totalSessions));
+        set('fcAllTimeAccuracy',  allTotal > 0 ? `${Math.round(s.totalCorrect / allTotal * 100)}%` : '—');
+        set('fcAllTimeCorrect',   String(s.totalCorrect));
+        set('fcAllTimeIncorrect', String(s.totalIncorrect));
+        set('fcAllTimeStreak',    String(commonStatsManager.getStats().currentStreak));
     }
 
     // ─────────────────────────────────────────────────────────────────────

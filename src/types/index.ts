@@ -1,15 +1,11 @@
 /**
  * Типы и интерфейсы для Chess Vision Trainer
- * Все типы приложения в одном месте
  */
 
 // ==========================================
 // Puzzle Types
 // ==========================================
 
-/**
- * Шахматная позиция-задача
- */
 export interface Puzzle {
     id: number;
     fen: string;
@@ -17,9 +13,6 @@ export interface Puzzle {
     bad_moves?: Array<string | BadMove>;
 }
 
-/**
- * Плохой ход с опровержением
- */
 export interface BadMove {
     san: string;
     refutation: string;
@@ -29,9 +22,6 @@ export interface BadMove {
 // Game Session Types
 // ==========================================
 
-/**
- * Конфигурация игровой сессии
- */
 export interface SessionConfig {
     difficulty: string;
     taskCount: number;
@@ -46,9 +36,6 @@ export interface SessionConfig {
     hideLegalMoves: boolean;
 }
 
-/**
- * Данные о ходе
- */
 export interface MoveData {
     from: string;
     to: string;
@@ -58,9 +45,6 @@ export interface MoveData {
     color?: string;
 }
 
-/**
- * Целевые ходы (шахи и взятия)
- */
 export interface TargetMoves {
     checks: MoveData[];
     captures: MoveData[];
@@ -68,21 +52,44 @@ export interface TargetMoves {
     capturesMap: Map<string, MoveData>;
 }
 
-/**
- * Целевые ходы для обоих цветов
- */
 export interface TargetColors {
     w: TargetMoves;
     b: TargetMoves;
 }
 
 // ==========================================
+// CC Game UI types (used by CCGameUI / GameSession)
+// ==========================================
+
+/** Статистика за сессию «Шахов и взятий», передаваемая в showResults() */
+export interface CCSessionStats {
+    solved: number;
+    total: number;
+    time: number;
+    accuracy: number;
+    avgTime: number;
+    newPuzzles: number;
+    moveStats: {
+        wChecks:   { found: number; total: number };
+        wCaptures: { found: number; total: number };
+        bChecks:   { found: number; total: number };
+        bCaptures: { found: number; total: number };
+    };
+}
+
+/** Общий прогресс по задачникам, передаваемый в showResults() */
+export interface CCOverallStats {
+    totalSolved: number;
+    totalPuzzles: number;
+    easy:   { solved: number; total: number };
+    medium: { solved: number; total: number };
+    hard:   { solved: number; total: number };
+}
+
+// ==========================================
 // Chessground Types
 // ==========================================
 
-/**
- * Конфигурация Chessground доски
- */
 export interface ChessgroundConfig {
     fen?: string;
     orientation?: 'white' | 'black';
@@ -109,18 +116,12 @@ export interface ChessgroundConfig {
     };
 }
 
-/**
- * Фигура для рисования на доске (стрелка/подсветка)
- */
 export interface DrawShape {
     orig: string;
-    dest: string;
+    dest?: string;
     brush: string;
 }
 
-/**
- * API Chessground доски
- */
 export interface ChessgroundAPI {
     set(config: Partial<ChessgroundConfig>): void;
     getFen(): string;
@@ -134,46 +135,25 @@ export interface ChessgroundAPI {
 // ==========================================
 
 /**
- * Кэшированные DOM элементы
+ * Глобальный кэш DOM — только экраны для view-routing.
+ * CC-специфичные элементы живут в CCGameUI.
  */
 export interface CachedDOM {
-    // Screens
-    homeScreen: HTMLElement | null;
-    startScreen: HTMLElement | null;
-    gameScreen: HTMLElement | null;
+    homeScreen:   HTMLElement | null;
+    startScreen:  HTMLElement | null;
+    gameScreen:   HTMLElement | null;
     resultScreen: HTMLElement | null;
+}
 
-    // Game elements
-    board: HTMLElement | null;
-    progressDisplay: HTMLElement | null;
-    taskIndicator: HTMLElement | null;
-    currentTaskName: HTMLElement | null;
+/**
+ * DOM-элементы, нужные StatusManager.
+ * Живут в CCGameUI, передаются в StatusManager при инициализации.
+ */
+export interface CCStatusDom {
     statusMessage: HTMLElement | null;
-    gameTimer: HTMLElement | null;
-
-    // Stats and logs
-    statsContainer: HTMLElement | null;
-    logContainer: HTMLElement | null;
-    logWhite: HTMLElement | null;
-    logBlack: HTMLElement | null;
-
-    // Result screen
-    resTotalSolved: HTMLElement | null;
-    resTotalTime: HTMLElement | null;
-    resAccuracy: HTMLElement | null;
-    resAvgTime: HTMLElement | null;
-
-    // Buttons
-    startGameBtn: HTMLButtonElement | null;
-    restartBtn: HTMLButtonElement | null;
-    flipBoardBtn: HTMLButtonElement | null;
-    giveUpBtn: HTMLButtonElement | null;
-
-    // Counters
-    wChecks: HTMLElement | null;
-    wCaptures: HTMLElement | null;
-    bChecks: HTMLElement | null;
-    bCaptures: HTMLElement | null;
+    logWhite:      HTMLElement | null;
+    logBlack:      HTMLElement | null;
+    gameTimer:     HTMLElement | null;
 }
 
 // ==========================================
@@ -197,13 +177,17 @@ export interface FieldColorAllTimeStats {
     allTimeBestStreak: number;
 }
 
+/** Результат одной сессии «Цвета поля» */
+export interface FCResult {
+    correct: number;
+    incorrect: number;
+    bestStreak: number;
+}
+
 // ==========================================
 // Error Types
 // ==========================================
 
-/**
- * Категории ошибок
- */
 export type ErrorCategory =
     | 'INITIALIZATION'
     | 'LIBRARY_LOAD'
@@ -212,9 +196,6 @@ export type ErrorCategory =
     | 'GAME_LOGIC'
     | 'UI_RENDER';
 
-/**
- * Лог ошибки
- */
 export interface ErrorLog {
     category: ErrorCategory;
     message: string;
@@ -226,15 +207,8 @@ export interface ErrorLog {
 // Localization Types
 // ==========================================
 
-/**
- * Словарь переводов
- */
 export interface LocaleData {
     [key: string]: string;
 }
 
-/**
- * Поддерживаемые языки
- */
 export type SupportedLocale = 'ru' | 'en';
-
