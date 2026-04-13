@@ -78,6 +78,8 @@ export declare class MemoryGame {
     private _clearShowTimer;
     private _clearAnswerTimer;
     private _clearCountdown;
+    /** Обновляет блок вопроса с нужным цветовым стилем */
+    private _setQuestion;
     private _showFeedback;
     private _updateStats;
     private _cacheDom;

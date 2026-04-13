@@ -151,7 +151,7 @@ export class MemoryGame {
         this.dom.timerEl.textContent = '—';
         this.dom.timerEl.classList.remove('text-error');
         this.dom.readyBtn.classList.add('hidden');
-        this.dom.questionEl.textContent = '';
+        this._setQuestion('', 'showing');
         this.dom.piecePalette.classList.add('hidden');
         this.dom.placePalette.classList.add('hidden');
         this.dom.placeActions.classList.add('hidden');
@@ -200,7 +200,7 @@ export class MemoryGame {
 
         // Показываем доску, сбрасываем палитры
         this.dom.boardEl.classList.remove('memory-hidden');
-        this.dom.questionEl.textContent = 'Запомни позицию';
+        this._setQuestion('Запомни позицию', 'showing');
         this.dom.piecePalette.classList.add('hidden');
         this.dom.placePalette.classList.add('hidden');
         this.dom.placeActions.classList.add('hidden');
@@ -238,7 +238,7 @@ export class MemoryGame {
         this.currentQuestion = question;
 
         // Отображаем вопрос
-        this.dom.questionEl.textContent = question.questionText;
+        this._setQuestion(question.questionText, 'asking');
 
         if (qType === 'find-piece') {
             this.ground?.set({ fen: '8/8/8/8/8/8/8/8', viewOnly: true });
@@ -417,7 +417,7 @@ export class MemoryGame {
         this._renderPlacementPalette();
         this.dom.placePalette.classList.remove('hidden');
         this.dom.placeActions.classList.remove('hidden');
-        this.dom.questionEl.textContent = 'Расставьте позицию по памяти';
+        this._setQuestion('Расставьте позицию по памяти', 'asking');
 
         if (this.config.answerSeconds > 0) {
             this._startAnswerCountdown(this.config.answerSeconds);
@@ -724,6 +724,15 @@ export class MemoryGame {
     }
 
     // ─── UI helpers ────────────────────────────────────────────────────────────
+
+    /** Обновляет блок вопроса с нужным цветовым стилем */
+    private _setQuestion(text: string, style: 'showing' | 'asking'): void {
+        this.dom.questionEl.textContent = text;
+        const base = 'flex-1 rounded-xl p-3 text-center font-bold border flex items-center justify-center h-14';
+        this.dom.questionEl.className = style === 'showing'
+            ? `${base} bg-success/10 text-success border-base-content/10`
+            : `${base} bg-base-200 text-base-content border-base-content/10`;
+    }
 
     private _showFeedback(correct: boolean, timeout = false): void {
         const el = this.dom.feedbackEl;
