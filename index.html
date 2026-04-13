@@ -809,22 +809,19 @@
                         </div>
 
                         <!-- Строка 1: Таймер + Верно + Ошибок + Осталось -->
-                        <div class="grid grid-cols-4 gap-2">
-                            <div class="bg-neutral text-neutral-content rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-[3.5rem]">
-                                <span id="memoryTimer" class="font-mono text-lg font-bold leading-tight">—</span>
-                                <span class="text-[10px] opacity-60 mt-0.5">сек</span>
+                        <div class="grid grid-cols-[1fr_auto_auto_auto] gap-2">
+                            <div class="bg-neutral text-neutral-content rounded-xl flex items-center justify-center p-3 font-mono text-2xl font-bold border border-base-content/10 h-14">
+                                <svg class="icon mr-2 text-sm opacity-70" aria-hidden="true"><use href="#i-clock"/></svg>
+                                <span id="memoryTimer">—</span>
                             </div>
-                            <div class="bg-success/10 text-success rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-[3.5rem]">
-                                <span id="memoryCorrect" class="font-mono text-lg font-bold leading-tight">0</span>
-                                <span class="text-[10px] opacity-60 mt-0.5">Верно</span>
+                            <div class="bg-success/10 text-success rounded-xl flex items-center justify-center px-3 min-w-14 font-mono text-base font-bold border border-base-content/10 h-14">
+                                <span id="memoryCorrect">0</span>
                             </div>
-                            <div class="bg-error/10 text-error rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-[3.5rem]">
-                                <span id="memoryIncorrect" class="font-mono text-lg font-bold leading-tight">0</span>
-                                <span class="text-[10px] opacity-60 mt-0.5">Ошибок</span>
+                            <div class="bg-error/10 text-error rounded-xl flex items-center justify-center px-3 min-w-14 font-mono text-base font-bold border border-base-content/10 h-14">
+                                <span id="memoryIncorrect">0</span>
                             </div>
-                            <div class="bg-base-200 rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-[3.5rem]">
-                                <span id="memoryRound" class="font-mono text-lg font-bold leading-tight">—</span>
-                                <span class="text-[10px] opacity-60 mt-0.5">осталось</span>
+                            <div class="bg-base-200 rounded-xl flex items-center justify-center px-3 min-w-14 font-mono text-base font-bold border border-base-content/10 h-14">
+                                <span id="memoryRound">—</span>
                             </div>
                         </div>
 
