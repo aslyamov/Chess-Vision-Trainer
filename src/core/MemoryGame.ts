@@ -258,7 +258,7 @@ export class MemoryGame {
                 },
             });
             this.dom.boardEl.classList.remove('memory-hidden');
-            this._renderPalette(puzzle.fen);
+            this._renderPalette();
             this.dom.piecePalette.classList.remove('hidden');
         }
 
@@ -390,6 +390,7 @@ export class MemoryGame {
             if (ch === '/') { rank--; file = 0; continue; }
             const n = parseInt(ch);
             if (!isNaN(n)) { file += n; continue; }
+            if (file >= 8 || rank < 0) continue;
             const color = ch === ch.toUpperCase() ? 'w' : 'b';
             const type  = ch.toUpperCase();
             const square = String.fromCharCode(97 + file) + (rank + 1);
@@ -569,9 +570,6 @@ export class MemoryGame {
             this._cleanupDrag();
         };
 
-        // Удаляем старые перед добавлением — на случай двойного вызова
-        if (this.dragMove) document.removeEventListener('pointermove', this.dragMove);
-        if (this.dragEnd)  document.removeEventListener('pointerup',   this.dragEnd);
         document.addEventListener('pointermove', this.dragMove,  { passive: false });
         document.addEventListener('pointerup',   this.dragEnd);
     }
@@ -646,7 +644,7 @@ export class MemoryGame {
 
     // ─── палитра для name-piece ────────────────────────────────────────────────
 
-    private _renderPalette(_unused: string): void {
+    private _renderPalette(): void {
         this.dom.piecePalette.innerHTML = '';
 
         // Всегда показываем все 6 типов — не подсказываем что есть в позиции

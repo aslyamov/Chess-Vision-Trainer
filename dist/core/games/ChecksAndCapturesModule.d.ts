@@ -12,6 +12,7 @@ export declare class ChecksAndCapturesModule implements IGameModule {
     private ccUI;
     private ctx;
     private _saveSettingsDebounced;
+    private _destroyed;
     init(ctx: AppContext): void;
     onSelected(): void;
     destroy(): void;

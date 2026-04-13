@@ -25,6 +25,7 @@ export class ChecksAndCapturesModule {
         this.session = null;
         this.boardRenderer = null;
         this.ccUI = null;
+        this._destroyed = false;
     }
     // ─────────────────────────────────────────────────────────────────────────
     init(ctx) {
@@ -40,6 +41,7 @@ export class ChecksAndCapturesModule {
         this.ctx.uiManager.switchView(this.descriptor.startScreenId);
     }
     destroy() {
+        this._destroyed = true;
         this.session?.destroy();
         this.session = null;
         this.boardRenderer?.destroy();
@@ -130,7 +132,7 @@ export class ChecksAndCapturesModule {
         }));
     }
     _saveSettings() {
-        if (!this.ccUI)
+        if (this._destroyed || !this.ccUI)
             return;
         try {
             const cfg = this.ccUI.getSessionConfig();

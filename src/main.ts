@@ -5,7 +5,8 @@
  */
 
 import { ChessVisionTrainer } from './core/ChessVisionTrainer.js';
-import { logError } from './utils/error-handler.js';
+import { logError }           from './utils/error-handler.js';
+import { debounce }           from './utils/performance-utils.js';
 
 declare global {
     interface Window {
@@ -86,11 +87,11 @@ window.addEventListener('beforeunload', () => {
  * Do NOT scrollTo(0,0) here: on iOS Safari the address bar
  * collapse/expand fires resize, which would yank the page to top.
  */
-window.addEventListener('resize', () => {
+window.addEventListener('resize', debounce(() => {
     if (window.chessApp) {
         window.chessApp.redrawBoard();
     }
-});
+}, 150));
 
 /**
  * Global error handler

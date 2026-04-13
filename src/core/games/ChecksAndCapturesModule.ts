@@ -31,6 +31,7 @@ export class ChecksAndCapturesModule implements IGameModule {
     private ccUI:          CCGameUI      | null = null;
     private ctx!:          AppContext;
     private _saveSettingsDebounced!: () => void;
+    private _destroyed = false;
 
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,7 @@ export class ChecksAndCapturesModule implements IGameModule {
     }
 
     destroy(): void {
+        this._destroyed = true;
         this.session?.destroy();
         this.session = null;
         this.boardRenderer?.destroy();
@@ -171,7 +173,7 @@ export class ChecksAndCapturesModule implements IGameModule {
     }
 
     private _saveSettings(): void {
-        if (!this.ccUI) return;
+        if (this._destroyed || !this.ccUI) return;
         try {
             const cfg = this.ccUI.getSessionConfig();
             const settings = {
