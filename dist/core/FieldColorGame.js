@@ -73,7 +73,7 @@ export class FieldColorGame {
             this.ground.set({ coordinates: config.showCoordinates });
         this._applyStyle();
         if (this.currentSquare && config.boardStyle !== 'none') {
-            this.ground?.set({ lastMove: [this.currentSquare, this.currentSquare] });
+            this.ground?.set({ drawable: { shapes: [{ orig: this.currentSquare, brush: 'blue' }] } });
         }
     }
     destroy() {
@@ -120,10 +120,10 @@ export class FieldColorGame {
             orientation,
             viewOnly: true,
             coordinates: this.config.showCoordinates,
-            highlight: { lastMove: true, check: false },
+            highlight: { lastMove: false, check: false },
             animation: { enabled: false },
             movable: { free: false },
-            drawable: { enabled: false },
+            drawable: { enabled: false, visible: true, shapes: [] },
         });
         this._applyStyle();
         setTimeout(() => { this.ground?.redrawAll?.(); }, 50);
@@ -159,9 +159,7 @@ export class FieldColorGame {
             }, 180);
         }
         else {
-            // Подсветить поле. lastMove принимает [from, to]; при from===to
-            // Chessground красит одну клетку highlight-цветом.
-            this.ground?.set({ lastMove: [sq, sq] });
+            this.ground?.set({ drawable: { shapes: [{ orig: sq, brush: 'blue' }] } });
         }
     }
     _showFeedback(correct, label) {

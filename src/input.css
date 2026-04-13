@@ -268,15 +268,6 @@ cg-board {
    Field Color Game
    ========================================== */
 
-/* Кольцо-выделение целевого поля (как на скриншоте Lichess) */
-#fcBoard .last-move {
-    background: radial-gradient(circle,
-        transparent 28%,
-        rgba(70, 130, 200, 0.9) 29%,
-        rgba(70, 130, 200, 0.9) 43%,
-        transparent 44%
-    ) !important;
-}
 
 /* Монохромная доска — координаты единым тёмным цветом (только для нейтральной доски) */
 .fc-board-mono coords coord {
