@@ -14,6 +14,11 @@ declare class CommonStatsManager {
     private _empty;
     /** Вызвать в конце любой игровой сессии */
     recordPlay(): void;
+    /**
+     * Возвращает актуальную статистику.
+     * Если с момента последней игры прошло > 1 дня — серия отображается как 0,
+     * но запись в storage не трогается до следующего recordPlay().
+     */
     getStats(): CommonStats;
 }
 export declare const commonStatsManager: CommonStatsManager;

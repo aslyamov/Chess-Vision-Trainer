@@ -185,6 +185,38 @@ export interface FCResult {
 }
 
 // ==========================================
+// Memory Game Types
+// ==========================================
+
+export interface MemoryConfig {
+    minPieces:     number;
+    maxPieces:     number;
+    /** Секунд показа позиции. 0 = ∞ (только кнопка «Запомнил») */
+    showSeconds:   number;
+    /** Секунд на ответ. 0 = ∞ */
+    answerSeconds: number;
+    /** Количество задач. 0 = ∞ */
+    roundCount:    number;
+    questionType:  'find-piece' | 'name-piece' | 'place-pieces';
+    orientation:   'white' | 'black' | 'random';
+}
+
+export interface MemoryResult {
+    correct:    number;
+    incorrect:  number;
+    timeouts:   number;
+    bestStreak: number;
+}
+
+export interface MemoryAllTimeStats {
+    totalSessions:  number;
+    totalCorrect:   number;
+    totalIncorrect: number;
+    bestAccuracy:   number;   // % за лучшую сессию
+    bestStreak:     number;
+}
+
+// ==========================================
 // Error Types
 // ==========================================
 

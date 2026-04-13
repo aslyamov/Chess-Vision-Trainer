@@ -1,18 +1,22 @@
 /**
  * Модуль игры «Шахи и взятия».
- * Управляет GameSession, BoardRenderer и настройками игры.
+ * Управляет GameSession, BoardRenderer и CCGameUI.
  * ChessVisionTrainer делегирует всю CC-специфику этому модулю.
  */
 import type { IGameModule, GameDescriptor, AppContext } from '../IGame.js';
+import type { LocaleData } from '../../types/index.js';
 export declare class ChecksAndCapturesModule implements IGameModule {
     readonly descriptor: GameDescriptor;
     private session;
     private boardRenderer;
+    private ccUI;
     private ctx;
     private _saveSettingsDebounced;
     init(ctx: AppContext): void;
     onSelected(): void;
     destroy(): void;
+    onLanguageChange(langData: LocaleData): void;
+    renderStats(): void;
     startSession(): void;
     giveUp(): void;
     redrawBoard(): void;

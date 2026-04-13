@@ -10,8 +10,9 @@
 import { PuzzleManager } from './PuzzleManager.js';
 import { UIManager }     from '../ui/UIManager.js';
 import { gameRegistry }  from './GameRegistry.js';
-import { FieldColorModule } from './games/FieldColorModule.js';
+import { FieldColorModule }        from './games/FieldColorModule.js';
 import { ChecksAndCapturesModule } from './games/ChecksAndCapturesModule.js';
+import { MemoryModule }            from './games/MemoryModule.js';
 import { statsScreen }   from './StatsScreen.js';
 import {
     loadLanguageData,
@@ -135,6 +136,7 @@ export class ChessVisionTrainer implements AppContext {
     private _registerModules(): void {
         gameRegistry.register(new ChecksAndCapturesModule());
         gameRegistry.register(new FieldColorModule());
+        gameRegistry.register(new MemoryModule());
     }
 
     private _initializeEventListeners(): void {

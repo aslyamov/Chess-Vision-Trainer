@@ -7,6 +7,7 @@
 import { FieldColorGame } from '../FieldColorGame.js';
 import { fcStatsManager } from '../FieldColorStatsManager.js';
 import { commonStatsManager } from '../CommonStatsManager.js';
+import { setEl } from '../../utils/dom-utils.js';
 import type { FieldColorConfig, FCResult } from '../../types/index.js';
 import type { IGameModule, GameDescriptor, AppContext } from '../IGame.js';
 
@@ -78,33 +79,24 @@ export class FieldColorModule implements IGameModule {
     }
 
     private _showResults(result: FCResult): void {
-        const set = (id: string, v: string) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = v;
-        };
         const total = result.correct + result.incorrect;
-
-        set('fcResCorrect',    String(result.correct));
-        set('fcResIncorrect',  String(result.incorrect));
-        set('fcResAccuracy',   `${total > 0 ? Math.round(result.correct / total * 100) : 0}%`);
-        set('fcResBestStreak', String(result.bestStreak));
+        setEl('fcResCorrect',    String(result.correct));
+        setEl('fcResIncorrect',  String(result.incorrect));
+        setEl('fcResAccuracy',   `${total > 0 ? Math.round(result.correct / total * 100) : 0}%`);
+        setEl('fcResBestStreak', String(result.bestStreak));
 
         this._renderAllTimeStats();
         this.ctx.uiManager.switchView('fcResultScreen');
     }
 
     private _renderAllTimeStats(): void {
-        const set = (id: string, v: string) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = v;
-        };
         const s = fcStatsManager.load();
         const allTotal = s.totalCorrect + s.totalIncorrect;
-        set('fcAllTimeSessions',  String(s.totalSessions));
-        set('fcAllTimeAccuracy',  allTotal > 0 ? `${Math.round(s.totalCorrect / allTotal * 100)}%` : '—');
-        set('fcAllTimeCorrect',   String(s.totalCorrect));
-        set('fcAllTimeIncorrect', String(s.totalIncorrect));
-        set('fcAllTimeStreak',    String(commonStatsManager.getStats().currentStreak));
+        setEl('fcAllTimeSessions',  String(s.totalSessions));
+        setEl('fcAllTimeAccuracy',  allTotal > 0 ? `${Math.round(s.totalCorrect / allTotal * 100)}%` : '—');
+        setEl('fcAllTimeCorrect',   String(s.totalCorrect));
+        setEl('fcAllTimeIncorrect', String(s.totalIncorrect));
+        setEl('fcAllTimeStreak',    String(commonStatsManager.getStats().currentStreak));
     }
 
     // ─────────────────────────────────────────────────────────────────────

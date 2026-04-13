@@ -4,8 +4,9 @@
  * ChessVisionTrainer не знает деталей этой игры — только вызывает init() и onSelected().
  */
 import { FieldColorGame } from '../FieldColorGame.js';
-import { FIELD_COLOR_STATS_KEY } from '../../constants.js';
+import { fcStatsManager } from '../FieldColorStatsManager.js';
 import { commonStatsManager } from '../CommonStatsManager.js';
+import { setEl } from '../../utils/dom-utils.js';
 export class FieldColorModule {
     constructor() {
         this.descriptor = {
@@ -14,6 +15,8 @@ export class FieldColorModule {
             selectBtnId: 'selectFieldColorGame',
             startScreenId: 'fieldColorStartScreen',
             gameScreenId: 'fieldColorScreen',
+            statsTabId: 'tabFC',
+            statsTabPanelId: 'statsTabFC',
         };
         this.game = null;
     }
@@ -58,32 +61,26 @@ export class FieldColorModule {
         this.ctx.uiManager.switchView(this.descriptor.gameScreenId);
         this.game.start();
     }
+    renderStats() {
+        this._renderAllTimeStats();
+    }
     _showResults(result) {
-        const set = (id, v) => {
-            const el = document.getElementById(id);
-            if (el)
-                el.textContent = v;
-        };
         const total = result.correct + result.incorrect;
-        // Session stats
-        set('fcResCorrect', String(result.correct));
-        set('fcResIncorrect', String(result.incorrect));
-        set('fcResAccuracy', `${total > 0 ? Math.round(result.correct / total * 100) : 0}%`);
-        set('fcResBestStreak', String(result.bestStreak));
-        // All-time stats
-        try {
-            const raw = localStorage.getItem(FIELD_COLOR_STATS_KEY);
-            const s = raw ? JSON.parse(raw)
-                : { totalSessions: 0, totalCorrect: 0, totalIncorrect: 0, allTimeBestStreak: 0 };
-            const allTotal = s.totalCorrect + s.totalIncorrect;
-            set('fcAllTimeSessions', String(s.totalSessions));
-            set('fcAllTimeAccuracy', allTotal > 0 ? `${Math.round(s.totalCorrect / allTotal * 100)}%` : '—');
-            set('fcAllTimeCorrect', String(s.totalCorrect));
-            set('fcAllTimeIncorrect', String(s.totalIncorrect));
-            set('fcAllTimeStreak', String(commonStatsManager.getStats().currentStreak));
-        }
-        catch { /* нули из HTML */ }
+        setEl('fcResCorrect', String(result.correct));
+        setEl('fcResIncorrect', String(result.incorrect));
+        setEl('fcResAccuracy', `${total > 0 ? Math.round(result.correct / total * 100) : 0}%`);
+        setEl('fcResBestStreak', String(result.bestStreak));
+        this._renderAllTimeStats();
         this.ctx.uiManager.switchView('fcResultScreen');
+    }
+    _renderAllTimeStats() {
+        const s = fcStatsManager.load();
+        const allTotal = s.totalCorrect + s.totalIncorrect;
+        setEl('fcAllTimeSessions', String(s.totalSessions));
+        setEl('fcAllTimeAccuracy', allTotal > 0 ? `${Math.round(s.totalCorrect / allTotal * 100)}%` : '—');
+        setEl('fcAllTimeCorrect', String(s.totalCorrect));
+        setEl('fcAllTimeIncorrect', String(s.totalIncorrect));
+        setEl('fcAllTimeStreak', String(commonStatsManager.getStats().currentStreak));
     }
     // ─────────────────────────────────────────────────────────────────────
     _readConfigFromUI() {

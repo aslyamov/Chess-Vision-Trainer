@@ -294,6 +294,102 @@ cg-board {
     touch-action: manipulation;
 }
 
+/* ==========================================
+   Memory Game
+   ========================================== */
+
+/* Скрытая доска (фаза QUESTION) — blur вместо display:none, чтобы Chessground не сломался */
+.memory-hidden {
+    filter: blur(12px);
+    pointer-events: none;
+    user-select: none;
+    transition: filter 0.2s ease;
+}
+
+/* Кликабельная доска (фаза QUESTION, тип find-piece) */
+.memory-clickable cg-board piece {
+    cursor: pointer;
+}
+.memory-clickable cg-board square {
+    cursor: pointer;
+}
+
+/* Фидбек-строка */
+.memory-feedback {
+    min-height: 1.5rem;
+    transition: color 0.15s ease;
+}
+
+/* Палитра фигур — flex-сетка в 2 ряда */
+#memoryPalette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
+    max-width: 100%;
+}
+
+#memoryPalette.hidden {
+    display: none !important;
+}
+
+/* Палитра расстановки — те же стили что и name-piece палитра */
+#memoryPlacePalette {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 100%;
+}
+
+#memoryPlacePalette.hidden {
+    display: none !important;
+}
+
+/* Ряд палитры (белые / чёрные) */
+.memory-palette-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Кнопки палитры фигур */
+.memory-piece-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.8rem;
+    height: 2.8rem;
+    font-size: 1.4rem;
+    border-radius: 0.375rem;
+    border: 2px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.memory-piece-btn:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.5);
+}
+
+/* piece внутри кнопки: фиксируем размер, убираем absolute-позиционирование */
+.memory-piece-btn .cg-wrap piece {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-size: cover !important;
+}
+
+/* Touch: предотвратить zoom */
+#memoryScreen,
+#memoryStartScreen {
+    touch-action: manipulation;
+}
+
 /* Inline SVG icon sizing */
 .icon {
     display: inline-block;

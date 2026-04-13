@@ -1,15 +1,12 @@
 /**
- * Типы для системы статистики
- * Фаза 1: Базовая статистика
+ * Типы для системы статистики игры «Шахи и взятия»
  */
 /**
- * Статистика по ходам (шахи/взятия)
+ * Статистика ходов с разбивкой по цвету и типу.
+ * Избыточные агрегаты (checksFound/totalChecks и т.д.) удалены —
+ * они вычисляются как wChecks.found + bChecks.found при необходимости.
  */
 export interface MoveStatsRecord {
-    checksFound: number;
-    capturesFound: number;
-    totalChecks: number;
-    totalCaptures: number;
     wChecks: {
         found: number;
         total: number;
@@ -28,7 +25,7 @@ export interface MoveStatsRecord {
     };
 }
 /**
- * Запись одной сессии
+ * Запись одной сессии «Шахов и взятий»
  */
 export interface SessionRecord {
     id: string;
@@ -45,7 +42,7 @@ export interface SessionRecord {
     mode: 'normal' | 'sequential' | 'goodMoves';
 }
 /**
- * Общая статистика за всё время
+ * Общая статистика за всё время (CC)
  */
 export interface AllTimeStats {
     totalSessions: number;

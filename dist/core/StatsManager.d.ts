@@ -1,44 +1,20 @@
 /**
- * StatsManager - управление статистикой сессий
- * Сохраняет историю сессий, общую статистику, streaks
+ * StatsManager — статистика игры «Шахи и взятия».
+ * Хранит историю сессий и агрегированные all-time данные в localStorage.
  */
 import type { SessionRecord, AllTimeStats } from '../types/stats.js';
 declare class StatsManager {
     private sessions;
     private allTimeStats;
     constructor();
-    /**
-     * Загружает сессии из localStorage
-     */
-    private loadSessions;
-    /**
-     * Сохраняет сессии в localStorage
-     */
-    private saveSessions;
-    /**
-     * Загружает общую статистику из localStorage
-     */
-    private loadAllTimeStats;
-    /**
-     * Сохраняет общую статистику в localStorage
-     */
-    private saveAllTimeStats;
-    /**
-     * Сохраняет результат сессии
-     */
     saveSession(sessionData: Omit<SessionRecord, 'id' | 'date' | 'timestamp'>): SessionRecord;
-    /**
-     * Обновляет общую статистику на основе новой сессии
-     */
-    private updateAllTimeStats;
-    /**
-     * Возвращает общую статистику
-     */
     getAllTimeStats(): AllTimeStats;
-    /**
-     * Очищает всю статистику
-     */
     clearAllStats(): void;
+    private _updateAllTimeStats;
+    private _loadSessions;
+    private _saveSessions;
+    private _loadAllTimeStats;
+    private _saveAllTimeStats;
 }
 export declare const statsManager: StatsManager;
 export {};

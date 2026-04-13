@@ -26,6 +26,16 @@ export const BRUSHES = {
     /** Bad move refutation */
     REFUTATION: 'red'
 };
+/** Status message colors (used in GameSession.setStatus calls) */
+export const STATUS_COLORS = {
+    SUCCESS: 'green', // Верно! Всё! Решено!
+    ERROR: 'red', // Зевок! Время!
+    WARNING: 'orange', // Мимо!
+    ALREADY: 'blue', // Было!
+    INFO: '#0050b3', // Удачи! (старт задачи)
+    NEUTRAL: '#555', // Ищи ещё (после опровержения)
+    DANGER: '#d97706', // Опасно! (найден плохой ход)
+};
 /** localStorage keys */
 export const SETTINGS_KEY = 'chess_vision_settings';
 export const THEME_KEY = 'chess_theme';
@@ -35,5 +45,7 @@ export const ALL_TIME_STATS_KEY = 'chess_all_time_stats';
 export const ERROR_LOG_KEY = 'chess_error_log';
 export const FIELD_COLOR_SETTINGS_KEY = 'chess_field_color_settings';
 export const FIELD_COLOR_STATS_KEY = 'chess_field_color_stats';
+export const MEMORY_SETTINGS_KEY = 'chess_memory_settings';
+export const MEMORY_STATS_KEY = 'chess_memory_stats';
 export const COMMON_STATS_KEY = 'chess_common_stats';
 //# sourceMappingURL=constants.js.map

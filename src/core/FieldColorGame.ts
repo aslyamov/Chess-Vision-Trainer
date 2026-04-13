@@ -235,6 +235,7 @@ export class FieldColorGame {
     }
 
     private _startTimer(): void {
+        this._stopTimer();
         this.timerInterval = setInterval(() => {
             if (!this.active) return;
             this.timeLeft--;

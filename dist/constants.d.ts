@@ -26,6 +26,16 @@ export declare const BRUSHES: {
     /** Bad move refutation */
     REFUTATION: string;
 };
+/** Status message colors (used in GameSession.setStatus calls) */
+export declare const STATUS_COLORS: {
+    readonly SUCCESS: "green";
+    readonly ERROR: "red";
+    readonly WARNING: "orange";
+    readonly ALREADY: "blue";
+    readonly INFO: "#0050b3";
+    readonly NEUTRAL: "#555";
+    readonly DANGER: "#d97706";
+};
 /** localStorage keys */
 export declare const SETTINGS_KEY = "chess_vision_settings";
 export declare const THEME_KEY = "chess_theme";
@@ -35,5 +45,7 @@ export declare const ALL_TIME_STATS_KEY = "chess_all_time_stats";
 export declare const ERROR_LOG_KEY = "chess_error_log";
 export declare const FIELD_COLOR_SETTINGS_KEY = "chess_field_color_settings";
 export declare const FIELD_COLOR_STATS_KEY = "chess_field_color_stats";
+export declare const MEMORY_SETTINGS_KEY = "chess_memory_settings";
+export declare const MEMORY_STATS_KEY = "chess_memory_stats";
 export declare const COMMON_STATS_KEY = "chess_common_stats";
 //# sourceMappingURL=constants.d.ts.map

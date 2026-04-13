@@ -1,14 +1,16 @@
 /**
  * StatsScreen — экран общей статистики.
- * Читает данные из StatsManager (игра 1) и localStorage (игра 2),
- * а также общую серию дней из CommonStatsManager.
+ * Data-driven: каждый модуль сам рендерит свою вкладку через renderStats().
+ * При добавлении игры 3 — реализовать renderStats() в модуле; сюда лезть не надо.
  */
+import type { IGameModule } from './IGame.js';
 export declare class StatsScreen {
-    /** Заполнить все элементы экрана актуальными данными */
-    render(): void;
+    /**
+     * Отрисовать экран статистики.
+     * @param modules — все зарегистрированные игровые модули
+     */
+    render(modules: IGameModule[]): void;
     private _renderCommon;
-    private _renderChecksAndCaptures;
-    private _renderFieldColor;
 }
 export declare const statsScreen: StatsScreen;
 //# sourceMappingURL=StatsScreen.d.ts.map

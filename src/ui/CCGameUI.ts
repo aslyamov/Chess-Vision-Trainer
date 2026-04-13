@@ -15,6 +15,7 @@ import { StatusManager } from './StatusManager.js';
 import { statsManager }  from '../core/StatsManager.js';
 import { commonStatsManager } from '../core/CommonStatsManager.js';
 import { formatTime }    from '../utils/chess-utils.js';
+import { setEl }         from '../utils/dom-utils.js';
 import type { UIManager } from './UIManager.js';
 import type {
     SessionConfig,
@@ -90,22 +91,17 @@ export class CCGameUI implements IGameUI {
     }
 
     showResults(stats: CCSessionStats, overallStats?: CCOverallStats): void {
-        const set = (id: string, v: string) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = v;
-        };
-
         // Статистика сессии
-        set('resTotalSolved', String(stats.solved));
-        set('resTotalTime',   formatTime(stats.time));
-        set('resAccuracy',    `${Math.round(stats.accuracy)}%`);
-        set('resAvgTime',     formatTime(stats.avgTime));
+        setEl('resTotalSolved', String(stats.solved));
+        setEl('resTotalTime',   formatTime(stats.time));
+        setEl('resAccuracy',    `${Math.round(stats.accuracy)}%`);
+        setEl('resAvgTime',     formatTime(stats.avgTime));
 
         // Ходы по категориям
         const ms = stats.moveStats;
         const upd = (fId: string, tId: string, found: number, total: number) => {
-            set(fId, String(found));
-            set(tId, String(total));
+            setEl(fId, String(found));
+            setEl(tId, String(total));
         };
         upd('resWChecks',    'resWChecksTotal',    ms.wChecks.found,    ms.wChecks.total);
         upd('resWCaptures',  'resWCapturesTotal',  ms.wCaptures.found,  ms.wCaptures.total);
@@ -208,21 +204,16 @@ export class CCGameUI implements IGameUI {
 
     /** Рендер вкладки CC на экране статистики */
     renderStatsTab(): void {
-        const s   = statsManager.getAllTimeStats();
-        const set = (id: string, v: string) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = v;
-        };
-
-        set('ccStatsSessions',  String(s.totalSessions));
-        set('ccStatsAccuracy',  `${Math.round(s.avgAccuracy)}%`);
-        set('ccStatsPuzzles',   String(s.totalPuzzlesSolved));
+        const s = statsManager.getAllTimeStats();
+        setEl('ccStatsSessions',  String(s.totalSessions));
+        setEl('ccStatsAccuracy',  `${Math.round(s.avgAccuracy)}%`);
+        setEl('ccStatsPuzzles',   String(s.totalPuzzlesSolved));
 
         const ms = s.moveStats;
-        set('ccStatsWChecks',   `${ms.wChecks.found}/${ms.wChecks.total}`);
-        set('ccStatsWCaptures', `${ms.wCaptures.found}/${ms.wCaptures.total}`);
-        set('ccStatsBChecks',   `${ms.bChecks.found}/${ms.bChecks.total}`);
-        set('ccStatsBCaptures', `${ms.bCaptures.found}/${ms.bCaptures.total}`);
+        setEl('ccStatsWChecks',   `${ms.wChecks.found}/${ms.wChecks.total}`);
+        setEl('ccStatsWCaptures', `${ms.wCaptures.found}/${ms.wCaptures.total}`);
+        setEl('ccStatsBChecks',   `${ms.bChecks.found}/${ms.bChecks.total}`);
+        setEl('ccStatsBCaptures', `${ms.bCaptures.found}/${ms.bCaptures.total}`);
     }
 
     // ── Private ───────────────────────────────────────────────────────────────
@@ -246,20 +237,15 @@ export class CCGameUI implements IGameUI {
     }
 
     private _updateAllTimeStats(): void {
-        const s   = statsManager.getAllTimeStats();
-        const set = (id: string, v: string) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = v;
-        };
-
-        set('allTimeSessions', String(s.totalSessions));
-        set('allTimeAccuracy', `${Math.round(s.avgAccuracy)}%`);
-        set('allTimeStreak',   String(commonStatsManager.getStats().currentStreak));
+        const s = statsManager.getAllTimeStats();
+        setEl('allTimeSessions', String(s.totalSessions));
+        setEl('allTimeAccuracy', `${Math.round(s.avgAccuracy)}%`);
+        setEl('allTimeStreak',   String(commonStatsManager.getStats().currentStreak));
 
         const ms = s.moveStats;
         const upd = (fId: string, tId: string, found: number, total: number) => {
-            set(fId, String(found));
-            set(tId, String(total));
+            setEl(fId, String(found));
+            setEl(tId, String(total));
         };
         upd('allWChecks',    'allWChecksTotal',    ms.wChecks.found,    ms.wChecks.total);
         upd('allWCaptures',  'allWCapturesTotal',  ms.wCaptures.found,  ms.wCaptures.total);

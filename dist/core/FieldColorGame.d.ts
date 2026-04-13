@@ -3,12 +3,7 @@
  * Использует Chessground для рендера пустой доски.
  * Целевое поле подсвечивается через lastMove.
  */
-import type { FieldColorConfig } from '../types/index.js';
-export interface FCResult {
-    correct: number;
-    incorrect: number;
-    bestStreak: number;
-}
+import type { FieldColorConfig, FCResult } from '../types/index.js';
 export declare class FieldColorGame {
     private Chessground;
     private ground;

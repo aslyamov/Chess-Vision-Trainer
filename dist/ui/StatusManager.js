@@ -1,6 +1,6 @@
 /**
- * Manages status messages, timers, and move logging
- * TypeScript версия
+ * StatusManager — таймер, статус-сообщения и лог ходов для «Шахов и взятий».
+ * Принимает CCStatusDom вместо полного CachedDOM — не зависит от UIManager.
  */
 import { formatTime, localizeSAN } from '../utils/chess-utils.js';
 export class StatusManager {
@@ -14,25 +14,13 @@ export class StatusManager {
         this.dom = dom;
         this.langData = langData;
     }
-    /**
-     * Updates language data
-     * @param langData - Translation data
-     */
     updateLanguage(langData) {
         this.langData = langData;
     }
-    /**
-     * Updates settings
-     * @param settings - Settings object
-     */
     updateSettings(settings) {
         this.settings = settings;
     }
-    /**
-     * Sets status message
-     * @param message - Status message
-     * @param color - Text color
-     */
+    // ── Status message ────────────────────────────────────────────────────────
     setStatus(message, color = '#333') {
         if (!this.settings.showText)
             return;
@@ -41,69 +29,48 @@ export class StatusManager {
             this.dom.statusMessage.style.color = color;
         }
     }
-    /**
-     * Logs a move to the appropriate log panel
-     * @param san - Move in SAN notation
-     * @param isCheck - Whether move gives check
-     * @param isCapture - Whether move captures
-     * @param color - Color that made the move
-     * @param currentLang - Current language
-     */
-    logMove(san, isCheck, isCapture, color, currentLang = 'en') {
+    // ── Move log ──────────────────────────────────────────────────────────────
+    logMove(san, isCheck, isCapture, color, lang = 'en') {
         if (!this.settings.showLog)
             return;
-        const logItem = document.createElement('div');
-        logItem.className = 'log-item';
+        const item = document.createElement('div');
+        item.className = 'log-item';
         const sanSpan = document.createElement('span');
-        sanSpan.textContent = localizeSAN(san, currentLang);
-        const badgesSpan = document.createElement('span');
+        sanSpan.textContent = localizeSAN(san, lang);
+        const badges = document.createElement('span');
         if (isCapture) {
-            const badge = document.createElement('span');
-            badge.className = 'log-badge log-badge-capture';
-            badge.textContent = this.langData.log_capture || 'ВЗЯТИЕ';
-            badgesSpan.appendChild(badge);
+            const b = document.createElement('span');
+            b.className = 'log-badge log-badge-capture';
+            b.textContent = this.langData.log_capture || 'ВЗЯТИЕ';
+            badges.appendChild(b);
         }
         if (isCheck) {
-            const badge = document.createElement('span');
-            badge.className = 'log-badge log-badge-check';
-            badge.textContent = this.langData.log_check || 'ШАХ';
-            badgesSpan.appendChild(badge);
+            const b = document.createElement('span');
+            b.className = 'log-badge log-badge-check';
+            b.textContent = this.langData.log_check || 'ШАХ';
+            badges.appendChild(b);
         }
-        logItem.appendChild(sanSpan);
-        logItem.appendChild(badgesSpan);
+        item.appendChild(sanSpan);
+        item.appendChild(badges);
         const logEl = color === 'w' ? this.dom.logWhite : this.dom.logBlack;
         if (logEl) {
-            // Insert after sticky header so it stays pinned at top
             const header = logEl.firstElementChild;
-            if (header) {
-                header.insertAdjacentElement('afterend', logItem);
-            }
-            else {
-                logEl.appendChild(logItem);
-            }
+            header
+                ? header.insertAdjacentElement('afterend', item)
+                : logEl.appendChild(item);
         }
     }
-    /**
-     * Clears move logs
-     */
     clearLogs() {
-        // Remove only .log-item children, preserving sticky headers
-        if (this.dom.logWhite) {
-            this.dom.logWhite.querySelectorAll('.log-item').forEach(el => el.remove());
-        }
-        if (this.dom.logBlack) {
-            this.dom.logBlack.querySelectorAll('.log-item').forEach(el => el.remove());
-        }
+        this.dom.logWhite?.querySelectorAll('.log-item').forEach(el => el.remove());
+        this.dom.logBlack?.querySelectorAll('.log-item').forEach(el => el.remove());
     }
-    /**
-     * Starts timer (countdown or stopwatch)
-     * @param isCountdown - Whether to countdown
-     * @param onTimeout - Callback when time runs out
-     */
+    // ── Timer ─────────────────────────────────────────────────────────────────
+    setSessionStartTime(ts) { this.sessionStartTime = ts; }
+    setLimitEndTime(ts) { this.limitEndTime = ts; }
+    get limitEndTimeValue() { return this.limitEndTime; }
     startTimer(isCountdown, onTimeout = null) {
-        if (this.timerInterval) {
+        if (this.timerInterval)
             clearInterval(this.timerInterval);
-        }
         const update = () => {
             let seconds;
             if (isCountdown) {
@@ -124,25 +91,18 @@ export class StatusManager {
                     this.dom.gameTimer.style.color = '#fff';
                 }
             }
-            if (this.dom.gameTimer) {
+            if (this.dom.gameTimer)
                 this.dom.gameTimer.textContent = formatTime(seconds);
-            }
         };
         update();
         this.timerInterval = setInterval(update, 1000);
     }
-    /**
-     * Stops timer
-     */
     stopTimer() {
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
             this.timerInterval = null;
         }
     }
-    /**
-     * Pauses the timer
-     */
     pauseTimer() {
         if (this.isPaused)
             return;
@@ -150,57 +110,21 @@ export class StatusManager {
         this.pauseStartTime = Date.now();
         this.stopTimer();
     }
-    /**
-     * Resumes the timer
-     * @param isCountdown - Whether to countdown
-     * @param onTimeout - Callback when time runs out
-     */
     resumeTimer(isCountdown, onTimeout = null) {
         if (!this.isPaused)
             return;
         const pauseDuration = Date.now() - this.pauseStartTime;
-        if (isCountdown) {
+        if (isCountdown)
             this.limitEndTime += pauseDuration;
-        }
-        // Всегда сдвигаем время начала сессии, чтобы статистика (getElapsedTime) 
-        // не учитывала время паузы
+        // Сдвигаем начало сессии, чтобы getElapsedTime() не считал паузу
         this.sessionStartTime += pauseDuration;
         this.isPaused = false;
         this.startTimer(isCountdown, onTimeout);
     }
-    /**
-     * Sets session start time
-     * @param timestamp - Start timestamp
-     */
-    setSessionStartTime(timestamp) {
-        this.sessionStartTime = timestamp;
-    }
-    /**
-     * Sets limit end time for countdown
-     * @param timestamp - End timestamp
-     */
-    setLimitEndTime(timestamp) {
-        this.limitEndTime = timestamp;
-    }
-    /**
-     * Getter for limitEndTime needed by GameSession
-     */
-    get limitEndTimeValue() {
-        return this.limitEndTime;
-    }
-    /**
-     * Gets elapsed time in seconds
-     * @returns Seconds elapsed
-     */
     getElapsedTime() {
-        const endTime = this.isPaused ? this.pauseStartTime : Date.now();
-        return Math.floor((endTime - this.sessionStartTime) / 1000);
+        const end = this.isPaused ? this.pauseStartTime : Date.now();
+        return Math.floor((end - this.sessionStartTime) / 1000);
     }
-    /**
-     * Cleanup - stops timer
-     */
-    destroy() {
-        this.stopTimer();
-    }
+    destroy() { this.stopTimer(); }
 }
 //# sourceMappingURL=StatusManager.js.map

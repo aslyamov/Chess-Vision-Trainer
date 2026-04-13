@@ -7,7 +7,7 @@ function today() {
     return new Date().toISOString().split('T')[0];
 }
 function daysBetween(a, b) {
-    return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86400000);
+    return Math.floor((new Date(b).getTime() - new Date(a).getTime()) / 86400000);
 }
 class CommonStatsManager {
     load() {
@@ -37,18 +37,23 @@ class CommonStatsManager {
         if (s.lastPlayedDate === t)
             return; // уже засчитано сегодня
         const diff = s.lastPlayedDate ? daysBetween(s.lastPlayedDate, t) : null;
+        // diff === 1 → серия продолжается; иначе (null или > 1) → начинаем заново
         s.currentStreak = diff === 1 ? s.currentStreak + 1 : 1;
         s.longestStreak = Math.max(s.longestStreak, s.currentStreak);
         s.totalDaysPlayed += 1;
         s.lastPlayedDate = t;
         this.save(s);
     }
+    /**
+     * Возвращает актуальную статистику.
+     * Если с момента последней игры прошло > 1 дня — серия отображается как 0,
+     * но запись в storage не трогается до следующего recordPlay().
+     */
     getStats() {
         const s = this.load();
-        // Сбросить серию если вчера не играли
         if (s.lastPlayedDate && daysBetween(s.lastPlayedDate, today()) > 1) {
-            s.currentStreak = 0;
-            this.save(s);
+            // Вычисляем effective streak без записи в storage
+            return { ...s, currentStreak: 0 };
         }
         return s;
     }

@@ -3,6 +3,13 @@
  * TypeScript версия
  */
 // Все 64 поля на шахматной доске
+/**
+ * Подсчитывает количество фигур в позиции по FEN.
+ * Считает буквы в части расстановки (до первого пробела).
+ */
+export function countPieces(fen) {
+    return fen.split(' ')[0].replace(/[^a-zA-Z]/g, '').length;
+}
 export const SQUARES = Object.freeze(Array.from({ length: 64 }, (_, i) => {
     const file = String.fromCharCode(97 + (i % 8)); // a-h
     const rank = 8 - Math.floor(i / 8); // 8-1

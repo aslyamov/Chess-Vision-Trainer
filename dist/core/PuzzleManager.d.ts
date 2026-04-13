@@ -19,6 +19,10 @@ export declare class PuzzleManager {
      */
     getPuzzles(config: SessionConfig): Puzzle[];
     /**
+     * Возвращает все загруженные пазлы без фильтрации
+     */
+    getAllPuzzles(): Puzzle[];
+    /**
      * Получает количество доступных пазлов для сложности
      * @param difficulty - Уровень сложности или 'all'
      * @returns Количество пазлов

@@ -110,6 +110,14 @@ export class PuzzleManager {
     }
 
     /**
+     * Возвращает все загруженные пазлы без фильтрации
+     */
+    getAllPuzzles(): Puzzle[] {
+        if (!this.loaded) throw new Error('Puzzles not loaded yet');
+        return this.puzzles;
+    }
+
+    /**
      * Получает количество доступных пазлов для сложности
      * @param difficulty - Уровень сложности или 'all'
      * @returns Количество пазлов

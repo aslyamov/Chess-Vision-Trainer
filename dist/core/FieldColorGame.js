@@ -3,8 +3,8 @@
  * Использует Chessground для рендера пустой доски.
  * Целевое поле подсвечивается через lastMove.
  */
-import { FIELD_COLOR_SETTINGS_KEY, FIELD_COLOR_STATS_KEY } from '../constants.js';
-import { commonStatsManager } from './CommonStatsManager.js';
+import { FIELD_COLOR_SETTINGS_KEY } from '../constants.js';
+import { fcStatsManager } from './FieldColorStatsManager.js';
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const ALL_SQUARES = FILES.flatMap(f => [1, 2, 3, 4, 5, 6, 7, 8].map(r => `${f}${r}`));
 function isWhiteSquare(sq) {
@@ -193,6 +193,7 @@ export class FieldColorGame {
         this.dom.accuracy.textContent = total > 0 ? `${Math.round(this.correct / total * 100)}%` : '—';
     }
     _startTimer() {
+        this._stopTimer();
         this.timerInterval = setInterval(() => {
             if (!this.active)
                 return;
@@ -227,21 +228,7 @@ export class FieldColorGame {
         this.onFinish({ correct: this.correct, incorrect: this.incorrect, bestStreak: this.bestStreak });
     }
     _saveStats() {
-        try {
-            const raw = localStorage.getItem(FIELD_COLOR_STATS_KEY);
-            const prev = raw ? JSON.parse(raw)
-                : { totalSessions: 0, totalCorrect: 0, totalIncorrect: 0, allTimeBestStreak: 0 };
-            localStorage.setItem(FIELD_COLOR_STATS_KEY, JSON.stringify({
-                totalSessions: prev.totalSessions + 1,
-                totalCorrect: prev.totalCorrect + this.correct,
-                totalIncorrect: prev.totalIncorrect + this.incorrect,
-                allTimeBestStreak: Math.max(prev.allTimeBestStreak, this.bestStreak),
-            }));
-        }
-        catch (e) {
-            console.warn('Could not save field color stats', e);
-        }
-        commonStatsManager.recordPlay();
+        fcStatsManager.record({ correct: this.correct, incorrect: this.incorrect, bestStreak: this.bestStreak });
     }
     static loadConfig() {
         const defaults = { boardStyle: 'colored', showCoordinates: true, orientation: 'white', timeMode: 0, roundCount: 20 };

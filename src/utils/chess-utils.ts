@@ -6,6 +6,14 @@
 import type { MoveData, TargetMoves, TargetColors, BadMove } from '../types/index.js';
 
 // Все 64 поля на шахматной доске
+/**
+ * Подсчитывает количество фигур в позиции по FEN.
+ * Считает буквы в части расстановки (до первого пробела).
+ */
+export function countPieces(fen: string): number {
+    return fen.split(' ')[0].replace(/[^a-zA-Z]/g, '').length;
+}
+
 export const SQUARES: readonly string[] = Object.freeze(
     Array.from({ length: 64 }, (_, i) => {
         const file = String.fromCharCode(97 + (i % 8)); // a-h

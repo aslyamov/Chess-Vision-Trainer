@@ -17,7 +17,7 @@ function today(): string {
 }
 
 function daysBetween(a: string, b: string): number {
-    return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000);
+    return Math.floor((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000);
 }
 
 class CommonStatsManager {

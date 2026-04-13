@@ -1,10 +1,11 @@
 /**
  * Модуль игры «Шахи и взятия».
- * Управляет GameSession, BoardRenderer и настройками игры.
+ * Управляет GameSession, BoardRenderer и CCGameUI.
  * ChessVisionTrainer делегирует всю CC-специфику этому модулю.
  */
 import { GameSession } from '../GameSession.js';
 import { BoardRenderer } from '../../ui/BoardRenderer.js';
+import { CCGameUI } from '../../ui/CCGameUI.js';
 import { soundManager } from '../SoundManager.js';
 import { puzzleProgress } from '../PuzzleProgressManager.js';
 import { statsManager } from '../StatsManager.js';
@@ -18,13 +19,17 @@ export class ChecksAndCapturesModule {
             selectBtnId: 'selectChecksGame',
             startScreenId: 'startScreen',
             gameScreenId: 'gameScreen',
+            statsTabId: 'tabCC',
+            statsTabPanelId: 'statsTabCC',
         };
         this.session = null;
         this.boardRenderer = null;
+        this.ccUI = null;
     }
-    // ─────────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     init(ctx) {
         this.ctx = ctx;
+        this.ccUI = new CCGameUI(ctx.uiManager, ctx.getLangData());
         this._saveSettingsDebounced = debounce(this._saveSettings.bind(this), 300);
         this._loadSettings();
         this._updateAvailableCount();
@@ -35,45 +40,41 @@ export class ChecksAndCapturesModule {
         this.ctx.uiManager.switchView(this.descriptor.startScreenId);
     }
     destroy() {
-        if (this.session) {
-            this.session.destroy();
-            this.session = null;
-        }
-        if (this.boardRenderer) {
-            this.boardRenderer.destroy();
-            this.boardRenderer = null;
-        }
+        this.session?.destroy();
+        this.session = null;
+        this.boardRenderer?.destroy();
+        this.boardRenderer = null;
     }
-    // ─────────────────────────────────────────────────────────────────────
+    onLanguageChange(langData) {
+        this.ccUI?.updateLanguage(langData);
+    }
+    renderStats() {
+        this.ccUI?.renderStatsTab();
+    }
+    // ─────────────────────────────────────────────────────────────────────────
     startSession() {
-        const config = this.ctx.uiManager.getSessionConfig();
+        if (!this.ccUI)
+            return;
+        const config = this.ccUI.getSessionConfig();
         soundManager.preload();
         const soundEnabled = document.getElementById('setSound')?.checked ?? true;
         soundManager.setEnabled(soundEnabled);
         this.destroy();
         const puzzles = this.ctx.getPuzzleManager().getPuzzles(config);
-        const dom = this.ctx.uiManager.getDOM();
-        this.boardRenderer = new BoardRenderer(dom.board, this.ctx.Chessground);
-        this.session = new GameSession(puzzles, config, this.ctx.uiManager, this.boardRenderer, this.ctx.getStatusManager(), this.ctx.getLangData(), this.ctx.getCurrentLang(), () => this.ctx.getPuzzleManager().getStatsByDifficulty(puzzleProgress.getSolvedIds()));
+        this.boardRenderer = new BoardRenderer(this.ccUI.getBoardElement(), this.ctx.Chessground);
+        this.session = new GameSession(puzzles, config, this.ccUI, this.boardRenderer, this.ccUI.getStatusManager(), this.ctx.getLangData(), this.ctx.getCurrentLang(), () => this.ctx.getPuzzleManager().getStatsByDifficulty(puzzleProgress.getSolvedIds()));
         this.session.start();
         this._saveSettings();
     }
-    giveUp() {
-        this.session?.nextPuzzle();
-    }
-    redrawBoard() {
-        this.boardRenderer?.redraw();
-    }
-    flipBoard() {
-        this.boardRenderer?.flipBoard();
-    }
+    giveUp() { this.session?.nextPuzzle(); }
+    redrawBoard() { this.boardRenderer?.redraw(); }
+    flipBoard() { this.boardRenderer?.flipBoard(); }
     restart() {
         this.destroy();
         this.ctx.uiManager.showStartScreen();
     }
     resetProgress() {
-        const modal = document.getElementById('confirmResetModal');
-        modal?.showModal?.();
+        document.getElementById('confirmResetModal')?.showModal?.();
     }
     confirmReset() {
         document.getElementById('confirmResetModal')?.close?.();
@@ -84,22 +85,24 @@ export class ChecksAndCapturesModule {
     cancelReset() {
         document.getElementById('confirmResetModal')?.close?.();
     }
-    // ─────────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     _applyLiveSettings() {
-        if (!this.session)
+        if (!this.session || !this.ccUI)
             return;
-        const config = this.ctx.uiManager.getSessionConfig();
-        this.ctx.uiManager.applySettings(config);
+        const config = this.ccUI.getSessionConfig();
+        this.ccUI.applySettings(config);
         this.session.updateLiveConfig(config);
         const soundEnabled = document.getElementById('setSound')?.checked ?? true;
         soundManager.setEnabled(soundEnabled);
     }
     _updateAvailableCount() {
+        if (!this.ccUI)
+            return;
         const diffEl = document.querySelector('input[name="difficulty"]:checked');
         if (!diffEl)
             return;
         const count = this.ctx.getPuzzleManager().getCount(diffEl.value);
-        this.ctx.uiManager.updateAvailableCount(count);
+        this.ccUI.updateAvailableCount(count);
     }
     _setupEventListeners() {
         document.getElementById('startGameBtn')?.addEventListener('click', () => this.startSession());
@@ -113,37 +116,36 @@ export class ChecksAndCapturesModule {
         document.getElementById('resGoStatsBtn')?.addEventListener('click', () => this.ctx.openStats());
     }
     _setupAutoSave() {
-        document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
-            radio.addEventListener('change', () => {
-                this._updateAvailableCount();
-                this._saveSettings();
-            });
-        });
+        document.querySelectorAll('input[name="difficulty"]').forEach(radio => radio.addEventListener('change', () => {
+            this._updateAvailableCount();
+            this._saveSettings();
+        }));
         document.getElementById('taskCountInput')?.addEventListener('change', () => this._saveSettings());
         document.getElementById('timeLimitInput')?.addEventListener('change', () => this._saveSettings());
         const checkboxIds = ['setSequential', 'setHighlights', 'setShowDests',
             'setHints', 'setStatusText', 'setShowLog', 'setGoodMoves', 'setSound'];
-        checkboxIds.forEach(id => {
-            document.getElementById(id)?.addEventListener('change', () => {
-                this._saveSettingsDebounced();
-                this._applyLiveSettings();
-            });
-        });
+        checkboxIds.forEach(id => document.getElementById(id)?.addEventListener('change', () => {
+            this._saveSettingsDebounced();
+            this._applyLiveSettings();
+        }));
     }
     _saveSettings() {
+        if (!this.ccUI)
+            return;
         try {
+            const cfg = this.ccUI.getSessionConfig();
             const settings = {
-                difficulty: document.querySelector('input[name="difficulty"]:checked')?.value || 'medium',
-                taskCount: document.getElementById('taskCountInput')?.value || '10',
-                timeLimit: document.getElementById('timeLimitInput')?.value || '0',
-                sequential: document.getElementById('setSequential')?.checked ?? false,
-                highlights: document.getElementById('setHighlights')?.checked ?? true,
-                hints: document.getElementById('setHints')?.checked ?? true,
-                statusText: document.getElementById('setStatusText')?.checked ?? true,
-                showLog: document.getElementById('setShowLog')?.checked ?? true,
-                goodMoves: document.getElementById('setGoodMoves')?.checked ?? false,
+                difficulty: cfg.difficulty,
+                taskCount: String(cfg.taskCount),
+                timeLimit: String(cfg.timeLimit),
+                sequential: cfg.sequentialMode,
+                highlights: cfg.highlightFound,
+                hints: cfg.showHints,
+                statusText: cfg.showText,
+                showLog: cfg.showLog,
+                goodMoves: cfg.goodMovesOnly,
+                showDests: !cfg.hideLegalMoves,
                 sound: document.getElementById('setSound')?.checked ?? true,
-                showDests: document.getElementById('setShowDests')?.checked ?? true,
             };
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
         }

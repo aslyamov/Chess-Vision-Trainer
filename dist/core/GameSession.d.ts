@@ -2,45 +2,8 @@
  * Manages a single game session - puzzle iteration, move validation, statistics
  * TypeScript версия
  */
-import type { Puzzle, SessionConfig, LocaleData, ChessgroundConfig, DrawShape } from '../types/index.js';
-interface OverallStats {
-    totalSolved: number;
-    totalPuzzles: number;
-    easy: {
-        solved: number;
-        total: number;
-    };
-    medium: {
-        solved: number;
-        total: number;
-    };
-    hard: {
-        solved: number;
-        total: number;
-    };
-}
-interface MoveStatsResult {
-    wChecks: MoveStats;
-    wCaptures: MoveStats;
-    bChecks: MoveStats;
-    bCaptures: MoveStats;
-}
-interface IUIManager {
-    showGameScreen(): void;
-    showResults(stats: {
-        solved: number;
-        total: number;
-        time: number;
-        accuracy: number;
-        avgTime: number;
-        newPuzzles: number;
-        moveStats: MoveStatsResult;
-    }, overallStats?: OverallStats): void;
-    applySettings(config: SessionConfig): void;
-    updateProgress(current: number, total: number): void;
-    updateTaskIndicator(visible: boolean, name?: string): void;
-    updateCounter(id: string, found: number, total: number): void;
-}
+import type { IGameUI } from '../ui/CCGameUI.js';
+import type { Puzzle, SessionConfig, LocaleData, ChessgroundConfig, DrawShape, CCOverallStats } from '../types/index.js';
 interface IBoardRenderer {
     initialize(config: {
         onMove: (orig: string, dest: string) => void;
@@ -71,10 +34,6 @@ interface IStatusManager {
     clearLogs(): void;
     readonly limitEndTimeValue: number;
 }
-interface MoveStats {
-    found: number;
-    total: number;
-}
 export declare class GameSession {
     private puzzles;
     private config;
@@ -93,7 +52,7 @@ export declare class GameSession {
     private timers;
     private previouslySolvedIds;
     private getOverallStats?;
-    constructor(puzzles: Puzzle[], config: SessionConfig, uiManager: IUIManager, boardRenderer: IBoardRenderer, statusManager: IStatusManager, langData: LocaleData, currentLang: string, getOverallStats?: () => OverallStats);
+    constructor(puzzles: Puzzle[], config: SessionConfig, uiManager: IGameUI, boardRenderer: IBoardRenderer, statusManager: IStatusManager, langData: LocaleData, currentLang: string, getOverallStats?: () => CCOverallStats);
     /**
      * Starts the game session
      */
@@ -103,7 +62,9 @@ export declare class GameSession {
      */
     nextPuzzle(): void;
     /**
-     * Finishes session and shows results
+     * Finishes session and shows results.
+     * ВАЖНО: totalTime читается до destroy() — после stopTimer() значение
+     * всё ещё корректно, но порядок явно фиксирует намерение.
      */
     finish(): void;
     /**

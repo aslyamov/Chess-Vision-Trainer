@@ -3,6 +3,11 @@
  * TypeScript версия
  */
 import type { TargetMoves, TargetColors, BadMove } from '../types/index.js';
+/**
+ * Подсчитывает количество фигур в позиции по FEN.
+ * Считает буквы в части расстановки (до первого пробела).
+ */
+export declare function countPieces(fen: string): number;
 export declare const SQUARES: readonly string[];
 /**
  * Создаёт уникальный ключ для хода из координат
