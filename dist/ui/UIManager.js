@@ -174,14 +174,8 @@ export class UIManager {
             el = this.dom.bCaptures;
         if (!el)
             return;
-        el.textContent = `${found}/${total}`;
-        // Highlight when completed
-        if (found === total && total > 0) {
-            el.classList.add('counter-completed');
-        }
-        else {
-            el.classList.remove('counter-completed');
-        }
+        const remaining = total - found;
+        el.textContent = (total === 0 || remaining === 0) ? '' : String(remaining);
     }
     /**
      * Shows/hides containers based on settings

@@ -14,6 +14,7 @@ export declare class FieldColorModule implements IGameModule {
     private _launch;
     private _backToStart;
     private _restart;
+    private _showResults;
     private _readConfigFromUI;
     private _applyConfigToUI;
     private _setupEventListeners;

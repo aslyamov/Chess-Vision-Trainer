@@ -4,21 +4,28 @@
  * Целевое поле подсвечивается через lastMove.
  */
 import type { FieldColorConfig } from '../types/index.js';
+export interface FCResult {
+    correct: number;
+    incorrect: number;
+    bestStreak: number;
+}
 export declare class FieldColorGame {
     private Chessground;
     private ground;
     private config;
     private dom;
+    private onFinish;
     private currentSquare;
     private correct;
     private incorrect;
     private streak;
     private bestStreak;
+    private currentRound;
     private timeLeft;
     private timerInterval;
     private answering;
     private active;
-    constructor(ChessgroundLib: any, config: FieldColorConfig);
+    constructor(ChessgroundLib: any, config: FieldColorConfig, onFinish: (result: FCResult) => void);
     start(): void;
     answer(guessWhite: boolean): void;
     updateConfig(config: FieldColorConfig): void;
@@ -34,7 +41,6 @@ export declare class FieldColorGame {
     private _updateTimerDisplay;
     private _finish;
     private _saveStats;
-    private _showResultModal;
     static loadConfig(): FieldColorConfig;
     static saveConfig(config: FieldColorConfig): void;
 }

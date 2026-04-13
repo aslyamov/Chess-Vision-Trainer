@@ -5,7 +5,10 @@
  */
 
 import { FieldColorGame } from '../FieldColorGame.js';
-import type { FieldColorConfig } from '../../types/index.js';
+import type { FCResult } from '../FieldColorGame.js';
+import { FIELD_COLOR_STATS_KEY } from '../../constants.js';
+import { commonStatsManager } from '../CommonStatsManager.js';
+import type { FieldColorConfig, FieldColorAllTimeStats } from '../../types/index.js';
 import type { IGameModule, GameDescriptor, AppContext } from '../IGame.js';
 
 export class FieldColorModule implements IGameModule {
@@ -45,7 +48,9 @@ export class FieldColorModule implements IGameModule {
 
     private _launch(config: FieldColorConfig): void {
         this.destroy();
-        this.game = new FieldColorGame(this.ctx.Chessground, config);
+        this.game = new FieldColorGame(this.ctx.Chessground, config, (result) => {
+            this._showResults(result);
+        });
         this.ctx.uiManager.switchView(this.descriptor.gameScreenId);
         this.game.start();
     }
@@ -58,11 +63,42 @@ export class FieldColorModule implements IGameModule {
     }
 
     private _restart(): void {
-        (document.getElementById('fcResultModal') as HTMLDialogElement | null)?.close();
         const config = FieldColorGame.loadConfig();
         this.destroy();
-        this.game = new FieldColorGame(this.ctx.Chessground, config);
+        this.game = new FieldColorGame(this.ctx.Chessground, config, (result) => {
+            this._showResults(result);
+        });
+        this.ctx.uiManager.switchView(this.descriptor.gameScreenId);
         this.game.start();
+    }
+
+    private _showResults(result: FCResult): void {
+        const set = (id: string, v: string) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = v;
+        };
+        const total = result.correct + result.incorrect;
+
+        // Session stats
+        set('fcResCorrect',    String(result.correct));
+        set('fcResIncorrect',  String(result.incorrect));
+        set('fcResAccuracy',   `${total > 0 ? Math.round(result.correct / total * 100) : 0}%`);
+        set('fcResBestStreak', String(result.bestStreak));
+
+        // All-time stats
+        try {
+            const raw = localStorage.getItem(FIELD_COLOR_STATS_KEY);
+            const s: FieldColorAllTimeStats = raw ? JSON.parse(raw)
+                : { totalSessions: 0, totalCorrect: 0, totalIncorrect: 0, allTimeBestStreak: 0 };
+            const allTotal = s.totalCorrect + s.totalIncorrect;
+            set('fcAllTimeSessions',  String(s.totalSessions));
+            set('fcAllTimeAccuracy',  allTotal > 0 ? `${Math.round(s.totalCorrect / allTotal * 100)}%` : '—');
+            set('fcAllTimeCorrect',   String(s.totalCorrect));
+            set('fcAllTimeIncorrect', String(s.totalIncorrect));
+            set('fcAllTimeStreak',    String(commonStatsManager.getStats().currentStreak));
+        } catch { /* нули из HTML */ }
+
+        this.ctx.uiManager.switchView('fcResultScreen');
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -70,13 +106,14 @@ export class FieldColorModule implements IGameModule {
     private _readConfigFromUI(): FieldColorConfig {
         const radio = (name: string) =>
             (document.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value;
+        const int = (id: string, fallback: number) =>
+            Math.max(0, parseInt((document.getElementById(id) as HTMLInputElement)?.value ?? '') || fallback);
         return {
             boardStyle:      (radio('fcBoardStyle') as FieldColorConfig['boardStyle']) ?? 'colored',
             orientation:     (radio('fcOrientation') as FieldColorConfig['orientation']) ?? 'white',
             showCoordinates: (document.getElementById('fcShowCoords') as HTMLInputElement)?.checked ?? true,
-            timeMode:        Math.max(0, parseInt(
-                (document.getElementById('fcTimeModeInput') as HTMLInputElement)?.value ?? '0'
-            ) || 0),
+            timeMode:        int('fcTimeModeInput', 0),
+            roundCount:      int('fcRoundCountInput', 20),
         };
     }
 
@@ -89,6 +126,8 @@ export class FieldColorModule implements IGameModule {
         setRadio('fcOrientation', config.orientation);
         const timeModeInput = document.getElementById('fcTimeModeInput') as HTMLInputElement | null;
         if (timeModeInput) timeModeInput.value = config.timeMode.toString();
+        const roundInput = document.getElementById('fcRoundCountInput') as HTMLInputElement | null;
+        if (roundInput) roundInput.value = config.roundCount.toString();
         const coords = document.getElementById('fcShowCoords') as HTMLInputElement | null;
         if (coords) coords.checked = config.showCoordinates;
     }
@@ -115,20 +154,14 @@ export class FieldColorModule implements IGameModule {
         document.getElementById('fcResPlayAgainBtn')?.addEventListener('click',
             () => this._restart());
 
-        document.getElementById('fcResGoHomeBtn')?.addEventListener('click', () => {
-            (document.getElementById('fcResultModal') as HTMLDialogElement | null)?.close();
-            this._backToStart();
-        });
+        document.getElementById('fcResGoHomeBtn')?.addEventListener('click',
+            () => this._backToStart());
 
-        document.getElementById('fcResGoGamesBtn')?.addEventListener('click', () => {
-            (document.getElementById('fcResultModal') as HTMLDialogElement | null)?.close();
-            this.ctx.goHome();
-        });
+        document.getElementById('fcResGoGamesBtn')?.addEventListener('click',
+            () => this.ctx.goHome());
 
-        document.getElementById('fcResGoStatsBtn')?.addEventListener('click', () => {
-            (document.getElementById('fcResultModal') as HTMLDialogElement | null)?.close();
-            this.ctx.openStats();
-        });
+        document.getElementById('fcResGoStatsBtn')?.addEventListener('click',
+            () => this.ctx.openStats());
     }
 
     private _setupAutoSave(): void {
@@ -138,6 +171,7 @@ export class FieldColorModule implements IGameModule {
                 .forEach(el => el.addEventListener('change', onChange))
         );
         document.getElementById('fcTimeModeInput')?.addEventListener('change', onChange);
+        document.getElementById('fcRoundCountInput')?.addEventListener('change', onChange);
         document.getElementById('fcShowCoords')?.addEventListener('change', onChange);
     }
 }

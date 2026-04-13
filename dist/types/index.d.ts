@@ -144,6 +144,8 @@ export interface FieldColorConfig {
     orientation: 'white' | 'black' | 'random';
     /** Seconds. 0 = infinite */
     timeMode: number;
+    /** Rounds count. 0 = infinite */
+    roundCount: number;
 }
 export interface FieldColorAllTimeStats {
     totalSessions: number;

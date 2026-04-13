@@ -406,14 +406,24 @@
                         </div>
                     </div>
 
-                    <!-- Время -->
-                    <div class="form-control w-full">
-                        <label class="label font-bold text-sm uppercase text-base-content/70 justify-center">
-                            ⏱ Время (сек)
-                        </label>
-                        <input id="fcTimeModeInput" type="number" min="0" max="600"
-                               value="0" class="input input-bordered input-secondary w-full text-center font-mono text-lg" />
-                        <label class="label text-xs text-base-content/50 justify-center pt-1">0 — бесконечно</label>
+                    <!-- Раундов + Время -->
+                    <div class="grid grid-cols-2 gap-4 w-full">
+                        <div class="form-control">
+                            <label class="label font-bold text-sm uppercase text-base-content/70 justify-center">
+                                🎯 Раундов
+                            </label>
+                            <input id="fcRoundCountInput" type="number" min="0" max="500" value="20"
+                                   class="input input-bordered input-secondary w-full text-center font-mono text-lg" />
+                            <label class="label text-xs text-base-content/50 justify-center pt-1">0 — бесконечно</label>
+                        </div>
+                        <div class="form-control">
+                            <label class="label font-bold text-sm uppercase text-base-content/70 justify-center">
+                                ⏱ Время (сек)
+                            </label>
+                            <input id="fcTimeModeInput" type="number" min="0" max="600" value="0"
+                                   class="input input-bordered input-secondary w-full text-center font-mono text-lg" />
+                            <label class="label text-xs text-base-content/50 justify-center pt-1">0 — бесконечно</label>
+                        </div>
                     </div>
 
                     <!-- Настройки -->
@@ -533,8 +543,9 @@
     <!-- ==========================================
          FIELD COLOR — Результаты (модал)
          ========================================== -->
-    <dialog id="fcResultModal" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box">
+    <main id="fcResultScreen" class="view hidden w-full min-h-[100svh] flex flex-col items-center py-8 px-4">
+        <div class="card w-full max-w-md bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md my-auto">
+        <div class="card-body">
             <div class="flex flex-col items-center gap-1 mb-5">
                 <div class="bg-secondary/20 rounded-full p-4 mb-1">
                     <svg class="icon text-secondary w-8 h-8" aria-hidden="true"><use href="#i-trophy"/></svg>
@@ -609,7 +620,8 @@
                 </button>
             </div>
         </div>
-    </dialog>
+        </div>
+    </main>
 
     <!-- ==========================================
          GAME SCREEN
@@ -690,22 +702,22 @@
                                 <svg class="icon text-base-content/60 mr-2" aria-hidden="true"><use href="#i-flag"/></svg>
                                 <span data-lang="row_checks">Шахи</span>
                             </div>
-                            <div class="bg-base-200 rounded-lg p-2">
-                                <span id="w-checks" class="badge badge-lg">0/0</span>
+                            <div class="flex items-center justify-center h-10">
+                                <span id="w-checks" class="font-mono font-bold text-xl text-success"></span>
                             </div>
-                            <div class="bg-base-200 rounded-lg p-2">
-                                <span id="b-checks" class="badge badge-lg">0/0</span>
+                            <div class="flex items-center justify-center h-10">
+                                <span id="b-checks" class="font-mono font-bold text-xl text-success"></span>
                             </div>
                             <!-- Captures row -->
                             <div class="text-sm text-left flex items-center">
                                 <svg class="icon text-base-content/60 mr-2" aria-hidden="true"><use href="#i-xmark"/></svg>
                                 <span data-lang="row_captures">Взятия</span>
                             </div>
-                            <div class="bg-base-200 rounded-lg p-2">
-                                <span id="w-captures" class="badge badge-lg">0/0</span>
+                            <div class="flex items-center justify-center h-10">
+                                <span id="w-captures" class="font-mono font-bold text-xl text-success"></span>
                             </div>
-                            <div class="bg-base-200 rounded-lg p-2">
-                                <span id="b-captures" class="badge badge-lg">0/0</span>
+                            <div class="flex items-center justify-center h-10">
+                                <span id="b-captures" class="font-mono font-bold text-xl text-success"></span>
                             </div>
                         </div>
                     </div>

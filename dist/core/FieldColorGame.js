@@ -13,19 +13,21 @@ function isWhiteSquare(sq) {
     return (fileIdx + rankIdx) % 2 !== 0;
 }
 export class FieldColorGame {
-    constructor(ChessgroundLib, config) {
+    constructor(ChessgroundLib, config, onFinish) {
         this.ground = null;
         this.currentSquare = '';
         this.correct = 0;
         this.incorrect = 0;
         this.streak = 0;
         this.bestStreak = 0;
+        this.currentRound = 0;
         this.timeLeft = 0;
         this.timerInterval = null;
         this.answering = false;
         this.active = false;
         this.Chessground = ChessgroundLib;
         this.config = config;
+        this.onFinish = onFinish;
         this.dom = this._cacheDom();
     }
     start() {
@@ -34,6 +36,7 @@ export class FieldColorGame {
         this.incorrect = 0;
         this.streak = 0;
         this.bestStreak = 0;
+        this.currentRound = 0;
         this.currentSquare = '';
         this.answering = false;
         this._stopTimer();
@@ -62,10 +65,19 @@ export class FieldColorGame {
             this.incorrect++;
             this.streak = 0;
         }
+        this.currentRound++;
         this._showFeedback(correct, label);
         this._updateStatsDisplay();
-        setTimeout(() => { if (this.active)
-            this._nextSquare(); }, 550);
+        setTimeout(() => {
+            if (!this.active)
+                return;
+            if (this.config.roundCount > 0 && this.currentRound >= this.config.roundCount) {
+                this._finish();
+            }
+            else {
+                this._nextSquare();
+            }
+        }, 550);
     }
     updateConfig(config) {
         this.config = config;
@@ -160,6 +172,10 @@ export class FieldColorGame {
             }, 180);
         }
         else {
+            // Случайная ориентация — новая для каждого поля
+            if (this.config.orientation === 'random') {
+                this.ground?.set({ orientation: Math.random() < 0.5 ? 'white' : 'black' });
+            }
             this.ground?.set({ drawable: { shapes: [{ orig: sq, brush: 'blue' }] } });
         }
     }
@@ -208,7 +224,7 @@ export class FieldColorGame {
         this.active = false;
         this._stopTimer();
         this._saveStats();
-        this._showResultModal();
+        this.onFinish({ correct: this.correct, incorrect: this.incorrect, bestStreak: this.bestStreak });
     }
     _saveStats() {
         try {
@@ -227,36 +243,8 @@ export class FieldColorGame {
         }
         commonStatsManager.recordPlay();
     }
-    _showResultModal() {
-        const modal = document.getElementById('fcResultModal');
-        if (!modal)
-            return;
-        const set = (id, v) => { const el = document.getElementById(id); if (el)
-            el.textContent = v; };
-        const total = this.correct + this.incorrect;
-        // Session stats
-        set('fcResCorrect', String(this.correct));
-        set('fcResIncorrect', String(this.incorrect));
-        set('fcResAccuracy', `${total > 0 ? Math.round(this.correct / total * 100) : 0}%`);
-        set('fcResBestStreak', String(this.bestStreak));
-        // All-time stats
-        try {
-            const raw = localStorage.getItem(FIELD_COLOR_STATS_KEY);
-            const s = raw ? JSON.parse(raw)
-                : { totalSessions: 0, totalCorrect: 0, totalIncorrect: 0, allTimeBestStreak: 0 };
-            const allTotal = s.totalCorrect + s.totalIncorrect;
-            const accuracy = allTotal > 0 ? `${Math.round(s.totalCorrect / allTotal * 100)}%` : '—';
-            set('fcAllTimeSessions', String(s.totalSessions));
-            set('fcAllTimeAccuracy', accuracy);
-            set('fcAllTimeCorrect', String(s.totalCorrect));
-            set('fcAllTimeIncorrect', String(s.totalIncorrect));
-            set('fcAllTimeStreak', String(commonStatsManager.getStats().currentStreak));
-        }
-        catch { /* нули из HTML */ }
-        modal.showModal();
-    }
     static loadConfig() {
-        const defaults = { boardStyle: 'colored', showCoordinates: true, orientation: 'white', timeMode: 0 };
+        const defaults = { boardStyle: 'colored', showCoordinates: true, orientation: 'white', timeMode: 0, roundCount: 20 };
         try {
             const saved = localStorage.getItem(FIELD_COLOR_SETTINGS_KEY);
             return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
