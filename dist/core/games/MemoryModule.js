@@ -20,7 +20,6 @@ export class MemoryModule {
             statsTabPanelId: 'statsTabMemory',
         };
         this.game = null;
-        this._autoSaveListeners = [];
     }
     // ─────────────────────────────────────────────────────────────────────────
     init(ctx) {
@@ -38,10 +37,6 @@ export class MemoryModule {
             this.game.destroy();
             this.game = null;
         }
-        for (const { el, handler } of this._autoSaveListeners) {
-            el.removeEventListener('change', handler);
-        }
-        this._autoSaveListeners = [];
     }
     renderStats() {
         this._renderAllTimeStats();
@@ -161,17 +156,9 @@ export class MemoryModule {
     }
     _setupAutoSave() {
         const onChange = () => MemoryGame.saveConfig(this._readConfigFromUI());
-        ['memPieceRange', 'memQuestionType', 'memOrientation'].forEach(name => document.querySelectorAll(`input[name="${name}"]`).forEach(el => {
-            el.addEventListener('change', onChange);
-            this._autoSaveListeners.push({ el, handler: onChange });
-        }));
-        ['memRoundCountInput', 'memShowSecondsInput', 'memAnswerSecondsInput'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener('change', onChange);
-                this._autoSaveListeners.push({ el, handler: onChange });
-            }
-        });
+        ['memPieceRange', 'memQuestionType', 'memOrientation'].forEach(name => document.querySelectorAll(`input[name="${name}"]`)
+            .forEach(el => el.addEventListener('change', onChange)));
+        ['memRoundCountInput', 'memShowSecondsInput', 'memAnswerSecondsInput'].forEach(id => document.getElementById(id)?.addEventListener('change', onChange));
     }
 }
 //# sourceMappingURL=MemoryModule.js.map

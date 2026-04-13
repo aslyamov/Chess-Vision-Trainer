@@ -8,7 +8,6 @@ export declare class MemoryModule implements IGameModule {
     readonly descriptor: GameDescriptor;
     private game;
     private ctx;
-    private _autoSaveListeners;
     init(ctx: AppContext): void;
     onSelected(): void;
     destroy(): void;
