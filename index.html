@@ -791,11 +791,13 @@
             </div>
 
             <!-- Сайдбар -->
-            <div class="flex flex-col gap-4 w-full lg:w-[380px]">
+            <div class="flex flex-col gap-3 w-full lg:w-[380px]">
 
-                <!-- Заголовок + счётчики -->
+                <!-- Основная карточка -->
                 <div class="card bg-base-100 shadow-xl border border-base-content/10">
                     <div class="card-body p-4 gap-3">
+
+                        <!-- Заголовок -->
                         <div class="flex items-center justify-between border-b border-base-content/10 pb-2">
                             <button id="memBackBtn" class="btn btn-ghost btn-xs opacity-50 hover:opacity-100">
                                 <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
@@ -806,70 +808,53 @@
                             <div class="w-7"></div>
                         </div>
 
-                        <!-- Статистика -->
-                        <div class="grid grid-cols-3 gap-2">
-                            <div class="bg-success/10 text-success rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10">
+                        <!-- Строка 1: Таймер + Верно + Ошибок + Осталось -->
+                        <div class="grid grid-cols-4 gap-2">
+                            <div class="bg-neutral text-neutral-content rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-[3.5rem]">
+                                <span id="memoryTimer" class="font-mono text-lg font-bold leading-tight">—</span>
+                                <span class="text-[10px] opacity-60 mt-0.5">сек</span>
+                            </div>
+                            <div class="bg-success/10 text-success rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-[3.5rem]">
                                 <span id="memoryCorrect" class="font-mono text-lg font-bold leading-tight">0</span>
                                 <span class="text-[10px] opacity-60 mt-0.5">Верно</span>
                             </div>
-                            <div class="bg-error/10 text-error rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10">
+                            <div class="bg-error/10 text-error rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-[3.5rem]">
                                 <span id="memoryIncorrect" class="font-mono text-lg font-bold leading-tight">0</span>
                                 <span class="text-[10px] opacity-60 mt-0.5">Ошибок</span>
                             </div>
-                            <div class="bg-base-200 rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10">
-                                <span id="memoryRound" class="font-mono text-lg font-bold leading-tight">1</span>
-                                <span class="text-[10px] opacity-60 mt-0.5">Задача</span>
+                            <div class="bg-base-200 rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-[3.5rem]">
+                                <span id="memoryRound" class="font-mono text-lg font-bold leading-tight">—</span>
+                                <span class="text-[10px] opacity-60 mt-0.5">осталось</span>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Карточка показа / вопроса -->
-                <div class="card bg-base-100 shadow-xl border border-base-content/10 flex-1">
-                    <div class="card-body p-4 flex flex-col gap-3 justify-center">
-
-                        <!-- Обратный отсчёт (фаза SHOWING) -->
-                        <div class="flex items-center justify-center gap-3">
-                            <div class="bg-neutral text-neutral-content rounded-xl px-4 py-2 font-mono text-3xl font-bold min-w-[4rem] text-center border border-base-content/10">
-                                <span id="memoryCountdown">—</span>
+                        <!-- Строка 2: Вопрос + кнопка «Запомнил» -->
+                        <div class="flex gap-2 items-stretch">
+                            <div id="memoryQuestion"
+                                class="flex-1 bg-base-200 rounded-xl px-3 py-2 text-sm font-semibold leading-snug flex items-center min-h-[2.75rem]">
+                                Запомни позицию
                             </div>
-                            <button id="memoryReadyBtn" class="btn btn-accent btn-sm gap-1 hidden">
-                                Запомнил <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
-                            </button>
-                        </div>
-
-                        <!-- Вопрос (фаза QUESTION) -->
-                        <div id="memoryQuestion"
-                            class="hidden bg-base-200 rounded-xl p-4 text-center font-bold text-base leading-snug">
-                        </div>
-
-                        <!-- Таймер на ответ -->
-                        <div class="flex justify-center">
-                            <span class="font-mono text-sm text-base-content/50">
-                                <span id="memoryAnswerTimer"></span>
-                            </span>
-                        </div>
-
-                        <!-- Палитра фигур (тип name-piece) -->
-                        <div id="memoryPalette" class="hidden"></div>
-
-                        <!-- Палитра расстановки (тип place-pieces) -->
-                        <div id="memoryPlacePalette" class="hidden"></div>
-
-                        <!-- Кнопки управления расстановкой (тип place-pieces) -->
-                        <div id="memoryPlaceActions" class="hidden flex gap-2">
-                            <button id="memoryClearBtn" class="btn btn-outline btn-sm btn-error flex-none" title="Очистить доску">
-                                🗑
-                            </button>
-                            <button id="memoryCheckBtn" class="btn btn-accent btn-sm flex-1">
-                                ✓ Проверить
-                            </button>
+                            <button id="memoryReadyBtn"
+                                class="btn btn-accent btn-sm w-11 flex-none text-base hidden"
+                                title="Запомнил">→</button>
                         </div>
 
                         <!-- Фидбек -->
-                        <div id="memoryFeedback" class="memory-feedback text-center font-bold text-base min-h-[1.5rem]"></div>
+                        <div id="memoryFeedback" class="memory-feedback text-center font-bold text-sm min-h-[1.25rem]"></div>
 
                     </div>
+                </div>
+
+                <!-- Палитра фигур (тип name-piece) -->
+                <div id="memoryPalette" class="hidden"></div>
+
+                <!-- Палитра расстановки (тип place-pieces) -->
+                <div id="memoryPlacePalette" class="hidden"></div>
+
+                <!-- Кнопки управления расстановкой (тип place-pieces) -->
+                <div id="memoryPlaceActions" class="hidden flex gap-2">
+                    <button id="memoryClearBtn" class="btn btn-outline btn-sm btn-error flex-none" title="Очистить доску">🗑</button>
+                    <button id="memoryCheckBtn" class="btn btn-accent btn-sm flex-1">✓ Проверить</button>
                 </div>
 
             </div>

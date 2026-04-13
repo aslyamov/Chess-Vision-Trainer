@@ -36,8 +36,8 @@ export type AnswerOutcome = 'correct' | 'incorrect' | 'timeout';
 interface MemoryDom {
     boardEl:        HTMLElement;
     questionEl:     HTMLElement;
+    /** Единый таймер: показывает countdown фазы SHOWING и countdown фазы QUESTION */
     timerEl:        HTMLElement;
-    countdownEl:    HTMLElement;
     readyBtn:       HTMLButtonElement;
     piecePalette:   HTMLElement;
     placePalette:   HTMLElement;
@@ -148,11 +148,10 @@ export class MemoryGame {
         this._cleanupDrag();
         this._detachPlacementListeners();
         // Сбрасываем весь видимый UI-стейт
-        this.dom.timerEl.textContent = '';
+        this.dom.timerEl.textContent = '—';
         this.dom.timerEl.classList.remove('text-error');
-        this.dom.countdownEl.textContent = '';
         this.dom.readyBtn.classList.add('hidden');
-        this.dom.questionEl.classList.add('hidden');
+        this.dom.questionEl.textContent = '';
         this.dom.piecePalette.classList.add('hidden');
         this.dom.placePalette.classList.add('hidden');
         this.dom.placeActions.classList.add('hidden');
@@ -199,22 +198,23 @@ export class MemoryGame {
             });
         }
 
-        // Показываем доску, скрываем вопрос и палитры
+        // Показываем доску, сбрасываем палитры
         this.dom.boardEl.classList.remove('memory-hidden');
-        this.dom.questionEl.classList.add('hidden');
+        this.dom.questionEl.textContent = 'Запомни позицию';
         this.dom.piecePalette.classList.add('hidden');
         this.dom.placePalette.classList.add('hidden');
         this.dom.placeActions.classList.add('hidden');
         this.dom.feedbackEl.textContent = '';
         this.dom.readyBtn.classList.remove('hidden');
 
-        // Обратный отсчёт
+        // Таймер фазы SHOWING
         if (this.config.showSeconds > 0) {
             this._startCountdown(this.config.showSeconds);
             this.showTimer = setTimeout(() => this._showQuestion(), this.config.showSeconds * 1000);
         } else {
-            // ∞ — только кнопка «Запомнил»
-            this.dom.countdownEl.textContent = '∞';
+            this._clearCountdown();
+            this.dom.timerEl.textContent = '∞';
+            this.dom.timerEl.classList.remove('text-error');
         }
     }
 
@@ -223,7 +223,6 @@ export class MemoryGame {
         this._clearCountdown();
 
         this.dom.readyBtn.classList.add('hidden');
-        this.dom.countdownEl.textContent = '';
 
         const puzzle = this.puzzles[this.currentIndex];
         const qType  = this.config.questionType;
@@ -240,7 +239,6 @@ export class MemoryGame {
 
         // Отображаем вопрос
         this.dom.questionEl.textContent = question.questionText;
-        this.dom.questionEl.classList.remove('hidden');
 
         if (qType === 'find-piece') {
             this.ground?.set({ fen: '8/8/8/8/8/8/8/8', viewOnly: true });
@@ -266,6 +264,9 @@ export class MemoryGame {
         if (this.config.answerSeconds > 0) {
             this._startAnswerCountdown(this.config.answerSeconds);
             this.answerTimer = setTimeout(() => this._resolveAnswer('timeout'), this.config.answerSeconds * 1000);
+        } else {
+            this.dom.timerEl.textContent = '∞';
+            this.dom.timerEl.classList.remove('text-error');
         }
     }
 
@@ -328,7 +329,6 @@ export class MemoryGame {
 
     private _nextRound(): void {
         this.currentQuestion = null;
-        this.dom.questionEl.classList.add('hidden');
         this.dom.piecePalette.classList.add('hidden');
         this.dom.placePalette.classList.add('hidden');
         this.dom.placeActions.classList.add('hidden');
@@ -418,11 +418,13 @@ export class MemoryGame {
         this.dom.placePalette.classList.remove('hidden');
         this.dom.placeActions.classList.remove('hidden');
         this.dom.questionEl.textContent = 'Расставьте позицию по памяти';
-        this.dom.questionEl.classList.remove('hidden');
 
         if (this.config.answerSeconds > 0) {
             this._startAnswerCountdown(this.config.answerSeconds);
             this.answerTimer = setTimeout(() => this._checkAndResolve(true), this.config.answerSeconds * 1000);
+        } else {
+            this.dom.timerEl.textContent = '∞';
+            this.dom.timerEl.classList.remove('text-error');
         }
     }
 
@@ -687,10 +689,11 @@ export class MemoryGame {
     private _startCountdown(seconds: number): void {
         this._clearCountdown();
         let left = seconds;
-        this.dom.countdownEl.textContent = String(left);
+        this.dom.timerEl.textContent = String(left);
+        this.dom.timerEl.classList.remove('text-error');
         this.countdownInterval = setInterval(() => {
             left--;
-            this.dom.countdownEl.textContent = String(Math.max(0, left));
+            this.dom.timerEl.textContent = String(Math.max(0, left));
             if (left <= 0) this._clearCountdown();
         }, 1000);
     }
@@ -699,6 +702,7 @@ export class MemoryGame {
         this._clearCountdown();
         let left = seconds;
         this.dom.timerEl.textContent = String(left);
+        this.dom.timerEl.classList.toggle('text-error', left <= 3);
         this.countdownInterval = setInterval(() => {
             left--;
             this.dom.timerEl.textContent = String(Math.max(0, left));
@@ -747,10 +751,9 @@ export class MemoryGame {
     private _updateStats(): void {
         this.dom.correctStat.textContent   = String(this.correct);
         this.dom.incorrectStat.textContent = String(this.incorrect + this.timeouts);
-        const total = this.config.roundCount > 0
-            ? `${this.currentIndex + 1} / ${this.config.roundCount}`
-            : String(this.currentIndex + 1);
-        this.dom.roundStat.textContent = total;
+        this.dom.roundStat.textContent = this.config.roundCount > 0
+            ? String(Math.max(0, this.config.roundCount - this.currentIndex))
+            : '∞';
     }
 
     private _cacheDom(): MemoryDom {
@@ -758,8 +761,7 @@ export class MemoryGame {
         return {
             boardEl:       get('memoryBoard'),
             questionEl:    get('memoryQuestion'),
-            timerEl:       get('memoryAnswerTimer'),
-            countdownEl:   get('memoryCountdown'),
+            timerEl:       get('memoryTimer'),
             readyBtn:      get('memoryReadyBtn') as HTMLButtonElement,
             piecePalette:  get('memoryPalette'),
             placePalette:  get('memoryPlacePalette'),
