@@ -267,10 +267,27 @@ export class FieldColorGame {
         if (!modal) return;
         const set = (id: string, v: string) => { const el = document.getElementById(id); if (el) el.textContent = v; };
         const total = this.correct + this.incorrect;
+
+        // Session stats
         set('fcResCorrect',    String(this.correct));
         set('fcResIncorrect',  String(this.incorrect));
         set('fcResAccuracy',   `${total > 0 ? Math.round(this.correct / total * 100) : 0}%`);
         set('fcResBestStreak', String(this.bestStreak));
+
+        // All-time stats
+        try {
+            const raw = localStorage.getItem(FIELD_COLOR_STATS_KEY);
+            const s: FieldColorAllTimeStats = raw ? JSON.parse(raw)
+                : { totalSessions: 0, totalCorrect: 0, totalIncorrect: 0, allTimeBestStreak: 0 };
+            const allTotal = s.totalCorrect + s.totalIncorrect;
+            const accuracy = allTotal > 0 ? `${Math.round(s.totalCorrect / allTotal * 100)}%` : '—';
+            set('fcAllTimeSessions',  String(s.totalSessions));
+            set('fcAllTimeAccuracy',  accuracy);
+            set('fcAllTimeCorrect',   String(s.totalCorrect));
+            set('fcAllTimeIncorrect', String(s.totalIncorrect));
+            set('fcAllTimeStreak',    String(commonStatsManager.getStats().currentStreak));
+        } catch { /* нули из HTML */ }
+
         modal.showModal();
     }
 

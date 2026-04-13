@@ -46,6 +46,7 @@ export class StatsScreen {
                 : { totalSessions: 0, totalCorrect: 0, totalIncorrect: 0, allTimeBestStreak: 0 };
             const total = s.totalCorrect + s.totalIncorrect;
             set('fcStatsSessions', String(s.totalSessions));
+            set('fcStatsTotal', String(total));
             set('fcStatsCorrect', String(s.totalCorrect));
             set('fcStatsIncorrect', String(s.totalIncorrect));
             set('fcStatsAccuracy', pct(s.totalCorrect, total));

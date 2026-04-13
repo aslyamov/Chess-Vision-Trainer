@@ -196,26 +196,35 @@
                 </div>
 
                 <!-- Tab: Цвет поля -->
-                <div id="statsTabFC" class="hidden space-y-4">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div id="statsTabFC" class="hidden space-y-3">
+                    <!-- Top row: 2 big cells -->
+                    <div class="grid grid-cols-2 gap-3">
                         <div class="bg-base-200/60 rounded-xl p-3 text-center">
                             <div class="text-2xl font-bold text-secondary" id="fcStatsSessions">0</div>
                             <div class="text-xs text-base-content/50 mt-1">Сессий</div>
-                        </div>
-                        <div class="bg-base-200/60 rounded-xl p-3 text-center">
-                            <div class="text-2xl font-bold text-success" id="fcStatsAccuracy">—</div>
-                            <div class="text-xs text-base-content/50 mt-1">Точность</div>
                         </div>
                         <div class="bg-base-200/60 rounded-xl p-3 text-center">
                             <div class="text-2xl font-bold text-warning" id="fcStatsBestStreak">0</div>
                             <div class="text-xs text-base-content/50 mt-1">Лучш. серия</div>
                         </div>
                     </div>
-                    <div class="bg-base-200/40 rounded-xl p-4">
-                        <div class="text-xs font-bold uppercase text-base-content/50 mb-3 text-center">Ответы за всё время</div>
-                        <div class="grid grid-cols-2 gap-2 text-sm">
-                            <div class="flex justify-between px-2"><span class="text-base-content/60">Верных</span><span class="font-mono font-bold text-success" id="fcStatsCorrect">0</span></div>
-                            <div class="flex justify-between px-2"><span class="text-base-content/60">Ошибок</span><span class="font-mono font-bold text-error" id="fcStatsIncorrect">0</span></div>
+                    <!-- Bottom row: 4 equal cells -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-base-200/60 rounded-xl p-3 text-center">
+                            <div class="text-2xl font-bold text-success" id="fcStatsCorrect">0</div>
+                            <div class="text-xs text-base-content/50 mt-1">Верно</div>
+                        </div>
+                        <div class="bg-base-200/60 rounded-xl p-3 text-center">
+                            <div class="text-2xl font-bold text-error" id="fcStatsIncorrect">0</div>
+                            <div class="text-xs text-base-content/50 mt-1">Ошибок</div>
+                        </div>
+                        <div class="bg-base-200/60 rounded-xl p-3 text-center">
+                            <div class="text-2xl font-bold text-accent" id="fcStatsAccuracy">—</div>
+                            <div class="text-xs text-base-content/50 mt-1">Точность</div>
+                        </div>
+                        <div class="bg-base-200/60 rounded-xl p-3 text-center">
+                            <div class="text-2xl font-bold" id="fcStatsTotal">0</div>
+                            <div class="text-xs text-base-content/50 mt-1">Всего ответов</div>
                         </div>
                     </div>
                 </div>
@@ -511,34 +520,78 @@
          FIELD COLOR — Результаты (модал)
          ========================================== -->
     <dialog id="fcResultModal" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box text-center">
-            <h3 class="font-bold text-2xl mb-5">
-                <svg class="icon mr-2 text-secondary inline-block" aria-hidden="true"><use href="#i-trophy"/></svg>Результат
-            </h3>
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <div class="bg-success/10 rounded-xl p-4">
+        <div class="modal-box">
+            <div class="flex flex-col items-center gap-1 mb-5">
+                <div class="bg-secondary/20 rounded-full p-4 mb-1">
+                    <svg class="icon text-secondary w-8 h-8" aria-hidden="true"><use href="#i-trophy"/></svg>
+                </div>
+                <h3 class="font-bold text-2xl">Результат</h3>
+            </div>
+
+            <!-- Session stats 2x2 -->
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                    <div class="text-xs uppercase font-bold opacity-60 mb-1">Верно</div>
                     <div class="text-3xl font-bold text-success font-mono" id="fcResCorrect">0</div>
-                    <div class="text-xs text-base-content/50 mt-1">Верно</div>
                 </div>
-                <div class="bg-error/10 rounded-xl p-4">
+                <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                    <div class="text-xs uppercase font-bold opacity-60 mb-1">Ошибок</div>
                     <div class="text-3xl font-bold text-error font-mono" id="fcResIncorrect">0</div>
-                    <div class="text-xs text-base-content/50 mt-1">Ошибок</div>
                 </div>
-                <div class="bg-base-200 rounded-xl p-4">
-                    <div class="text-3xl font-bold font-mono" id="fcResAccuracy">0%</div>
-                    <div class="text-xs text-base-content/50 mt-1">Точность</div>
+                <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                    <div class="text-xs uppercase font-bold opacity-60 mb-1">Точность</div>
+                    <div class="text-3xl font-bold text-accent font-mono" id="fcResAccuracy">0%</div>
                 </div>
-                <div class="bg-secondary/10 rounded-xl p-4">
-                    <div class="text-3xl font-bold text-secondary font-mono" id="fcResBestStreak">0</div>
-                    <div class="text-xs text-base-content/50 mt-1">Лучшая серия</div>
+                <div class="flex flex-col items-center bg-base-200 rounded-box p-3">
+                    <div class="text-xs uppercase font-bold opacity-60 mb-1">Лучшая серия</div>
+                    <div class="text-3xl font-bold text-warning font-mono" id="fcResBestStreak">0</div>
                 </div>
             </div>
-            <div class="flex gap-3">
+
+            <!-- All-time stats -->
+            <div class="w-full p-3 bg-base-200 rounded-box mb-4">
+                <div class="text-xs font-bold uppercase opacity-60 mb-2 text-center">Статистика за всё время</div>
+                <div class="grid grid-cols-3 gap-2 text-xs text-center mb-2">
+                    <div>
+                        <div class="opacity-60">Сессий</div>
+                        <div id="fcAllTimeSessions" class="font-bold text-lg">0</div>
+                    </div>
+                    <div>
+                        <div class="opacity-60">Точность</div>
+                        <div id="fcAllTimeAccuracy" class="font-bold text-lg text-accent">—</div>
+                    </div>
+                    <div>
+                        <div class="opacity-60">Streak</div>
+                        <div class="font-bold text-lg text-warning"><span id="fcAllTimeStreak">0</span> 🔥</div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="flex justify-between px-1">
+                        <span class="opacity-60">Всего верно</span>
+                        <span class="font-mono font-bold text-success" id="fcAllTimeCorrect">0</span>
+                    </div>
+                    <div class="flex justify-between px-1">
+                        <span class="opacity-60">Всего ошибок</span>
+                        <span class="font-mono font-bold text-error" id="fcAllTimeIncorrect">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-2 mb-2">
                 <button id="fcResPlayAgainBtn" class="btn btn-secondary flex-1">
                     <svg class="icon mr-1" aria-hidden="true"><use href="#i-play"/></svg> Ещё раз
                 </button>
                 <button id="fcResGoHomeBtn" class="btn btn-ghost flex-1">
                     <svg class="icon mr-1" aria-hidden="true"><use href="#i-gear"/></svg> Настройки
+                </button>
+            </div>
+            <div class="flex gap-2">
+                <button id="fcResGoGamesBtn" class="btn btn-outline flex-1">
+                    <svg class="icon mr-1" aria-hidden="true"><use href="#i-arrow-left"/></svg> Игры
+                </button>
+                <button id="fcResGoStatsBtn" class="btn btn-outline flex-1">
+                    <svg class="icon mr-1" aria-hidden="true"><use href="#i-chart-simple"/></svg> Статистика
                 </button>
             </div>
         </div>
@@ -819,6 +872,14 @@
                     </button>
                     <button id="resetProgressBtn" class="btn btn-outline btn-error flex-none w-12">
                         <svg class="icon" aria-hidden="true"><use href="#i-trash-can"/></svg>
+                    </button>
+                </div>
+                <div class="flex gap-2 w-full">
+                    <button id="resGoHomeBtn" class="btn btn-outline flex-1">
+                        <svg class="icon mr-1" aria-hidden="true"><use href="#i-arrow-left"/></svg> Игры
+                    </button>
+                    <button id="resGoStatsBtn" class="btn btn-outline flex-1">
+                        <svg class="icon mr-1" aria-hidden="true"><use href="#i-chart-simple"/></svg> Статистика
                     </button>
                 </div>
             </div>

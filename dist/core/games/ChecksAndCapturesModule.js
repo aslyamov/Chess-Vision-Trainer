@@ -109,6 +109,8 @@ export class ChecksAndCapturesModule {
         document.getElementById('resetProgressBtn')?.addEventListener('click', () => this.resetProgress());
         document.getElementById('confirmResetBtn')?.addEventListener('click', () => this.confirmReset());
         document.getElementById('cancelResetBtn')?.addEventListener('click', () => this.cancelReset());
+        document.getElementById('resGoHomeBtn')?.addEventListener('click', () => this.ctx.goHome());
+        document.getElementById('resGoStatsBtn')?.addEventListener('click', () => this.ctx.openStats());
     }
     _setupAutoSave() {
         document.querySelectorAll('input[name="difficulty"]').forEach(radio => {

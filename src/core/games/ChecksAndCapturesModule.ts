@@ -142,6 +142,8 @@ export class ChecksAndCapturesModule implements IGameModule {
         document.getElementById('resetProgressBtn')?.addEventListener('click', () => this.resetProgress());
         document.getElementById('confirmResetBtn')?.addEventListener('click', () => this.confirmReset());
         document.getElementById('cancelResetBtn')?.addEventListener('click', () => this.cancelReset());
+        document.getElementById('resGoHomeBtn')?.addEventListener('click', () => this.ctx.goHome());
+        document.getElementById('resGoStatsBtn')?.addEventListener('click', () => this.ctx.openStats());
     }
 
     private _setupAutoSave(): void {

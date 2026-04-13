@@ -39,6 +39,8 @@ export interface AppContext {
     getCurrentLang(): SupportedLocale;
     /** Вернуться на главный экран, уничтожив текущую игру */
     goHome(): void;
+    /** Открыть экран общей статистики */
+    openStats(): void;
 }
 /**
  * Самодостаточный модуль игры.

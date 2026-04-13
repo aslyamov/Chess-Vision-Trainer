@@ -119,6 +119,16 @@ export class FieldColorModule implements IGameModule {
             (document.getElementById('fcResultModal') as HTMLDialogElement | null)?.close();
             this._backToStart();
         });
+
+        document.getElementById('fcResGoGamesBtn')?.addEventListener('click', () => {
+            (document.getElementById('fcResultModal') as HTMLDialogElement | null)?.close();
+            this.ctx.goHome();
+        });
+
+        document.getElementById('fcResGoStatsBtn')?.addEventListener('click', () => {
+            (document.getElementById('fcResultModal') as HTMLDialogElement | null)?.close();
+            this.ctx.openStats();
+        });
     }
 
     private _setupAutoSave(): void {

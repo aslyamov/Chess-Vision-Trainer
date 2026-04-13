@@ -268,13 +268,13 @@ cg-board {
    Field Color Game
    ========================================== */
 
-/* Зелёный highlight для целевого поля (ярче стандартного lastMove) */
+/* Синий мягкий круг для целевого поля */
 #fcBoard .last-move {
-    background-color: rgba(100, 220, 50, 0.6) !important;
+    background: radial-gradient(circle, rgba(20, 85, 200, 0.55) 50%, rgba(20, 85, 200, 0.08) 100%) !important;
 }
 
-/* Монохромная доска — координаты единым тёмным цветом */
-#fcBoard coords coord {
+/* Монохромная доска — координаты единым тёмным цветом (только для нейтральной доски) */
+.fc-board-mono coords coord {
     color: #555555 !important;
     text-shadow: none !important;
 }

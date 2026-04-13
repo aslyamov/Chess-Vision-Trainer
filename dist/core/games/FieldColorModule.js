@@ -92,6 +92,14 @@ export class FieldColorModule {
             document.getElementById('fcResultModal')?.close();
             this._backToStart();
         });
+        document.getElementById('fcResGoGamesBtn')?.addEventListener('click', () => {
+            document.getElementById('fcResultModal')?.close();
+            this.ctx.goHome();
+        });
+        document.getElementById('fcResGoStatsBtn')?.addEventListener('click', () => {
+            document.getElementById('fcResultModal')?.close();
+            this.ctx.openStats();
+        });
     }
     _setupAutoSave() {
         const onChange = () => FieldColorGame.saveConfig(this._readConfigFromUI());

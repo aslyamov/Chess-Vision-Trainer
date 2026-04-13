@@ -25,7 +25,7 @@ export declare class ChessVisionTrainer implements AppContext {
     goHome(): void;
     openSettings(): void;
     closeSettings(): void;
-    private _openStats;
+    openStats(): void;
     /** Перерисовать активную доску — вызывается при resize окна */
     redrawBoard(): void;
     destroy(): void;

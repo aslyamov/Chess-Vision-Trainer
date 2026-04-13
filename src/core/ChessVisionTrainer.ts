@@ -107,7 +107,7 @@ export class ChessVisionTrainer implements AppContext {
         (document.getElementById('settingsModal') as HTMLDialogElement)?.close?.();
     }
 
-    private _openStats(): void {
+    openStats(): void {
         statsScreen.render();
         this.uiManager.switchView('statsScreen');
     }
@@ -167,7 +167,7 @@ export class ChessVisionTrainer implements AppContext {
         document.getElementById('backToHomeBtn')?.addEventListener('click', () => this.goHome());
 
         // Экран статистики
-        document.getElementById('openStatsBtn')?.addEventListener('click', () => this._openStats());
+        document.getElementById('openStatsBtn')?.addEventListener('click', () => this.openStats());
         document.getElementById('statsBackBtn')?.addEventListener('click', () => this.uiManager.showHomeScreen());
 
         // Переключение табов на экране статистики
