@@ -88,6 +88,16 @@ export class MemoryGame {
         this._detachBoardClick();
         this._cleanupDrag();
         this._detachPlacementListeners();
+        // Сбрасываем весь видимый UI-стейт
+        this.dom.timerEl.textContent = '';
+        this.dom.timerEl.classList.remove('text-error');
+        this.dom.countdownEl.textContent = '';
+        this.dom.readyBtn.classList.add('hidden');
+        this.dom.questionEl.classList.add('hidden');
+        this.dom.piecePalette.classList.add('hidden');
+        this.dom.placePalette.classList.add('hidden');
+        this.dom.placeActions.classList.add('hidden');
+        this.dom.feedbackEl.textContent = '';
         if (this.ground) {
             this.ground.destroy();
             this.ground = null;
@@ -247,7 +257,7 @@ export class MemoryGame {
             this.ground?.set({ viewOnly: true });
         }
         setTimeout(() => {
-            this.ground?.set({ drawable: { shapes: [] } });
+            this.ground?.set({ drawable: { shapes: [], autoShapes: [] } });
             this._nextRound();
         }, 800);
     }
