@@ -26,6 +26,7 @@ interface FCDom {
     correct: HTMLElement;
     incorrect: HTMLElement;
     streak: HTMLElement;
+    accuracy: HTMLElement;
     timer: HTMLElement;
     feedback: HTMLElement;
     whiteBtn: HTMLButtonElement;
@@ -126,6 +127,7 @@ export class FieldColorGame {
             correct:   get('fcCorrect'),
             incorrect: get('fcIncorrect'),
             streak:    get('fcStreak'),
+            accuracy:  get('fcAccuracy'),
             timer:     get('fcTimer'),
             feedback:  get('fcFeedback'),
             whiteBtn:  get('fcWhiteBtn') as HTMLButtonElement,
@@ -209,9 +211,11 @@ export class FieldColorGame {
     }
 
     private _updateStatsDisplay(): void {
+        const total = this.correct + this.incorrect;
         this.dom.correct.textContent   = String(this.correct);
         this.dom.incorrect.textContent = String(this.incorrect);
         this.dom.streak.textContent    = String(this.streak);
+        this.dom.accuracy.textContent  = total > 0 ? `${Math.round(this.correct / total * 100)}%` : '—';
     }
 
     private _startTimer(): void {

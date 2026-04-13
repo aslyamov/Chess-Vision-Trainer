@@ -95,6 +95,7 @@ export class FieldColorGame {
             correct: get('fcCorrect'),
             incorrect: get('fcIncorrect'),
             streak: get('fcStreak'),
+            accuracy: get('fcAccuracy'),
             timer: get('fcTimer'),
             feedback: get('fcFeedback'),
             whiteBtn: get('fcWhiteBtn'),
@@ -169,9 +170,11 @@ export class FieldColorGame {
         el.classList.add(correct ? 'bg-success/10' : 'bg-error/10', correct ? 'text-success' : 'text-error');
     }
     _updateStatsDisplay() {
+        const total = this.correct + this.incorrect;
         this.dom.correct.textContent = String(this.correct);
         this.dom.incorrect.textContent = String(this.incorrect);
         this.dom.streak.textContent = String(this.streak);
+        this.dom.accuracy.textContent = total > 0 ? `${Math.round(this.correct / total * 100)}%` : '—';
     }
     _startTimer() {
         this.timerInterval = setInterval(() => {

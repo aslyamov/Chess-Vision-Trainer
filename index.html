@@ -464,31 +464,45 @@
                 <!-- Dashboard Card -->
                 <div class="card bg-base-100 shadow-xl border border-base-content/10">
                     <div class="card-body p-4">
-                        <h2 class="card-title text-sm uppercase text-base-content/50 border-b border-base-content/10 pb-2 justify-center">
-                            <svg class="icon text-secondary" aria-hidden="true"><use href="#i-bullseye"/></svg> Цвет поля
-                        </h2>
-                        <div class="grid grid-cols-[1fr_auto_auto] gap-2 mt-2">
-                            <!-- Row 1: Timer + Correct + Back -->
-                            <div class="bg-neutral text-neutral-content rounded-xl flex items-center justify-center p-3 font-mono text-2xl font-bold border border-base-content/10 h-14">
-                                <svg class="icon mr-2 text-sm opacity-70" aria-hidden="true"><use href="#i-clock"/></svg>
-                                <span id="fcTimer">∞</span>
-                            </div>
-                            <div class="bg-success/10 text-success rounded-xl flex items-center justify-center px-3 min-w-14 font-mono text-xl font-bold border border-base-content/10 h-14" title="Верно">
-                                <span id="fcCorrect">0</span>
-                            </div>
-                            <button id="fcBackBtn" class="btn btn-ghost rounded-xl border border-base-content/10 h-14 w-14 p-0" title="Настройки">
+                        <h2 class="card-title text-sm uppercase text-base-content/50 border-b border-base-content/10 pb-2 flex items-center justify-between">
+                            <button id="fcBackBtn" class="btn btn-ghost btn-xs p-1 opacity-50 hover:opacity-100" title="Настройки">
                                 <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
                             </button>
-                            <!-- Row 2: Feedback + Incorrect + Streak -->
-                            <div id="fcFeedback"
-                                class="bg-base-200 text-base-content/50 rounded-xl p-3 text-center font-bold border border-base-content/10 flex items-center justify-center h-14 transition-colors duration-150">
-                                —
+                            <span class="flex items-center gap-1">
+                                <svg class="icon text-secondary" aria-hidden="true"><use href="#i-bullseye"/></svg> Цвет поля
+                            </span>
+                            <div class="w-7"></div>
+                        </h2>
+                        <div class="flex flex-col gap-2 mt-1">
+                            <!-- Row 1: Timer + Feedback (equal) -->
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-neutral text-neutral-content rounded-xl flex items-center justify-center gap-2 font-mono text-2xl font-bold border border-base-content/10 h-14">
+                                    <svg class="icon text-sm opacity-70" aria-hidden="true"><use href="#i-clock"/></svg>
+                                    <span id="fcTimer">∞</span>
+                                </div>
+                                <div id="fcFeedback"
+                                    class="bg-base-200 text-base-content/50 rounded-xl text-center font-bold border border-base-content/10 flex items-center justify-center h-14 transition-colors duration-150">
+                                    —
+                                </div>
                             </div>
-                            <div class="bg-error/10 text-error rounded-xl flex items-center justify-center px-3 min-w-14 font-mono text-xl font-bold border border-base-content/10 h-14" title="Ошибок">
-                                <span id="fcIncorrect">0</span>
-                            </div>
-                            <div class="bg-primary/10 text-primary rounded-xl flex items-center justify-center px-3 min-w-14 font-mono text-xl font-bold border border-base-content/10 h-14" title="Серия">
-                                <span id="fcStreak">0</span>
+                            <!-- Row 2: 4 stats -->
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="bg-success/10 text-success rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-14">
+                                    <span id="fcCorrect" class="font-mono text-lg font-bold leading-tight">0</span>
+                                    <span class="text-[10px] opacity-60 mt-0.5">Верно</span>
+                                </div>
+                                <div class="bg-error/10 text-error rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-14">
+                                    <span id="fcIncorrect" class="font-mono text-lg font-bold leading-tight">0</span>
+                                    <span class="text-[10px] opacity-60 mt-0.5">Ошибок</span>
+                                </div>
+                                <div class="bg-accent/10 text-accent rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-14">
+                                    <span id="fcAccuracy" class="font-mono text-lg font-bold leading-tight">—</span>
+                                    <span class="text-[10px] opacity-60 mt-0.5">Точность</span>
+                                </div>
+                                <div class="bg-primary/10 text-primary rounded-xl flex flex-col items-center justify-center py-2 border border-base-content/10 min-h-14">
+                                    <span id="fcStreak" class="font-mono text-lg font-bold leading-tight">0</span>
+                                    <span class="text-[10px] opacity-60 mt-0.5">Серия</span>
+                                </div>
                             </div>
                         </div>
                     </div>
