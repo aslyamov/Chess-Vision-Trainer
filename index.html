@@ -643,29 +643,22 @@
                 </div>
 
                 <!-- Answer Card -->
-                <div class="card bg-base-100 shadow-xl border border-base-content/10 flex-1">
-                    <div class="card-body p-4 flex flex-col justify-center gap-4 h-full">
-                        <div class="flex gap-4 justify-center">
-                            <button id="fcWhiteBtn"
-                                class="btn w-24 h-20 flex-col gap-1 border-2 border-base-content/20
-                                       bg-base-100 hover:bg-base-200 active:scale-95 transition-all"
-                                title="Белое (W)">
-                                <span class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" class="w-8 h-8"><g fill="none" fill-rule="evenodd" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path stroke-linejoin="miter" d="M22.5 11.63V6M20 8h5"/><path fill="#fff" stroke-linecap="butt" stroke-linejoin="miter" d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5"/><path fill="#fff" d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10z"/><path d="M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0"/></g></svg>
-                                </span>
-                            </button>
-                            <button id="fcBlackBtn"
-                                class="btn w-24 h-20 flex-col gap-1 border-2 border-base-content/20
-                                       bg-base-100 hover:bg-base-200 active:scale-95 transition-all"
-                                title="Чёрное (B)">
-                                <span class="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center shadow">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" class="w-8 h-8"><g fill="none" fill-rule="evenodd" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path stroke-linejoin="miter" d="M22.5 11.6V6"/><path fill="#000" stroke-linecap="butt" stroke-linejoin="miter" d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5"/><path fill="#000" d="M11.5 37a22.3 22.3 0 0 0 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10z"/><path stroke-linejoin="miter" d="M20 8h5"/><path stroke="#ececec" d="M32 29.5s8.5-4 6-9.7C34.1 14 25 18 22.5 24.6v2.1-2.1C20 18 9.9 14 7 19.9c-2.5 5.6 4.8 9 4.8 9"/><path stroke="#ececec" d="M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0"/></g></svg>
-                                </span>
-                            </button>
-                        </div>
-                        <p class="text-center text-xs text-base-content/40">
-                            <kbd class="kbd kbd-sm">W</kbd> — белое &nbsp;·&nbsp; <kbd class="kbd kbd-sm">B</kbd> — чёрное
-                        </p>
+                <div class="card bg-base-100 shadow-xl border border-base-content/10">
+                    <div class="card-body p-3 gap-2">
+                        <button id="fcWhiteBtn"
+                            class="btn btn-outline h-11 w-full gap-3 justify-between px-4 active:scale-95 transition-transform font-bold"
+                            title="Белое (W)">
+                            <span class="text-xl leading-none select-none">♔</span>
+                            <span>Белое поле</span>
+                            <kbd class="kbd kbd-xs">W</kbd>
+                        </button>
+                        <button id="fcBlackBtn"
+                            class="btn btn-outline h-11 w-full gap-3 justify-between px-4 active:scale-95 transition-transform font-bold"
+                            title="Чёрное (B)">
+                            <span class="text-xl leading-none select-none">♚</span>
+                            <span>Чёрное поле</span>
+                            <kbd class="kbd kbd-xs">B</kbd>
+                        </button>
                     </div>
                 </div>
 
@@ -1487,24 +1480,60 @@
                     </div>
                 </div>
 
-                <!-- Question + Answers Card -->
+                <!-- Answer Card -->
                 <div class="card bg-base-100 shadow-xl border border-base-content/10 flex-1">
-                    <div class="card-body p-4 flex flex-col gap-3">
-                        <p class="text-center text-sm font-bold text-base-content/60 uppercase tracking-wide">
-                            У кого материальный перевес?
+                    <div class="card-body p-4 flex flex-col gap-4">
+
+                        <p class="text-center text-sm font-bold text-base-content/50 uppercase tracking-wide">
+                            Кто лидирует по материалу?
                         </p>
-                        <!-- 5 answer buttons filled by JS -->
-                        <div class="flex flex-col gap-2 flex-1 justify-center">
-                            <button id="materialOpt0" class="btn btn-outline w-full text-base font-bold" disabled></button>
-                            <button id="materialOpt1" class="btn btn-outline w-full text-base font-bold" disabled></button>
-                            <button id="materialOpt2" class="btn btn-outline w-full text-base font-bold" disabled></button>
-                            <button id="materialOpt3" class="btn btn-outline w-full text-base font-bold" disabled></button>
-                            <button id="materialOpt4" class="btn btn-outline w-full text-base font-bold" disabled></button>
+
+                        <!-- Side toggle: 3 buttons -->
+                        <div class="flex gap-2">
+                            <button id="materialSideWhite"
+                                class="btn btn-outline flex-1 gap-1 font-bold text-sm" disabled>
+                                ♙ Белые
+                            </button>
+                            <button id="materialSideEqual"
+                                class="btn btn-outline flex-1 font-bold text-sm" disabled>
+                                = Равно
+                            </button>
+                            <button id="materialSideBlack"
+                                class="btn btn-outline flex-1 gap-1 font-bold text-sm" disabled>
+                                ♟ Чёрные
+                            </button>
                         </div>
-                        <div id="materialFeedback" class="text-center text-sm font-semibold h-5 transition-all"></div>
-                        <button id="materialEndBtn" class="btn btn-ghost btn-sm w-full opacity-50 hover:opacity-80">
+
+                        <!-- Value stepper (hidden when Equal selected) -->
+                        <div id="materialValueRow" class="flex items-center justify-center gap-4 hidden">
+                            <button id="materialValueMinus"
+                                class="btn btn-circle btn-sm btn-outline font-bold text-lg leading-none" disabled>−</button>
+                            <div class="flex flex-col items-center">
+                                <span id="materialValueDisplay"
+                                    class="font-mono text-5xl font-bold w-16 text-center leading-none">1</span>
+                                <span class="text-xs text-base-content/40 mt-1">очков</span>
+                            </div>
+                            <button id="materialValuePlus"
+                                class="btn btn-circle btn-sm btn-outline font-bold text-lg leading-none" disabled>+</button>
+                        </div>
+
+                        <!-- Spacer to push submit down -->
+                        <div class="flex-1"></div>
+
+                        <!-- Feedback -->
+                        <div id="materialFeedback" class="text-center text-sm font-semibold transition-all min-h-5"></div>
+
+                        <!-- Submit -->
+                        <button id="materialSubmit" class="btn btn-warning w-full btn-lg font-bold" disabled>
+                            Проверить
+                        </button>
+
+                        <!-- End session -->
+                        <button id="materialEndBtn"
+                            class="btn btn-ghost btn-xs w-full opacity-40 hover:opacity-70">
                             Завершить сессию
                         </button>
+
                     </div>
                 </div>
 

@@ -1,10 +1,9 @@
 /**
  * MaterialGame — тренажёр «Материальный перевес».
- * Показывает позицию; игрок угадывает у кого материальный перевес и на сколько.
+ * Показывает позицию; модуль собирает ответ игрока (кто + сколько) и вызывает answer().
  *
- * Правила подсчёта: пешка=1, конь=3, слон=3, ладья=5, ферзь=9. Короли не считаются.
- * Ответ: белые +N / равно / чёрные +N.
- * Предлагается 5 вариантов ответа, центрованных вокруг правильного.
+ * Правила: пешка=1, конь=3, слон=3, ладья=5, ферзь=9. Короли не считаются.
+ * balance = white_material − black_material.
  */
 
 import { materialStatsManager } from './MaterialStatsManager.js';
@@ -12,12 +11,11 @@ import { MATERIAL_SETTINGS_KEY } from '../constants.js';
 import type { MaterialConfig, MaterialResult } from '../types/index.js';
 import type { Puzzle } from '../types/index.js';
 
-// ── Piece values ──────────────────────────────────────────────────────────────
+// ── Material helpers ──────────────────────────────────────────────────────────
 
 const PIECE_VALUES: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9 };
 
-/** Calculates white - black material balance from a FEN string. */
-function calcBalance(fen: string): number {
+export function calcBalance(fen: string): number {
     const placement = fen.split(' ')[0];
     let white = 0, black = 0;
     for (const ch of placement) {
@@ -29,24 +27,10 @@ function calcBalance(fen: string): number {
     return white - black;
 }
 
-/** Human-readable label for a balance value. */
 export function balanceLabel(balance: number): string {
     if (balance === 0) return 'Равно';
     if (balance > 0)   return `Белые +${balance}`;
     return `Чёрные +${Math.abs(balance)}`;
-}
-
-/**
- * Generates 5 answer options centred on the correct balance.
- * Sorted ascending (most negative first).
- */
-function generateOptions(balance: number): number[] {
-    const set = new Set<number>([balance]);
-    for (const d of [1, -1, 2, -2, 3, -3, 4, -4, 5, -5]) {
-        if (set.size >= 5) break;
-        set.add(balance + d);
-    }
-    return [...set].sort((a, b) => a - b);
 }
 
 // ── DOM cache ─────────────────────────────────────────────────────────────────
@@ -59,7 +43,6 @@ interface MaterialDom {
     streak:       HTMLElement;
     accuracy:     HTMLElement;
     remaining:    HTMLElement;
-    opts:         HTMLButtonElement[];   // 5 answer buttons
     feedback:     HTMLElement;
 }
 
@@ -71,6 +54,8 @@ export class MaterialGame {
     private config: MaterialConfig;
     private puzzles: Puzzle[];
     private onFinish: (result: MaterialResult) => void;
+    /** Called whenever a new puzzle is loaded — lets the module reset its input UI. */
+    private onPuzzleReady: () => void;
 
     private dom: MaterialDom;
 
@@ -79,21 +64,26 @@ export class MaterialGame {
     private incorrect = 0;
     private streak = 0;
     private bestStreak = 0;
-    private currentBalance = 0;
-    private answering = false;    // blocks double-clicks
     private active = false;
+    private answering = false;
+
+    /** The correct balance for the current puzzle (public read). */
+    get currentBalance(): number { return this._currentBalance; }
+    private _currentBalance = 0;
 
     constructor(
         ChessgroundLib: any,
         puzzles: Puzzle[],
         config: MaterialConfig,
         onFinish: (result: MaterialResult) => void,
+        onPuzzleReady: () => void = () => { /* noop */ },
     ) {
-        this.Chessground = ChessgroundLib;
-        this.puzzles     = puzzles;
-        this.config      = config;
-        this.onFinish    = onFinish;
-        this.dom         = this._cacheDom();
+        this.Chessground   = ChessgroundLib;
+        this.puzzles       = puzzles;
+        this.config        = config;
+        this.onFinish      = onFinish;
+        this.onPuzzleReady = onPuzzleReady;
+        this.dom           = this._cacheDom();
     }
 
     // ── Public ─────────────────────────────────────────────────────────────────
@@ -105,8 +95,43 @@ export class MaterialGame {
         this._loadPuzzle();
     }
 
-    answer(chosen: number): void {
-        this._onAnswer(chosen);
+    /**
+     * Submit an answer from the module's input UI.
+     * @param chosen balance: positive = white leads, negative = black leads, 0 = equal
+     * @returns true if accepted (not already answering / not finished)
+     */
+    answer(chosen: number): boolean {
+        if (!this.active || this.answering) return false;
+        this.answering = true;
+
+        const correct = chosen === this._currentBalance;
+        if (correct) {
+            this.correct++;
+            this.streak++;
+            this.bestStreak = Math.max(this.bestStreak, this.streak);
+        } else {
+            this.incorrect++;
+            this.streak = 0;
+        }
+
+        // Show feedback
+        const fb = this.dom.feedback;
+        if (correct) {
+            fb.textContent = '✓ Верно!';
+            fb.className   = 'text-center text-sm font-semibold transition-all text-success';
+        } else {
+            fb.textContent = `✗ Правильно: ${balanceLabel(this._currentBalance)}`;
+            fb.className   = 'text-center text-sm font-semibold transition-all text-error';
+        }
+
+        this._updateStats();
+
+        this.currentIndex++;
+        setTimeout(() => {
+            if (this.active) this._loadPuzzle();
+        }, 950);
+
+        return true;
     }
 
     destroy(): void {
@@ -115,15 +140,9 @@ export class MaterialGame {
             this.ground.destroy();
             this.ground = null;
         }
-        // Reset feedback
         const fb = this.dom.feedback;
         fb.textContent = '';
-        fb.className   = 'text-center text-sm font-semibold h-5 transition-all';
-        // Disable buttons
-        this.dom.opts.forEach(b => {
-            b.disabled = true;
-            b.className = this._btnBase();
-        });
+        fb.className   = 'text-center text-sm font-semibold transition-all';
     }
 
     // ── Config persistence ────────────────────────────────────────────────────
@@ -157,8 +176,6 @@ export class MaterialGame {
             streak:       q('materialStreak'),
             accuracy:     q('materialAccuracy'),
             remaining:    q('materialRemaining'),
-            opts: [0, 1, 2, 3, 4].map(i =>
-                document.getElementById(`materialOpt${i}`) as HTMLButtonElement),
             feedback:     q('materialFeedback'),
         };
     }
@@ -169,7 +186,7 @@ export class MaterialGame {
             : this.config.orientation;
 
         this.ground = this.Chessground(this.dom.boardEl, {
-            fen:         '8/8/8/8/8/8/8/8',  // blank; will be set in _loadPuzzle
+            fen:         'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
             orientation,
             coordinates: true,
             movable:     { free: false, color: undefined },
@@ -189,76 +206,24 @@ export class MaterialGame {
         }
 
         if (this.currentIndex >= this.puzzles.length) {
-            // Ran out of puzzles — wrap around
             this.currentIndex = 0;
         }
 
         const puzzle = this.puzzles[this.currentIndex];
-        this.currentBalance = calcBalance(puzzle.fen);
+        this._currentBalance = calcBalance(puzzle.fen);
         this.answering = false;
 
-        // Update board
         this.ground.set({ fen: puzzle.fen });
-
-        // Render answer buttons
-        const options = generateOptions(this.currentBalance);
-        this.dom.opts.forEach((btn, i) => {
-            const val = options[i];
-            btn.textContent = balanceLabel(val);
-            btn.dataset['value'] = String(val);
-            btn.disabled = false;
-            btn.className = this._btnBase();
-        });
 
         // Clear feedback
         const fb = this.dom.feedback;
         fb.textContent = '';
-        fb.className   = 'text-center text-sm font-semibold h-5 transition-all';
-
-        this._updateStats();
-    }
-
-    private _onAnswer(chosen: number): void {
-        if (!this.active || this.answering) return;
-        this.answering = true;
-
-        const correct = chosen === this.currentBalance;
-        if (correct) {
-            this.correct++;
-            this.streak++;
-            this.bestStreak = Math.max(this.bestStreak, this.streak);
-        } else {
-            this.incorrect++;
-            this.streak = 0;
-        }
-
-        // Highlight buttons
-        this.dom.opts.forEach(btn => {
-            btn.disabled = true;
-            const val = Number(btn.dataset['value']);
-            if (val === this.currentBalance) {
-                btn.className = this._btnBase() + ' btn-success text-success-content border-success';
-            } else if (val === chosen && !correct) {
-                btn.className = this._btnBase() + ' btn-error text-error-content border-error';
-            }
-        });
-
-        // Feedback text
-        const fb = this.dom.feedback;
-        if (correct) {
-            fb.textContent = '✓ Верно!';
-            fb.className   = 'text-center text-sm font-semibold h-5 text-success';
-        } else {
-            fb.textContent = `✗ Правильно: ${balanceLabel(this.currentBalance)}`;
-            fb.className   = 'text-center text-sm font-semibold h-5 text-error';
-        }
+        fb.className   = 'text-center text-sm font-semibold transition-all';
 
         this._updateStats();
 
-        this.currentIndex++;
-        setTimeout(() => {
-            if (this.active) this._loadPuzzle();
-        }, 900);
+        // Let the module reset its input UI
+        this.onPuzzleReady();
     }
 
     private _finish(): void {
@@ -285,9 +250,4 @@ export class MaterialGame {
         this.dom.accuracy.textContent  = total > 0 ? `${acc}%` : '—';
         this.dom.remaining.textContent = rem;
     }
-
-    private _btnBase(): string {
-        return 'btn btn-outline w-full text-base font-bold transition-colors duration-150';
-    }
-
 }
