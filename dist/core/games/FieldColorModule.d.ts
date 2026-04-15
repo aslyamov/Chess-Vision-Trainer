@@ -8,6 +8,7 @@ export declare class FieldColorModule implements IGameModule {
     readonly descriptor: GameDescriptor;
     private game;
     private ctx;
+    private _keyHandler;
     init(ctx: AppContext): void;
     onSelected(): void;
     destroy(): void;
@@ -20,6 +21,7 @@ export declare class FieldColorModule implements IGameModule {
     private _readConfigFromUI;
     private _applyConfigToUI;
     private _setupEventListeners;
+    private _setupKeyboard;
     private _setupAutoSave;
 }
 //# sourceMappingURL=FieldColorModule.d.ts.map

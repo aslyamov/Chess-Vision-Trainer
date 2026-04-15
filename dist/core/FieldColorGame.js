@@ -231,7 +231,7 @@ export class FieldColorGame {
         fcStatsManager.record({ correct: this.correct, incorrect: this.incorrect, bestStreak: this.bestStreak });
     }
     static loadConfig() {
-        const defaults = { boardStyle: 'colored', showCoordinates: true, orientation: 'white', timeMode: 0, roundCount: 20 };
+        const defaults = { boardStyle: 'colored', showCoordinates: true, orientation: 'white', timeMode: 0, roundCount: 0 };
         try {
             const saved = localStorage.getItem(FIELD_COLOR_SETTINGS_KEY);
             return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;

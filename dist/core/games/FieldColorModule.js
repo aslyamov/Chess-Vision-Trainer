@@ -19,12 +19,14 @@ export class FieldColorModule {
             statsTabPanelId: 'statsTabFC',
         };
         this.game = null;
+        this._keyHandler = null;
     }
     // ─────────────────────────────────────────────────────────────────────
     init(ctx) {
         this.ctx = ctx;
         this._setupEventListeners();
         this._setupAutoSave();
+        this._setupKeyboard();
     }
     onSelected() {
         const config = FieldColorGame.loadConfig();
@@ -35,6 +37,10 @@ export class FieldColorModule {
         if (this.game) {
             this.game.destroy();
             this.game = null;
+        }
+        if (this._keyHandler) {
+            document.removeEventListener('keydown', this._keyHandler);
+            this._keyHandler = null;
         }
     }
     // ─────────────────────────────────────────────────────────────────────
@@ -85,13 +91,16 @@ export class FieldColorModule {
     // ─────────────────────────────────────────────────────────────────────
     _readConfigFromUI() {
         const radio = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value;
-        const int = (id, fallback) => Math.max(0, parseInt(document.getElementById(id)?.value ?? '') || fallback);
+        const int = (id, fallback) => {
+            const v = parseInt(document.getElementById(id)?.value ?? '');
+            return isNaN(v) || v < 0 ? fallback : v;
+        };
         return {
             boardStyle: radio('fcBoardStyle') ?? 'colored',
             orientation: radio('fcOrientation') ?? 'white',
             showCoordinates: document.getElementById('fcShowCoords')?.checked ?? true,
             timeMode: int('fcTimeModeInput', 0),
-            roundCount: int('fcRoundCountInput', 20),
+            roundCount: int('fcRoundCountInput', 0),
         };
     }
     _applyConfigToUI(config) {
@@ -126,6 +135,20 @@ export class FieldColorModule {
         document.getElementById('fcResGoHomeBtn')?.addEventListener('click', () => this._backToStart());
         document.getElementById('fcResGoGamesBtn')?.addEventListener('click', () => this.ctx.goHome());
         document.getElementById('fcResGoStatsBtn')?.addEventListener('click', () => this.ctx.openStats());
+    }
+    _setupKeyboard() {
+        this._keyHandler = (e) => {
+            if (!this.game)
+                return;
+            if (e.target.tagName === 'INPUT')
+                return;
+            const key = e.key.toLowerCase();
+            if (key === 'w')
+                this.game.answer(true);
+            else if (key === 'b')
+                this.game.answer(false);
+        };
+        document.addEventListener('keydown', this._keyHandler);
     }
     _setupAutoSave() {
         const onChange = () => FieldColorGame.saveConfig(this._readConfigFromUI());

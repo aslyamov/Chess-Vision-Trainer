@@ -12,6 +12,8 @@ import { gameRegistry } from './GameRegistry.js';
 import { FieldColorModule } from './games/FieldColorModule.js';
 import { ChecksAndCapturesModule } from './games/ChecksAndCapturesModule.js';
 import { MemoryModule } from './games/MemoryModule.js';
+import { GoodCaptureModule } from './games/GoodCaptureModule.js';
+import { MaterialModule } from './games/MaterialModule.js';
 import { statsScreen } from './StatsScreen.js';
 import { loadLanguageData, applyTranslations, saveLanguagePreference, loadLanguagePreference, updateLanguageUI, } from '../utils/localization.js';
 import { logError } from '../utils/error-handler.js';
@@ -100,6 +102,8 @@ export class ChessVisionTrainer {
         gameRegistry.register(new ChecksAndCapturesModule());
         gameRegistry.register(new FieldColorModule());
         gameRegistry.register(new MemoryModule());
+        gameRegistry.register(new MaterialModule());
+        gameRegistry.register(new GoodCaptureModule());
     }
     _initializeEventListeners() {
         if (document.readyState === 'loading') {

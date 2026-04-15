@@ -24,6 +24,7 @@ export class FieldColorModule implements IGameModule {
 
     private game: FieldColorGame | null = null;
     private ctx!: AppContext;
+    private _keyHandler: ((e: KeyboardEvent) => void) | null = null;
 
     // ─────────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,7 @@ export class FieldColorModule implements IGameModule {
         this.ctx = ctx;
         this._setupEventListeners();
         this._setupAutoSave();
+        this._setupKeyboard();
     }
 
     onSelected(): void {
@@ -43,6 +45,10 @@ export class FieldColorModule implements IGameModule {
         if (this.game) {
             this.game.destroy();
             this.game = null;
+        }
+        if (this._keyHandler) {
+            document.removeEventListener('keydown', this._keyHandler);
+            this._keyHandler = null;
         }
     }
 
@@ -104,14 +110,16 @@ export class FieldColorModule implements IGameModule {
     private _readConfigFromUI(): FieldColorConfig {
         const radio = (name: string) =>
             (document.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value;
-        const int = (id: string, fallback: number) =>
-            Math.max(0, parseInt((document.getElementById(id) as HTMLInputElement)?.value ?? '') || fallback);
+        const int = (id: string, fallback: number) => {
+            const v = parseInt((document.getElementById(id) as HTMLInputElement)?.value ?? '');
+            return isNaN(v) || v < 0 ? fallback : v;
+        };
         return {
             boardStyle:      (radio('fcBoardStyle') as FieldColorConfig['boardStyle']) ?? 'colored',
             orientation:     (radio('fcOrientation') as FieldColorConfig['orientation']) ?? 'white',
             showCoordinates: (document.getElementById('fcShowCoords') as HTMLInputElement)?.checked ?? true,
             timeMode:        int('fcTimeModeInput', 0),
-            roundCount:      int('fcRoundCountInput', 20),
+            roundCount:      int('fcRoundCountInput', 0),
         };
     }
 
@@ -160,6 +168,17 @@ export class FieldColorModule implements IGameModule {
 
         document.getElementById('fcResGoStatsBtn')?.addEventListener('click',
             () => this.ctx.openStats());
+    }
+
+    private _setupKeyboard(): void {
+        this._keyHandler = (e: KeyboardEvent) => {
+            if (!this.game) return;
+            if ((e.target as HTMLElement).tagName === 'INPUT') return;
+            const key = e.key.toLowerCase();
+            if (key === 'w') this.game.answer(true);
+            else if (key === 'b') this.game.answer(false);
+        };
+        document.addEventListener('keydown', this._keyHandler);
     }
 
     private _setupAutoSave(): void {
