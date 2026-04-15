@@ -1362,66 +1362,62 @@
     <!-- ==========================================
          MATERIAL — Экран настроек
          ========================================== -->
-    <main id="materialStartScreen" class="view hidden w-full min-h-[100svh] flex flex-col items-center justify-center py-8 px-4">
-        <div class="card w-full max-w-md bg-base-100 shadow-2xl border border-base-content/10">
-            <div class="card-body p-6 gap-5">
+    <main id="materialStartScreen" class="view hidden w-full min-h-[100svh] flex flex-col items-center py-8 px-4">
+        <div class="card w-full max-w-lg bg-base-100/95 shadow-2xl border border-base-content/10 backdrop-blur-md my-auto">
+            <div class="card-body gap-6 text-center">
 
                 <!-- Header -->
-                <div class="flex items-center gap-3 border-b border-base-content/10 pb-4">
-                    <div class="w-12 h-12 rounded-xl bg-warning/20 flex items-center justify-center text-warning text-2xl shrink-0">
-                        <svg class="icon" aria-hidden="true"><use href="#i-scale"/></svg>
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-bold leading-tight">Материальный перевес</h1>
-                        <p class="text-sm text-base-content/60">Считай материал быстро и точно</p>
-                    </div>
+                <div class="pb-2 border-b border-base-content/10 relative">
+                    <button id="materialBackFromStartBtn"
+                        class="btn btn-ghost btn-sm absolute left-0 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content">
+                        <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg> Игры
+                    </button>
+                    <h1 class="text-2xl font-bold text-center bg-gradient-to-r from-warning to-orange-400 bg-clip-text text-transparent inline-flex items-center justify-center gap-2">
+                        <svg class="icon text-warning" aria-hidden="true"><use href="#i-scale"/></svg>Материальный перевес
+                    </h1>
+                    <p class="text-base-content/60 text-sm mt-1">Считай материал быстро и точно</p>
                 </div>
 
-                <!-- Settings -->
-                <div class="flex flex-col gap-4">
+                <div class="flex flex-col items-center gap-5 w-full max-w-sm mx-auto">
 
-                    <!-- Round count -->
-                    <div class="flex items-center justify-between gap-4">
-                        <label for="materialRoundCount" class="text-sm font-medium">Кол-во позиций</label>
-                        <div class="flex items-center gap-2">
-                            <input id="materialRoundCount" type="number" min="0" max="999" value="0"
-                                class="input input-bordered input-sm w-20 text-center font-mono">
-                            <span class="text-xs text-base-content/50">0 = ∞</span>
+                    <!-- Ориентация -->
+                    <div class="form-control w-full">
+                        <label class="label font-bold text-sm uppercase text-base-content/70 justify-center pb-2">
+                            🔄 Ориентация
+                        </label>
+                        <div class="join w-full grid grid-cols-3">
+                            <input class="join-item btn btn-sm btn-outline" type="radio"
+                                   name="materialOrientation" value="white" aria-label="Белые снизу" checked />
+                            <input class="join-item btn btn-sm btn-outline" type="radio"
+                                   name="materialOrientation" value="black" aria-label="Чёрные снизу" />
+                            <input class="join-item btn btn-sm btn-outline" type="radio"
+                                   name="materialOrientation" value="random" aria-label="Случайная" />
                         </div>
                     </div>
 
-                    <!-- Orientation -->
-                    <div class="flex items-center justify-between gap-4">
-                        <span class="text-sm font-medium">Сторона доски</span>
-                        <div class="flex gap-1">
-                            <label class="cursor-pointer">
-                                <input type="radio" name="materialOrientation" value="white" class="hidden peer" checked>
-                                <span class="btn btn-xs btn-outline peer-checked:btn-warning">Белые</span>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="materialOrientation" value="black" class="hidden peer">
-                                <span class="btn btn-xs btn-outline peer-checked:btn-warning">Чёрные</span>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="materialOrientation" value="random" class="hidden peer">
-                                <span class="btn btn-xs btn-outline peer-checked:btn-warning">Случайно</span>
-                            </label>
-                        </div>
+                    <!-- Позиций -->
+                    <div class="form-control w-full max-w-[10rem]">
+                        <label class="label font-bold text-xs uppercase text-base-content/70 justify-center">
+                            🎯 Позиций
+                        </label>
+                        <input id="materialRoundCount" type="number" min="0" max="999" value="0"
+                               class="input input-bordered input-warning w-full text-center font-mono text-lg" />
+                        <label class="label text-xs text-base-content/50 justify-center pt-1">0 — ∞</label>
                     </div>
+
+                    <!-- Подсказка стоимости фигур -->
+                    <p class="text-xs text-base-content/35">
+                        ♟ = 1 &nbsp;·&nbsp; ♞♝ = 3 &nbsp;·&nbsp; ♜ = 5 &nbsp;·&nbsp; ♛ = 9
+                    </p>
 
                 </div>
 
-                <!-- Hint -->
-                <p class="text-xs text-base-content/40 text-center">
-                    ♟ = 1 · ♞♝ = 3 · ♜ = 5 · ♛ = 9
-                </p>
-
-                <!-- Actions -->
-                <div class="flex flex-col gap-2">
-                    <button id="materialStartGameBtn" class="btn btn-warning btn-lg w-full shadow-lg hover:scale-[1.01] transition-transform text-lg">
+                <!-- Кнопка старт -->
+                <div class="card-actions mt-2 justify-center">
+                    <button id="materialStartGameBtn"
+                        class="btn btn-warning btn-lg w-full max-w-sm shadow-lg hover:scale-[1.01] transition-transform text-lg">
                         <svg class="icon mr-2" aria-hidden="true"><use href="#i-play"/></svg> Начать игру
                     </button>
-                    <button id="materialBackFromStartBtn" class="btn btn-ghost btn-sm w-full opacity-60">← Назад</button>
                 </div>
 
             </div>
