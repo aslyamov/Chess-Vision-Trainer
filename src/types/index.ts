@@ -217,6 +217,29 @@ export interface MemoryAllTimeStats {
 }
 
 // ==========================================
+// Material Game Types
+// ==========================================
+
+export interface MaterialConfig {
+    /** Количество позиций. 0 = бесконечно */
+    roundCount: number;
+    orientation: 'white' | 'black' | 'random';
+}
+
+export interface MaterialResult {
+    correct:    number;
+    incorrect:  number;
+    bestStreak: number;
+}
+
+export interface MaterialAllTimeStats {
+    totalSessions:  number;
+    totalCorrect:   number;
+    totalIncorrect: number;
+    bestStreak:     number;
+}
+
+// ==========================================
 // Error Types
 // ==========================================
 

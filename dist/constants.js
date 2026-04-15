@@ -48,4 +48,6 @@ export const FIELD_COLOR_STATS_KEY = 'chess_field_color_stats';
 export const MEMORY_SETTINGS_KEY = 'chess_memory_settings';
 export const MEMORY_STATS_KEY = 'chess_memory_stats';
 export const COMMON_STATS_KEY = 'chess_common_stats';
+export const MATERIAL_SETTINGS_KEY = 'chess_material_settings';
+export const MATERIAL_STATS_KEY = 'chess_material_stats';
 //# sourceMappingURL=constants.js.map

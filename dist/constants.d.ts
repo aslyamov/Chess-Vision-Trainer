@@ -48,4 +48,6 @@ export declare const FIELD_COLOR_STATS_KEY = "chess_field_color_stats";
 export declare const MEMORY_SETTINGS_KEY = "chess_memory_settings";
 export declare const MEMORY_STATS_KEY = "chess_memory_stats";
 export declare const COMMON_STATS_KEY = "chess_common_stats";
+export declare const MATERIAL_SETTINGS_KEY = "chess_material_settings";
+export declare const MATERIAL_STATS_KEY = "chess_material_stats";
 //# sourceMappingURL=constants.d.ts.map

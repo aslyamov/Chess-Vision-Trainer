@@ -189,6 +189,22 @@ export interface MemoryAllTimeStats {
     bestAccuracy: number;
     bestStreak: number;
 }
+export interface MaterialConfig {
+    /** Количество позиций. 0 = бесконечно */
+    roundCount: number;
+    orientation: 'white' | 'black' | 'random';
+}
+export interface MaterialResult {
+    correct: number;
+    incorrect: number;
+    bestStreak: number;
+}
+export interface MaterialAllTimeStats {
+    totalSessions: number;
+    totalCorrect: number;
+    totalIncorrect: number;
+    bestStreak: number;
+}
 export type ErrorCategory = 'INITIALIZATION' | 'LIBRARY_LOAD' | 'DATA_LOAD' | 'VALIDATION' | 'GAME_LOGIC' | 'UI_RENDER';
 export interface ErrorLog {
     category: ErrorCategory;
