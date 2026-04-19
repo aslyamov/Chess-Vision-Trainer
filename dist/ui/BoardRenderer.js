@@ -82,6 +82,8 @@ export class BoardRenderer {
         if (config.movable?.color && config.movable.color !== 'both') {
             config.turnColor = config.movable.color;
         }
+        if (config.orientation)
+            this.currentOrientation = config.orientation;
         this.ground.set(config);
     }
     /**
