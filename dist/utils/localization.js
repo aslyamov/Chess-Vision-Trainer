@@ -19,7 +19,16 @@ export async function loadLanguageData(lang) {
     }
     catch (error) {
         logError('DATA_LOAD', `Ошибка загрузки языка: ${lang}`, error, { file: `locales/${lang}.json` });
-        throw error;
+        // Fallback: try Russian, then return empty object so app still works
+        if (lang !== 'ru') {
+            try {
+                const fallback = await fetch('locales/ru.json');
+                if (fallback.ok)
+                    return await fallback.json();
+            }
+            catch { /* ignore */ }
+        }
+        return {};
     }
 }
 /**

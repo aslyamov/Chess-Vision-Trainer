@@ -22,6 +22,7 @@ export class BoardRenderer {
     private Chessground: any; // Глобальный объект
     private ground: ChessgroundAPI | null;
     private persistentShapes: Shape[];
+    private currentOrientation: 'white' | 'black' = 'white';
 
     constructor(boardElement: HTMLElement, ChessgroundLib: any) {
         this.boardElement = boardElement;
@@ -55,6 +56,7 @@ export class BoardRenderer {
         }
         this.boardElement.innerHTML = '';
         this.persistentShapes = [];
+        this.currentOrientation = 'white';
 
         try {
             this.ground = this.Chessground(this.boardElement, {
@@ -126,6 +128,7 @@ export class BoardRenderer {
      */
     setOrientation(orientation: 'white' | 'black'): void {
         if (!this.ground) return;
+        this.currentOrientation = orientation;
         this.ground.set({ orientation });
     }
 
@@ -134,10 +137,7 @@ export class BoardRenderer {
      */
     flipBoard(): void {
         if (!this.ground) return;
-        // Accessing state via any cast since internal state key might differ or be protected
-        const currentOrientation = (this.ground as any).state?.orientation || 'white';
-        const newOrientation = currentOrientation === 'white' ? 'black' : 'white';
-        this.setOrientation(newOrientation);
+        this.setOrientation(this.currentOrientation === 'white' ? 'black' : 'white');
     }
 
     /**

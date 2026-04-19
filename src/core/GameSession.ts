@@ -526,9 +526,12 @@ export class GameSession {
             if (moveIsBad) {
                 this.stats.totalErrors++;
 
-                // Try to make the move
-                const result = this.game.move({ from: orig, to: dest, promotion: 'q' });
-                const moveSuccessful = !!result;
+                // Try to make the move (chess.js 1.x throws on illegal move instead of returning null)
+                let moveSuccessful = false;
+                try {
+                    const result = this.game.move({ from: orig, to: dest, promotion: 'q' });
+                    moveSuccessful = !!result;
+                } catch { moveSuccessful = false; }
 
                 const refutation = (typeof badMoveObj === 'string') ? null : badMoveObj.refutation;
                 this._handleBadMoveRefutation(refutation, pieceColor, { from: orig, to: dest }, moveSuccessful);
@@ -662,8 +665,9 @@ export class GameSession {
             const refutationGame = new Chess(fenForRefutation);
 
             try {
-                // Try to find refutation move
-                let move = refutationGame.move(refutationSan);
+                // Try to find refutation move (chess.js 1.x throws on invalid SAN instead of returning null)
+                let move: any = null;
+                try { move = refutationGame.move(refutationSan); } catch { /* fall through to fuzzy match */ }
 
                 if (!move) {
                     const moves = refutationGame.moves({ verbose: true });
@@ -857,6 +861,7 @@ export class GameSession {
      * @private
      */
     private _handleTimeout(): void {
+        this.isDelayActive = true; // block further move processing until next puzzle
         this.status.pauseTimer();
         this.status.setStatus(this.langData.status_timeout || 'Время!', STATUS_COLORS.ERROR);
         this._setTimeout(() => this.nextPuzzle(), DELAYS.TIMEOUT_DISPLAY);

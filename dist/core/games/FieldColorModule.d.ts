@@ -9,6 +9,7 @@ export declare class FieldColorModule implements IGameModule {
     private game;
     private ctx;
     private _keyHandler;
+    private _listeners;
     init(ctx: AppContext): void;
     onSelected(): void;
     destroy(): void;
@@ -20,6 +21,8 @@ export declare class FieldColorModule implements IGameModule {
     private _renderAllTimeStats;
     private _readConfigFromUI;
     private _applyConfigToUI;
+    /** Registers a tracked event listener that will be removed on destroy(). */
+    private _on;
     private _setupEventListeners;
     private _setupKeyboard;
     private _setupAutoSave;

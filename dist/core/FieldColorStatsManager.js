@@ -45,7 +45,9 @@ class FieldColorStatsManager {
         try {
             localStorage.removeItem(FIELD_COLOR_STATS_KEY);
         }
-        catch { /* ignore */ }
+        catch (e) {
+            console.warn('FieldColorStatsManager: clear failed', e);
+        }
     }
 }
 export const fcStatsManager = new FieldColorStatsManager();

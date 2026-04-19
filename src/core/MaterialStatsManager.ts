@@ -41,7 +41,7 @@ class MaterialStatsManager {
 
     clear(): void {
         try { localStorage.removeItem(MATERIAL_STATS_KEY); }
-        catch { /* ignore */ }
+        catch (e) { console.warn('MaterialStatsManager: clear failed', e); }
     }
 }
 

@@ -99,7 +99,12 @@ export class FieldColorGame {
     }
     // ─────────────────────────────────────────────────────────────────────────
     _cacheDom() {
-        const get = (id) => document.getElementById(id);
+        const get = (id) => {
+            const el = document.getElementById(id);
+            if (!el)
+                throw new Error(`FieldColorGame: element #${id} not found in DOM`);
+            return el;
+        };
         return {
             boardEl: get('fcBoard'),
             boardWrapper: get('fcBoardWrapper'),

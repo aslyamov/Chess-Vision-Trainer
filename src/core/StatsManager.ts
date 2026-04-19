@@ -102,11 +102,9 @@ class StatsManager {
             s.bestAccuracy = session.accuracy;
         }
 
-        // avgAccuracy пересчитывается по всем сессиям точно
-        const totalAcc = this.sessions.reduce((sum, r) => sum + r.accuracy, 0);
-        s.avgAccuracy = this.sessions.length > 0
-            ? Math.round(totalAcc / this.sessions.length)
-            : 0;
+        // Инкрементальный пересчёт средней точности — O(1) вместо O(n) reduce
+        const prevTotal = (s.totalSessions - 1) * s.avgAccuracy;
+        s.avgAccuracy = Math.round((prevTotal + session.accuracy) / s.totalSessions);
 
         // Move stats по цветам (без избыточных агрегатов)
         ms.wChecks.found   += sm.wChecks.found;

@@ -7,7 +7,11 @@ function today() {
     return new Date().toISOString().split('T')[0];
 }
 function daysBetween(a, b) {
-    return Math.floor((new Date(b).getTime() - new Date(a).getTime()) / 86400000);
+    const aTime = new Date(a).getTime();
+    const bTime = new Date(b).getTime();
+    if (isNaN(aTime) || isNaN(bTime))
+        return 0;
+    return Math.floor((bTime - aTime) / 86400000);
 }
 class CommonStatsManager {
     load() {

@@ -18,9 +18,12 @@ declare class Chess {
     move(move: string | object): any;
     undo(): any;
     get(square: string): any;
-    in_check(): boolean;
-    in_checkmate(): boolean;
-    in_stalemate(): boolean;
+    inCheck(): boolean;
+    isCheckmate(): boolean;
+    isStalemate(): boolean;
+    isGameOver(): boolean;
+    isInsufficientMaterial(): boolean;
+    isDraw(): boolean;
 }
 
 // ==========================================

@@ -291,11 +291,11 @@ export class MemoryGame {
             for (const { key, square } of pieces) {
                 if (!byKey.has(key))
                     byKey.set(key, []);
-                byKey.get(key).push(square);
+                byKey.get(key)?.push(square);
             }
             const keys = [...byKey.keys()];
             const chosenKey = keys[Math.floor(Math.random() * keys.length)];
-            const correctSquares = byKey.get(chosenKey);
+            const correctSquares = byKey.get(chosenKey) ?? [];
             return {
                 type: 'find-piece',
                 pieceKey: chosenKey,

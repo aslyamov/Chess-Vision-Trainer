@@ -45,7 +45,7 @@ class FieldColorStatsManager {
     /** Сброс (например, из меню «очистить данные») */
     clear(): void {
         try { localStorage.removeItem(FIELD_COLOR_STATS_KEY); }
-        catch { /* ignore */ }
+        catch (e) { console.warn('FieldColorStatsManager: clear failed', e); }
     }
 }
 

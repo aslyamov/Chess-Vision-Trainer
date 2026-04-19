@@ -32,6 +32,7 @@ export class ChecksAndCapturesModule implements IGameModule {
     private ctx!:          AppContext;
     private _saveSettingsDebounced!: () => void;
     private _destroyed = false;
+    private _listeners: Array<[EventTarget, string, EventListener]> = [];
 
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -51,6 +52,8 @@ export class ChecksAndCapturesModule implements IGameModule {
 
     destroy(): void {
         this._destroyed = true;
+        this._listeners.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
+        this._listeners = [];
         this.session?.destroy();
         this.session = null;
         this.boardRenderer?.destroy();
@@ -139,36 +142,38 @@ export class ChecksAndCapturesModule implements IGameModule {
         this.ccUI.updateAvailableCount(count);
     }
 
+    /** Registers a tracked event listener that will be removed on destroy(). */
+    private _on(target: EventTarget | null | undefined, event: string, handler: EventListener): void {
+        if (!target) return;
+        target.addEventListener(event, handler);
+        this._listeners.push([target, event, handler]);
+    }
+
     private _setupEventListeners(): void {
-        document.getElementById('startGameBtn')?.addEventListener('click', () => this.startSession());
-        document.getElementById('giveUpBtn')?.addEventListener('click',   () => this.giveUp());
-        document.getElementById('flipBoardBtn')?.addEventListener('click', () => this.flipBoard());
-        document.getElementById('restartBtn')?.addEventListener('click',   () => this.restart());
-        document.getElementById('resetProgressBtn')?.addEventListener('click', () => this.resetProgress());
-        document.getElementById('confirmResetBtn')?.addEventListener('click',  () => this.confirmReset());
-        document.getElementById('cancelResetBtn')?.addEventListener('click',   () => this.cancelReset());
-        document.getElementById('resGoHomeBtn')?.addEventListener('click',     () => this.ctx.goHome());
-        document.getElementById('resGoStatsBtn')?.addEventListener('click',    () => this.ctx.openStats());
+        this._on(document.getElementById('startGameBtn'), 'click', () => this.startSession());
+        this._on(document.getElementById('giveUpBtn'),    'click', () => this.giveUp());
+        this._on(document.getElementById('flipBoardBtn'), 'click', () => this.flipBoard());
+        this._on(document.getElementById('restartBtn'),   'click', () => this.restart());
+        this._on(document.getElementById('resetProgressBtn'), 'click', () => this.resetProgress());
+        this._on(document.getElementById('confirmResetBtn'),  'click', () => this.confirmReset());
+        this._on(document.getElementById('cancelResetBtn'),   'click', () => this.cancelReset());
+        this._on(document.getElementById('resGoHomeBtn'),     'click', () => this.ctx.goHome());
+        this._on(document.getElementById('resGoStatsBtn'),    'click', () => this.ctx.openStats());
     }
 
     private _setupAutoSave(): void {
-        document.querySelectorAll('input[name="difficulty"]').forEach(radio =>
-            radio.addEventListener('change', () => {
-                this._updateAvailableCount();
-                this._saveSettings();
-            })
+        const onDifficultyChange = () => { this._updateAvailableCount(); this._saveSettings(); };
+        document.querySelectorAll<HTMLInputElement>('input[name="difficulty"]').forEach(radio =>
+            this._on(radio, 'change', onDifficultyChange)
         );
 
-        document.getElementById('taskCountInput')?.addEventListener('change', () => this._saveSettings());
-        document.getElementById('timeLimitInput')?.addEventListener('change', () => this._saveSettings());
+        this._on(document.getElementById('taskCountInput'), 'change', () => this._saveSettings());
+        this._on(document.getElementById('timeLimitInput'), 'change', () => this._saveSettings());
 
-        const checkboxIds = ['setSequential', 'setHighlights', 'setShowDests',
-            'setHints', 'setStatusText', 'setShowLog', 'setGoodMoves', 'setSound'];
-        checkboxIds.forEach(id =>
-            document.getElementById(id)?.addEventListener('change', () => {
-                this._saveSettingsDebounced();
-                this._applyLiveSettings();
-            })
+        const onSettingChange = () => { this._saveSettingsDebounced(); this._applyLiveSettings(); };
+        ['setSequential', 'setHighlights', 'setShowDests',
+            'setHints', 'setStatusText', 'setShowLog', 'setGoodMoves', 'setSound'].forEach(id =>
+            this._on(document.getElementById(id), 'change', onSettingChange)
         );
     }
 

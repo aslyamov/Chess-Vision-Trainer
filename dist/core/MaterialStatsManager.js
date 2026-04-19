@@ -41,7 +41,9 @@ class MaterialStatsManager {
         try {
             localStorage.removeItem(MATERIAL_STATS_KEY);
         }
-        catch { /* ignore */ }
+        catch (e) {
+            console.warn('MaterialStatsManager: clear failed', e);
+        }
     }
 }
 export const materialStatsManager = new MaterialStatsManager();

@@ -6,7 +6,6 @@
 
 import { FieldColorGame } from '../FieldColorGame.js';
 import { fcStatsManager } from '../FieldColorStatsManager.js';
-import { commonStatsManager } from '../CommonStatsManager.js';
 import { setEl } from '../../utils/dom-utils.js';
 import type { FieldColorConfig, FCResult } from '../../types/index.js';
 import type { IGameModule, GameDescriptor, AppContext } from '../IGame.js';
@@ -25,6 +24,7 @@ export class FieldColorModule implements IGameModule {
     private game: FieldColorGame | null = null;
     private ctx!: AppContext;
     private _keyHandler: ((e: KeyboardEvent) => void) | null = null;
+    private _listeners: Array<[EventTarget, string, EventListener]> = [];
 
     // ─────────────────────────────────────────────────────────────────────
 
@@ -47,15 +47,18 @@ export class FieldColorModule implements IGameModule {
             this.game = null;
         }
         if (this._keyHandler) {
-            document.removeEventListener('keydown', this._keyHandler);
+            window.removeEventListener('keydown', this._keyHandler, { capture: true });
             this._keyHandler = null;
         }
+        this._listeners.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
+        this._listeners = [];
     }
 
     // ─────────────────────────────────────────────────────────────────────
 
     private _launch(config: FieldColorConfig): void {
         this.destroy();
+        this._setupKeyboard();
         this.game = new FieldColorGame(this.ctx.Chessground, config, (result) => {
             this._showResults(result);
         });
@@ -71,13 +74,7 @@ export class FieldColorModule implements IGameModule {
     }
 
     private _restart(): void {
-        const config = FieldColorGame.loadConfig();
-        this.destroy();
-        this.game = new FieldColorGame(this.ctx.Chessground, config, (result) => {
-            this._showResults(result);
-        });
-        this.ctx.uiManager.switchView(this.descriptor.gameScreenId);
-        this.game.start();
+        this._launch(FieldColorGame.loadConfig());
     }
 
     renderStats(): void {
@@ -102,7 +99,7 @@ export class FieldColorModule implements IGameModule {
         setEl('fcAllTimeAccuracy',  allTotal > 0 ? `${Math.round(s.totalCorrect / allTotal * 100)}%` : '—');
         setEl('fcAllTimeCorrect',   String(s.totalCorrect));
         setEl('fcAllTimeIncorrect', String(s.totalIncorrect));
-        setEl('fcAllTimeStreak',    String(commonStatsManager.getStats().currentStreak));
+        setEl('fcAllTimeStreak',    String(s.allTimeBestStreak));
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -111,7 +108,7 @@ export class FieldColorModule implements IGameModule {
         const radio = (name: string) =>
             (document.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement)?.value;
         const int = (id: string, fallback: number) => {
-            const v = parseInt((document.getElementById(id) as HTMLInputElement)?.value ?? '');
+            const v = parseInt((document.getElementById(id) as HTMLInputElement)?.value ?? '', 10);
             return isNaN(v) || v < 0 ? fallback : v;
         };
         return {
@@ -138,57 +135,51 @@ export class FieldColorModule implements IGameModule {
         if (coords) coords.checked = config.showCoordinates;
     }
 
+    /** Registers a tracked event listener that will be removed on destroy(). */
+    private _on(target: EventTarget | null | undefined, event: string, handler: EventListener): void {
+        if (!target) return;
+        target.addEventListener(event, handler);
+        this._listeners.push([target, event, handler]);
+    }
+
     private _setupEventListeners(): void {
-        document.getElementById('fcBackFromStartBtn')?.addEventListener('click',
+        this._on(document.getElementById('fcBackFromStartBtn'), 'click',
             () => this.ctx.uiManager.showHomeScreen());
 
-        document.getElementById('fcStartGameBtn')?.addEventListener('click', () => {
+        this._on(document.getElementById('fcStartGameBtn'), 'click', () => {
             const config = this._readConfigFromUI();
             FieldColorGame.saveConfig(config);
             this._launch(config);
         });
 
-        document.getElementById('fcBackBtn')?.addEventListener('click',
-            () => this._backToStart());
-
-        document.getElementById('fcWhiteBtn')?.addEventListener('click',
-            () => this.game?.answer(true));
-
-        document.getElementById('fcBlackBtn')?.addEventListener('click',
-            () => this.game?.answer(false));
-
-        document.getElementById('fcResPlayAgainBtn')?.addEventListener('click',
-            () => this._restart());
-
-        document.getElementById('fcResGoHomeBtn')?.addEventListener('click',
-            () => this._backToStart());
-
-        document.getElementById('fcResGoGamesBtn')?.addEventListener('click',
-            () => this.ctx.goHome());
-
-        document.getElementById('fcResGoStatsBtn')?.addEventListener('click',
-            () => this.ctx.openStats());
+        this._on(document.getElementById('fcBackBtn'),       'click', () => this._backToStart());
+        this._on(document.getElementById('fcWhiteBtn'),      'click', () => this.game?.answer(true));
+        this._on(document.getElementById('fcBlackBtn'),      'click', () => this.game?.answer(false));
+        this._on(document.getElementById('fcResPlayAgainBtn'),'click', () => this._restart());
+        this._on(document.getElementById('fcResGoHomeBtn'),  'click', () => this._backToStart());
+        this._on(document.getElementById('fcResGoGamesBtn'), 'click', () => this.ctx.goHome());
+        this._on(document.getElementById('fcResGoStatsBtn'), 'click', () => this.ctx.openStats());
     }
 
     private _setupKeyboard(): void {
+        if (this._keyHandler) return; // уже зарегистрирован
         this._keyHandler = (e: KeyboardEvent) => {
             if (!this.game) return;
             if ((e.target as HTMLElement).tagName === 'INPUT') return;
-            const key = e.key.toLowerCase();
-            if (key === 'w') this.game.answer(true);
-            else if (key === 'b') this.game.answer(false);
+            if (e.key === 'ArrowUp')   { e.preventDefault(); e.stopPropagation(); this.game.answer(true); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); this.game.answer(false); }
         };
-        document.addEventListener('keydown', this._keyHandler);
+        window.addEventListener('keydown', this._keyHandler, { capture: true });
     }
 
     private _setupAutoSave(): void {
         const onChange = () => FieldColorGame.saveConfig(this._readConfigFromUI());
         ['fcBoardStyle', 'fcOrientation'].forEach(name =>
-            document.querySelectorAll(`input[name="${name}"]`)
-                .forEach(el => el.addEventListener('change', onChange))
+            document.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`)
+                .forEach(el => this._on(el, 'change', onChange))
         );
-        document.getElementById('fcTimeModeInput')?.addEventListener('change', onChange);
-        document.getElementById('fcRoundCountInput')?.addEventListener('change', onChange);
-        document.getElementById('fcShowCoords')?.addEventListener('change', onChange);
+        this._on(document.getElementById('fcTimeModeInput'),  'change', onChange);
+        this._on(document.getElementById('fcRoundCountInput'),'change', onChange);
+        this._on(document.getElementById('fcShowCoords'),     'change', onChange);
     }
 }

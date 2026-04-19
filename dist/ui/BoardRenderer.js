@@ -6,6 +6,7 @@ import { logError } from '../utils/error-handler.js';
 import { getAllDests } from '../utils/chess-utils.js';
 export class BoardRenderer {
     constructor(boardElement, ChessgroundLib) {
+        this.currentOrientation = 'white';
         this.boardElement = boardElement;
         this.Chessground = ChessgroundLib;
         this.ground = null;
@@ -30,6 +31,7 @@ export class BoardRenderer {
         }
         this.boardElement.innerHTML = '';
         this.persistentShapes = [];
+        this.currentOrientation = 'white';
         try {
             this.ground = this.Chessground(this.boardElement, {
                 fen: 'start',
@@ -89,6 +91,7 @@ export class BoardRenderer {
     setOrientation(orientation) {
         if (!this.ground)
             return;
+        this.currentOrientation = orientation;
         this.ground.set({ orientation });
     }
     /**
@@ -97,10 +100,7 @@ export class BoardRenderer {
     flipBoard() {
         if (!this.ground)
             return;
-        // Accessing state via any cast since internal state key might differ or be protected
-        const currentOrientation = this.ground.state?.orientation || 'white';
-        const newOrientation = currentOrientation === 'white' ? 'black' : 'white';
-        this.setOrientation(newOrientation);
+        this.setOrientation(this.currentOrientation === 'white' ? 'black' : 'white');
     }
     /**
      * Adds persistent shape (highlight/arrow)

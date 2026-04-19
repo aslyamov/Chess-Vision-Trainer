@@ -18,6 +18,10 @@ export class UIManager {
         });
 
         const target = document.getElementById(viewId);
+        if (!target) {
+            console.warn(`UIManager.switchView: view "${viewId}" not found in DOM`);
+            return;
+        }
         if (target) {
             target.classList.remove('hidden');
             target.classList.add('active');

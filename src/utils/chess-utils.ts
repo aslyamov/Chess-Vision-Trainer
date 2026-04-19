@@ -216,7 +216,7 @@ export function getMovesForColor(fen: string, color: 'w' | 'b'): TargetMoves {
 
             // Проверяем шахи
             tempGame.move(m);
-            if (tempGame.in_check()) {
+            if (tempGame.inCheck()) {
                 checks.push(m as MoveData);
             }
             tempGame.undo();

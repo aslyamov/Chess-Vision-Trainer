@@ -16,6 +16,7 @@ export declare class BoardRenderer {
     private Chessground;
     private ground;
     private persistentShapes;
+    private currentOrientation;
     constructor(boardElement: HTMLElement, ChessgroundLib: any);
     /**
      * Initializes Chessground board

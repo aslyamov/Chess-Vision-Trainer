@@ -21,11 +21,11 @@
 
     <!-- Chessground CSS -->
     <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/assets/chessground.base.css">
+        href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.1.1/assets/chessground.base.css">
     <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/assets/chessground.brown.css">
+        href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.1.1/assets/chessground.brown.css">
     <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/assets/chessground.cburnett.css">
+        href="https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.1.1/assets/chessground.cburnett.css">
 
     <!-- Built Tailwind + DaisyUI + Custom Styles -->
     <link rel="stylesheet" href="style.css?v=7">
@@ -644,21 +644,19 @@
 
                 <!-- Answer Card -->
                 <div class="card bg-base-100 shadow-xl border border-base-content/10">
-                    <div class="card-body p-3 gap-2">
-                        <button id="fcWhiteBtn"
-                            class="btn btn-outline h-11 w-full gap-3 justify-between px-4 active:scale-95 transition-transform font-bold"
-                            title="Белое (W)">
-                            <span class="text-xl leading-none select-none">♔</span>
-                            <span>Белое поле</span>
-                            <kbd class="kbd kbd-xs">W</kbd>
-                        </button>
-                        <button id="fcBlackBtn"
-                            class="btn btn-outline h-11 w-full gap-3 justify-between px-4 active:scale-95 transition-transform font-bold"
-                            title="Чёрное (B)">
-                            <span class="text-xl leading-none select-none">♚</span>
-                            <span>Чёрное поле</span>
-                            <kbd class="kbd kbd-xs">B</kbd>
-                        </button>
+                    <div class="card-body p-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="fcWhiteBtn"
+                                class="btn btn-outline w-full !h-auto aspect-square overflow-hidden fc-king-btn active:scale-95 transition-transform"
+                                title="Белое поле (↑)">
+                                <div class="cg-wrap" style="position:relative;width:5rem;height:5rem;display:block;flex-shrink:0;"><piece class="king white"></piece></div>
+                            </button>
+                            <button id="fcBlackBtn"
+                                class="btn btn-outline w-full !h-auto aspect-square overflow-hidden fc-king-btn active:scale-95 transition-transform"
+                                title="Чёрное поле (↓)">
+                                <div class="cg-wrap" style="position:relative;width:5rem;height:5rem;display:block;flex-shrink:0;"><piece class="king black"></piece></div>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1630,7 +1628,11 @@
     </div>
 
     <!-- SCRIPTS -->
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <!-- Chess.js 1.x — загружается как ESM и экспортируется в window.Chess -->
+    <script type="module">
+        import { Chess } from 'https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm';
+        window.Chess = Chess;
+    </script>
     <script type="module" src="dist/main.js"></script>
 
 </body>

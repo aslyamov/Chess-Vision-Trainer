@@ -13,6 +13,7 @@ export declare class ChecksAndCapturesModule implements IGameModule {
     private ctx;
     private _saveSettingsDebounced;
     private _destroyed;
+    private _listeners;
     init(ctx: AppContext): void;
     onSelected(): void;
     destroy(): void;
@@ -28,6 +29,8 @@ export declare class ChecksAndCapturesModule implements IGameModule {
     cancelReset(): void;
     private _applyLiveSettings;
     private _updateAvailableCount;
+    /** Registers a tracked event listener that will be removed on destroy(). */
+    private _on;
     private _setupEventListeners;
     private _setupAutoSave;
     private _saveSettings;

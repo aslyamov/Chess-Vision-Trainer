@@ -187,7 +187,7 @@ export function getMovesForColor(fen, color) {
             }
             // Проверяем шахи
             tempGame.move(m);
-            if (tempGame.in_check()) {
+            if (tempGame.inCheck()) {
                 checks.push(m);
             }
             tempGame.undo();

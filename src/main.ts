@@ -19,8 +19,10 @@ const waitForChessground = (): Promise<any> => {
     return new Promise((resolve) => {
         if (window.Chessground) return resolve(window.Chessground);
 
-        // @ts-ignore
-        import('https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.0.1/+esm')
+        // TypeScript не может резолвить динамический импорт CDN-URL статически
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error — intentional CDN dynamic import, no type declarations available
+        import('https://cdn.jsdelivr.net/npm/@lichess-org/chessground@10.1.1/+esm')
             .then(module => {
                 const cg = module.Chessground || module.default?.Chessground || module.default;
                 resolve(cg);

@@ -384,6 +384,16 @@ cg-board {
     background-size: cover !important;
 }
 
+/* FC answer buttons: piece fills cg-wrap */
+.fc-king-btn .cg-wrap piece {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-size: cover !important;
+}
+
 /* Touch: предотвратить zoom */
 #memoryScreen,
 #memoryStartScreen {
