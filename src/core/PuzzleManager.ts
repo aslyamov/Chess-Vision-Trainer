@@ -13,11 +13,11 @@ export class PuzzleManager {
     private loaded: boolean = false;
 
     /**
-     * Загружает пазлы из JSON файла
-     * @param url - URL к файлу puzzles.json
-     * @returns Promise
+     * Загружает пазлы из JSON файла со стримингом прогресса.
+     * @param url        - URL к файлу puzzles.json
+     * @param onProgress - колбэк 0–100 (%; вызывается по мере получения байт)
      */
-    async loadPuzzles(url: string = 'puzzles.json'): Promise<void> {
+    async loadPuzzles(url: string = 'puzzles.json', onProgress?: (percent: number) => void): Promise<void> {
         try {
             const response = await fetch(url);
 
@@ -25,7 +25,42 @@ export class PuzzleManager {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
-            const data = await response.json();
+            // Стриминг с прогрессом (Content-Length = сжатый размер при gzip)
+            const contentLength = response.headers.get('Content-Length');
+            const total = contentLength ? parseInt(contentLength, 10) : 0;
+
+            let text: string;
+
+            if (total > 0 && response.body) {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                const chunks: string[] = [];
+                let received = 0;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    chunks.push(decoder.decode(value, { stream: true }));
+                    received += value.length;
+                    // Прогресс по сжатым байтам — может превысить 100% если gzip
+                    onProgress?.(Math.min(99, Math.round(received / total * 100)));
+                }
+                // Финализируем декодер
+                chunks.push(decoder.decode());
+                text = chunks.join('');
+            } else {
+                // Fallback: нет Content-Length → показываем анимированный прогресс 0→90%
+                let fake = 0;
+                const fakeTimer = setInterval(() => {
+                    fake = Math.min(90, fake + 5);
+                    onProgress?.(fake);
+                }, 150);
+                text = await response.text();
+                clearInterval(fakeTimer);
+            }
+
+            onProgress?.(99);
+            const data = JSON.parse(text);
 
             if (!Array.isArray(data) || data.length === 0) {
                 throw new Error('Puzzles data is empty or invalid');
@@ -33,6 +68,7 @@ export class PuzzleManager {
 
             this.puzzles = data;
             this.loaded = true;
+            onProgress?.(100);
 
             console.log(`[Puzzles] Загружено ${this.puzzles.length} задач`);
         } catch (error) {

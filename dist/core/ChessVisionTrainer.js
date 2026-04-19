@@ -34,8 +34,17 @@ export class ChessVisionTrainer {
     getCurrentLang() { return this.currentLang; }
     // ── Инициализация ─────────────────────────────────────────────────────────
     async init() {
+        const overlay = document.getElementById('loadingOverlay');
+        const bar = document.getElementById('loadingBar');
+        const pctLabel = document.getElementById('loadingPercent');
+        const setProgress = (p) => {
+            if (bar)
+                bar.style.width = p + '%';
+            if (pctLabel)
+                pctLabel.textContent = p + '%';
+        };
         try {
-            await this.puzzleManager.loadPuzzles('puzzles.json');
+            await this.puzzleManager.loadPuzzles('puzzles.json', setProgress);
             this._loadTheme();
             this.currentLang = loadLanguagePreference('ru');
             await this.loadLanguage(this.currentLang);
@@ -46,6 +55,14 @@ export class ChessVisionTrainer {
             logError('INITIALIZATION', 'Ошибка инициализации', error);
             alert('Не удалось запустить приложение. Смотрите консоль для деталей.');
             throw error;
+        }
+        finally {
+            // Скрываем оверлей всегда — даже при ошибке (alert уже показан выше)
+            if (overlay) {
+                overlay.style.transition = 'opacity 0.3s ease';
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 320);
+            }
         }
     }
     // ── Язык ─────────────────────────────────────────────────────────────────

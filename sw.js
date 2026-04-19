@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chess-vision-v37';
+const CACHE_NAME = 'chess-vision-v38';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -40,13 +40,35 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Network-first стратегия: сначала сеть, потом кэш
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  // Stale-while-revalidate для puzzles.json:
+  // — отдаём из кэша мгновенно (если есть), одновременно обновляем кэш в фоне.
+  // — при первом заходе ждём сеть, кэшируем результат.
+  if (url.pathname.endsWith('/puzzles.json')) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then((cache) =>
+        cache.match(event.request).then((cached) => {
+          const networkFetch = fetch(event.request).then((response) => {
+            if (response.ok && response.status !== 206) {
+              cache.put(event.request, response.clone());
+            }
+            return response;
+          }).catch(() => null);
+
+          // Если в кэше есть — отдаём сразу, сеть обновляет в фоне
+          return cached || networkFetch;
+        })
+      )
+    );
+    return;
+  }
+
+  // Network-first для всего остального (JS/CSS обновляются с деплоем)
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Кэшируем свежий ответ
-        // Skip caching partial responses (206) — not supported by Cache API
         if (response.ok && response.status !== 206) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -56,7 +78,6 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Если сеть недоступна - берём из кэша
         return caches.match(event.request);
       })
   );

@@ -60,6 +60,21 @@
     <div class="absolute inset-0 bg-gradient-to-br from-base-300 to-base-100 -z-10"></div>
 
     <!-- ==========================================
+         LOADING OVERLAY — показывается пока грузится puzzles.json
+         Скрывается из JS после завершения init()
+         ========================================== -->
+    <div id="loadingOverlay" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-base-300 gap-5">
+        <svg class="w-16 h-16 text-primary" aria-hidden="true" fill="currentColor" viewBox="0 0 448 512">
+            <use href="#i-chess-knight"/>
+        </svg>
+        <p class="text-xl font-semibold text-base-content">Загрузка...</p>
+        <div class="w-56 bg-base-200 rounded-full h-2 overflow-hidden">
+            <div id="loadingBar" class="bg-primary h-2 rounded-full transition-[width] duration-200 ease-out" style="width:0%"></div>
+        </div>
+        <p id="loadingPercent" class="text-sm text-base-content/50">0%</p>
+    </div>
+
+    <!-- ==========================================
          HOME SCREEN — выбор игры
          ========================================== -->
     <main id="homeScreen" class="view active w-full min-h-[100svh] flex flex-col items-center py-8 px-4">

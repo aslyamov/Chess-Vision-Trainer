@@ -57,8 +57,17 @@ export class ChessVisionTrainer implements AppContext {
     // ── Инициализация ─────────────────────────────────────────────────────────
 
     async init(): Promise<void> {
+        const overlay  = document.getElementById('loadingOverlay');
+        const bar      = document.getElementById('loadingBar')     as HTMLElement | null;
+        const pctLabel = document.getElementById('loadingPercent') as HTMLElement | null;
+
+        const setProgress = (p: number): void => {
+            if (bar)      bar.style.width  = p + '%';
+            if (pctLabel) pctLabel.textContent = p + '%';
+        };
+
         try {
-            await this.puzzleManager.loadPuzzles('puzzles.json');
+            await this.puzzleManager.loadPuzzles('puzzles.json', setProgress);
             this._loadTheme();
 
             this.currentLang = loadLanguagePreference('ru');
@@ -70,6 +79,13 @@ export class ChessVisionTrainer implements AppContext {
             logError('INITIALIZATION', 'Ошибка инициализации', error as Error);
             alert('Не удалось запустить приложение. Смотрите консоль для деталей.');
             throw error;
+        } finally {
+            // Скрываем оверлей всегда — даже при ошибке (alert уже показан выше)
+            if (overlay) {
+                overlay.style.transition = 'opacity 0.3s ease';
+                overlay.style.opacity   = '0';
+                setTimeout(() => overlay.remove(), 320);
+            }
         }
     }
 
