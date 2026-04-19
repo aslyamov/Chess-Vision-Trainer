@@ -12,7 +12,10 @@ export declare class FieldColorModule implements IGameModule {
     private _listeners;
     init(ctx: AppContext): void;
     onSelected(): void;
+    /** Полный снос модуля (вызывается при выходе в главное меню). */
     destroy(): void;
+    /** Останавливает текущую игру и клавиатурный обработчик, не трогая слушатели модуля. */
+    private _destroyGame;
     private _launch;
     private _backToStart;
     private _restart;

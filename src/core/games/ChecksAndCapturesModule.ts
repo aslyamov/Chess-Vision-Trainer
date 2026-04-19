@@ -50,10 +50,16 @@ export class ChecksAndCapturesModule implements IGameModule {
         this.ctx.uiManager.switchView(this.descriptor.startScreenId);
     }
 
+    /** Полный снос модуля (вызывается при выходе в главное меню). */
     destroy(): void {
         this._destroyed = true;
+        this._destroyGame();
         this._listeners.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
         this._listeners = [];
+    }
+
+    /** Останавливает текущую сессию/доску, не трогая слушатели модуля. */
+    private _destroyGame(): void {
         this.session?.destroy();
         this.session = null;
         this.boardRenderer?.destroy();
@@ -79,7 +85,7 @@ export class ChecksAndCapturesModule implements IGameModule {
         const soundEnabled = (document.getElementById('setSound') as HTMLInputElement)?.checked ?? true;
         soundManager.setEnabled(soundEnabled);
 
-        this.destroy();
+        this._destroyGame();
 
         const puzzles = this.ctx.getPuzzleManager().getPuzzles(config);
         this.boardRenderer = new BoardRenderer(this.ccUI.getBoardElement(), this.ctx.Chessground);
@@ -104,7 +110,7 @@ export class ChecksAndCapturesModule implements IGameModule {
     flipBoard():   void { this.boardRenderer?.flipBoard(); }
 
     restart(): void {
-        this.destroy();
+        this._destroyGame();
         this.ctx.uiManager.showStartScreen();
     }
 

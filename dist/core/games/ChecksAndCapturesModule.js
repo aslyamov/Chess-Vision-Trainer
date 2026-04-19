@@ -41,10 +41,15 @@ export class ChecksAndCapturesModule {
     onSelected() {
         this.ctx.uiManager.switchView(this.descriptor.startScreenId);
     }
+    /** Полный снос модуля (вызывается при выходе в главное меню). */
     destroy() {
         this._destroyed = true;
+        this._destroyGame();
         this._listeners.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
         this._listeners = [];
+    }
+    /** Останавливает текущую сессию/доску, не трогая слушатели модуля. */
+    _destroyGame() {
         this.session?.destroy();
         this.session = null;
         this.boardRenderer?.destroy();
@@ -64,7 +69,7 @@ export class ChecksAndCapturesModule {
         soundManager.preload();
         const soundEnabled = document.getElementById('setSound')?.checked ?? true;
         soundManager.setEnabled(soundEnabled);
-        this.destroy();
+        this._destroyGame();
         const puzzles = this.ctx.getPuzzleManager().getPuzzles(config);
         this.boardRenderer = new BoardRenderer(this.ccUI.getBoardElement(), this.ctx.Chessground);
         this.session = new GameSession(puzzles, config, this.ccUI, this.boardRenderer, this.ccUI.getStatusManager(), this.ctx.getLangData(), this.ctx.getCurrentLang(), () => this.ctx.getPuzzleManager().getStatsByDifficulty(puzzleProgress.getSolvedIds()));
@@ -75,7 +80,7 @@ export class ChecksAndCapturesModule {
     redrawBoard() { this.boardRenderer?.redraw(); }
     flipBoard() { this.boardRenderer?.flipBoard(); }
     restart() {
-        this.destroy();
+        this._destroyGame();
         this.ctx.uiManager.showStartScreen();
     }
     resetProgress() {

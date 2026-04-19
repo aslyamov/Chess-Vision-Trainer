@@ -16,7 +16,10 @@ export declare class ChecksAndCapturesModule implements IGameModule {
     private _listeners;
     init(ctx: AppContext): void;
     onSelected(): void;
+    /** Полный снос модуля (вызывается при выходе в главное меню). */
     destroy(): void;
+    /** Останавливает текущую сессию/доску, не трогая слушатели модуля. */
+    private _destroyGame;
     onLanguageChange(langData: LocaleData): void;
     renderStats(): void;
     startSession(): void;

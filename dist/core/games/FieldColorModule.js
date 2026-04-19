@@ -33,7 +33,14 @@ export class FieldColorModule {
         this._applyConfigToUI(config);
         this.ctx.uiManager.switchView(this.descriptor.startScreenId);
     }
+    /** Полный снос модуля (вызывается при выходе в главное меню). */
     destroy() {
+        this._destroyGame();
+        this._listeners.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
+        this._listeners = [];
+    }
+    /** Останавливает текущую игру и клавиатурный обработчик, не трогая слушатели модуля. */
+    _destroyGame() {
         if (this.game) {
             this.game.destroy();
             this.game = null;
@@ -42,12 +49,10 @@ export class FieldColorModule {
             window.removeEventListener('keydown', this._keyHandler, { capture: true });
             this._keyHandler = null;
         }
-        this._listeners.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
-        this._listeners = [];
     }
     // ─────────────────────────────────────────────────────────────────────
     _launch(config) {
-        this.destroy();
+        this._destroyGame();
         this._setupKeyboard();
         this.game = new FieldColorGame(this.ctx.Chessground, config, (result) => {
             this._showResults(result);
@@ -56,7 +61,7 @@ export class FieldColorModule {
         this.game.start();
     }
     _backToStart() {
-        this.destroy();
+        this._destroyGame();
         const config = FieldColorGame.loadConfig();
         this._applyConfigToUI(config);
         this.ctx.uiManager.switchView(this.descriptor.startScreenId);
