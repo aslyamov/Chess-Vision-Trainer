@@ -1,0 +1,49 @@
+name: Update CDN Dependencies
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Каждое воскресенье в 00:00
+  workflow_dispatch: # Возможность ручного запуска
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-cdn:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run check and update script
+      run: node scripts/check-cdn-updates.js
+
+    - name: Build project
+      run: npm run build
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore(deps): bump CDN dependencies to latest versions"
+        title: "chore(deps): bump CDN dependencies (chess.js / Chessground)"
+        body: |
+          Automatic update of CDN dependencies to the latest versions.
+          
+          Checks performed:
+          - chess.js
+          - @lichess-org/chessground
+          
+          Please verify if the build passes and manually test the trainer page.
+        branch: dependabot/cdn-updates
+        delete-branch: true
