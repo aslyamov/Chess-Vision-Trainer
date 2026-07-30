@@ -7,11 +7,11 @@ export declare class PuzzleManager {
     private puzzles;
     private loaded;
     /**
-     * Загружает пазлы из JSON файла
-     * @param url - URL к файлу puzzles.json
-     * @returns Promise
+     * Загружает пазлы из JSON файла со стримингом прогресса.
+     * @param url        - URL к файлу puzzles.json
+     * @param onProgress - колбэк 0–100 (%; вызывается по мере получения байт)
      */
-    loadPuzzles(url?: string): Promise<void>;
+    loadPuzzles(url?: string, onProgress?: (percent: number) => void): Promise<void>;
     /**
      * Получает пазлы с приоритетом новых (нерешённых) задач
      * @param config - Конфигурация сессии
