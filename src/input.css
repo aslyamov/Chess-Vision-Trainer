@@ -1,6 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light, dark;
+}
+
+@theme {
+  --color-chess-board: #b58863;
+  --color-chess-dark: #262421;
+  --color-chess-highlight: #a7c5eb;
+}
 
 /* ==========================================
    Global Styles

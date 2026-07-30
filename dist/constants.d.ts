@@ -28,13 +28,13 @@ export declare const BRUSHES: {
 };
 /** Status message colors (used in GameSession.setStatus calls) */
 export declare const STATUS_COLORS: {
-    readonly SUCCESS: 'green';
-    readonly ERROR: 'red';
-    readonly WARNING: 'orange';
-    readonly ALREADY: 'blue';
-    readonly INFO: '#0050b3';
-    readonly NEUTRAL: '#555';
-    readonly DANGER: '#d97706';
+    readonly SUCCESS: "green";
+    readonly ERROR: "red";
+    readonly WARNING: "orange";
+    readonly ALREADY: "blue";
+    readonly INFO: "#0050b3";
+    readonly NEUTRAL: "#555";
+    readonly DANGER: "#d97706";
 };
 /** localStorage keys */
 export declare const SETTINGS_KEY = "chess_vision_settings";

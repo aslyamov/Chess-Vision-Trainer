@@ -54,8 +54,6 @@ export class ChecksAndCapturesModule implements IGameModule {
     destroy(): void {
         this._destroyed = true;
         this._destroyGame();
-        this._listeners.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
-        this._listeners = [];
     }
 
     /** Останавливает текущую сессию/доску, не трогая слушатели модуля. */

@@ -36,8 +36,6 @@ export class FieldColorModule {
     /** Полный снос модуля (вызывается при выходе в главное меню). */
     destroy() {
         this._destroyGame();
-        this._listeners.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
-        this._listeners = [];
     }
     /** Останавливает текущую игру и клавиатурный обработчик, не трогая слушатели модуля. */
     _destroyGame() {
