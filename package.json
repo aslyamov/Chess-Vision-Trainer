@@ -20,6 +20,7 @@
     "author": "",
     "license": "MIT",
     "devDependencies": {
+        "@tailwindcss/cli": "^4.3.3",
         "@types/node": "^26.1.2",
         "daisyui": "^5.7.8",
         "tailwindcss": "^4.3.3",
