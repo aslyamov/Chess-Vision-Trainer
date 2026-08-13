@@ -21,7 +21,7 @@
     "license": "MIT",
     "devDependencies": {
         "@tailwindcss/cli": "^4.3.3",
-        "@types/node": "^26.1.2",
+        "@types/node": "^26.2.0",
         "daisyui": "^5.7.14",
         "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2"
