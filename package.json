@@ -22,7 +22,7 @@
     "devDependencies": {
         "@tailwindcss/cli": "^4.3.3",
         "@types/node": "^26.6.2",
-        "daisyui": "^5.7.42",
+        "daisyui": "^5.7.46",
         "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2"
     }
